@@ -1234,3 +1234,54 @@ CREATE TABLE login_history (
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (user_id) REFERENCES users(user_id) ON DELETE CASCADE
 );
+
+-- Insert sample data for users
+INSERT INTO users (username, password, email, role) VALUES
+    ('john.admin', 'admin123', 'john.admin@company.com', 'admin'),
+    ('sara.hr', 'hr123', 'sara.hr@company.com', 'hr'),
+    ('mike.manager', 'manager123', 'mike.manager@company.com', 'manager'),
+    ('alice.dev', 'dev123', 'alice.dev@company.com', 'employee'),
+    ('bob.sales', 'sales123', 'bob.sales@company.com', 'employee'),
+    ('emma.marketing', 'marketing123', 'emma.marketing@company.com', 'employee');
+
+-- Insert sample data for personal_information
+INSERT INTO personal_information (first_name, last_name, date_of_birth, gender, marital_status, nationality, tax_id, social_security_number, phone_number, emergency_contact_name, emergency_contact_relationship, emergency_contact_phone) VALUES
+('John', 'Doe', '1985-05-15', 'Male', 'Married', 'American', '123-45-6789', '123456789', '555-1234', 'Jane Doe', 'Spouse', '555-5678'),
+('Alice', 'Smith', '1990-08-22', 'Female', 'Single', 'Canadian', '987-65-4321', '987654321', '555-4321', 'Bob Smith', 'Father', '555-8765'),
+('Michael', 'Johnson', '1978-11-30', 'Male', 'Divorced', 'British', '456-78-9012', '456789012', '555-6789', 'Sarah Johnson', 'Sister', '555-2345');
+
+-- Insert sample data for job_roles
+INSERT INTO job_roles (title, description, department, min_salary, max_salary) VALUES
+('Software Developer', 'Develops and maintains software applications.', 'IT', 70000.00, 120000.00),
+('HR Manager', 'Manages human resources and employee relations.', 'HR', 60000.00, 100000.00),
+('Marketing Specialist', 'Plans and executes marketing strategies.', 'Marketing', 50000.00, 90000.00);
+
+-- Insert sample data for employee_profiles
+INSERT INTO employee_profiles (user_id, personal_info_id, job_role_id, manager_id, employee_number, hire_date, employment_status, current_salary, work_email, work_phone, location, remote_work) VALUES
+(1, 1, 1, NULL, 'EMP001', '2020-01-10', 'Full-time', 85000.00, 'john.doe@company.com', '555-0001', 'New York', FALSE),
+(2, 2, 2, 1, 'EMP002', '2019-05-15', 'Full-time', 75000.00, 'alice.smith@company.com', '555-0002', 'Toronto', TRUE),
+(3, 3, 3, 1, 'EMP003', '2018-09-20', 'Part-time', 60000.00, 'michael.johnson@company.com', '555-0003', 'London', FALSE);
+
+-- Insert sample data for departments
+INSERT INTO departments (department_name, description, manager_id, location) VALUES
+('Information Technology', 'Handles all IT-related functions.', 1, 'New York'),
+('Human Resources', 'Manages employee relations and recruitment.', 2, 'Toronto'),
+('Marketing', 'Responsible for marketing and advertising.', 3, 'London');
+
+-- Insert sample data for employment_history
+INSERT INTO employment_history (employee_id, job_role_id, start_date, end_date, salary, manager_id, reason_for_change) VALUES
+(1, 1, '2020-01-10', NULL, 85000.00, NULL, 'Initial Hire'),
+(2, 2, '2019-05-15', NULL, 75000.00, 1, 'Initial Hire'),
+(3, 3, '2018-09-20', NULL, 60000.00, 1, 'Initial Hire');
+
+-- Insert sample data for document_management
+INSERT INTO document_management (employee_id, document_type, document_name, file_path, expiry_date, document_status, notes) VALUES
+(1, 'Contract', 'Employment Contract', '/documents/contracts/john_doe_contract.pdf', '2025-01-10', 'Active', 'Initial employment contract'),
+(2, 'Resume', 'Resume', '/documents/resumes/alice_smith_resume.pdf', NULL, 'Active', 'Latest resume'),
+(3, 'Certificate', 'Marketing Certification', '/documents/certificates/michael_johnson_cert.pdf', '2024-12-31', 'Active', 'Marketing certification');
+
+-- Insert sample data for employee_training
+INSERT INTO employee_training (employee_id, training_name, training_description, start_date, end_date, training_status, trainer_name, training_cost) VALUES
+(1, 'Advanced Software Development', 'Advanced training in software development techniques.', '2023-10-01', '2023-10-05', 'Completed', 'Jane Smith', 1500.00),
+(2, 'HR Management Workshop', 'Workshop on advanced HR management practices.', '2023-11-10', '2023-11-12', 'Scheduled', 'Robert Brown', 1200.00),
+(3, 'Digital Marketing Strategies', 'Training on the latest digital marketing strategies.', '2023-09-15', '2023-09-17', 'Completed', 'Emily Davis', 1000.00);
