@@ -2,6 +2,7 @@
 -- CORE USER AND EMPLOYEE TABLES
 -- ===============================
 
+
 -- Create user table
 CREATE TABLE users (
     user_id INT AUTO_INCREMENT PRIMARY KEY,
@@ -34,27 +35,16 @@ CREATE TABLE personal_information (
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
 );
 
--- Create departments table
-CREATE TABLE departments (
-    department_id INT AUTO_INCREMENT PRIMARY KEY,
-    department_name VARCHAR(100) NOT NULL,
-    description TEXT,
-    manager_id INT NULL,
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
-);
-
 -- Create job_roles table
 CREATE TABLE job_roles (
     job_role_id INT AUTO_INCREMENT PRIMARY KEY,
     title VARCHAR(100) NOT NULL,
     description TEXT NOT NULL,
-    department_id INT NOT NULL,
+    department VARCHAR(50) NOT NULL,
     min_salary DECIMAL(10,2),
     max_salary DECIMAL(10,2),
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-    FOREIGN KEY (department_id) REFERENCES departments(department_id)
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
 );
 
 -- Create employee_profiles table (connects users, personal info, and current job role)
@@ -80,10 +70,17 @@ CREATE TABLE employee_profiles (
     FOREIGN KEY (manager_id) REFERENCES employee_profiles(employee_id) ON DELETE SET NULL
 );
 
--- Add foreign key for department manager after employee_profiles table is created
-ALTER TABLE departments
-ADD CONSTRAINT fk_department_manager
-FOREIGN KEY (manager_id) REFERENCES employee_profiles(employee_id) ON DELETE SET NULL;
+-- Create departments table
+CREATE TABLE departments (
+    department_id INT AUTO_INCREMENT PRIMARY KEY,
+    department_name VARCHAR(100) NOT NULL,
+    description TEXT,
+    manager_id INT,
+    location VARCHAR(100),
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    FOREIGN KEY (manager_id) REFERENCES employee_profiles(employee_id) ON DELETE SET NULL
+);
 
 -- Create employment_history table
 CREATE TABLE employment_history (
@@ -113,6 +110,22 @@ CREATE TABLE document_management (
     expiry_date DATE,
     document_status ENUM('Active', 'Expired', 'Pending Review') DEFAULT 'Active',
     notes TEXT,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    FOREIGN KEY (employee_id) REFERENCES employee_profiles(employee_id) ON DELETE CASCADE
+);
+
+-- Create employee_training table
+CREATE TABLE employee_training (
+    training_id INT AUTO_INCREMENT PRIMARY KEY,
+    employee_id INT NOT NULL,
+    training_name VARCHAR(255) NOT NULL,
+    training_description TEXT,
+    start_date DATE NOT NULL,
+    end_date DATE,
+    training_status ENUM('Scheduled', 'In Progress', 'Completed', 'Cancelled') DEFAULT 'Scheduled',
+    trainer_name VARCHAR(100),
+    training_cost DECIMAL(10,2),
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
     FOREIGN KEY (employee_id) REFERENCES employee_profiles(employee_id) ON DELETE CASCADE
