@@ -2,14 +2,13 @@
 -- CORE USER AND EMPLOYEE TABLES
 -- ===============================
 
-
--- Create user table
+-- Create user table (Admin and HR only)
 CREATE TABLE users (
     user_id INT AUTO_INCREMENT PRIMARY KEY,
     username VARCHAR(50) NOT NULL UNIQUE,
     password VARCHAR(255) NOT NULL,
     email VARCHAR(100) NOT NULL UNIQUE,
-    role ENUM('admin', 'manager', 'hr', 'employee') NOT NULL,
+    role ENUM('admin', 'hr') NOT NULL,
     is_active BOOLEAN DEFAULT TRUE,
     last_login DATETIME,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
@@ -47,13 +46,11 @@ CREATE TABLE job_roles (
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
 );
 
--- Create employee_profiles table (connects users, personal info, and current job role)
+-- Create employee_profiles table (no manager references)
 CREATE TABLE employee_profiles (
     employee_id INT AUTO_INCREMENT PRIMARY KEY,
-    user_id INT UNIQUE,
     personal_info_id INT UNIQUE,
     job_role_id INT,
-    manager_id INT,
     employee_number VARCHAR(20) NOT NULL UNIQUE,
     hire_date DATE NOT NULL,
     employment_status ENUM('Full-time', 'Part-time', 'Contract', 'Intern', 'Terminated') NOT NULL,
@@ -64,25 +61,21 @@ CREATE TABLE employee_profiles (
     remote_work BOOLEAN DEFAULT FALSE,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-    FOREIGN KEY (user_id) REFERENCES users(user_id) ON DELETE SET NULL,
     FOREIGN KEY (personal_info_id) REFERENCES personal_information(personal_info_id) ON DELETE SET NULL,
-    FOREIGN KEY (job_role_id) REFERENCES job_roles(job_role_id) ON DELETE SET NULL,
-    FOREIGN KEY (manager_id) REFERENCES employee_profiles(employee_id) ON DELETE SET NULL
+    FOREIGN KEY (job_role_id) REFERENCES job_roles(job_role_id) ON DELETE SET NULL
 );
 
--- Create departments table
+-- Create departments table (no manager references)
 CREATE TABLE departments (
     department_id INT AUTO_INCREMENT PRIMARY KEY,
     department_name VARCHAR(100) NOT NULL,
     description TEXT,
-    manager_id INT,
     location VARCHAR(100),
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-    FOREIGN KEY (manager_id) REFERENCES employee_profiles(employee_id) ON DELETE SET NULL
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
 );
 
--- Create employment_history table
+-- Create employment_history table (no manager references)
 CREATE TABLE employment_history (
     history_id INT AUTO_INCREMENT PRIMARY KEY,
     employee_id INT NOT NULL,
@@ -90,13 +83,11 @@ CREATE TABLE employment_history (
     start_date DATE NOT NULL,
     end_date DATE,
     salary DECIMAL(10,2) NOT NULL,
-    manager_id INT,
     reason_for_change VARCHAR(255),
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
     FOREIGN KEY (employee_id) REFERENCES employee_profiles(employee_id) ON DELETE CASCADE,
-    FOREIGN KEY (job_role_id) REFERENCES job_roles(job_role_id) ON DELETE SET NULL,
-    FOREIGN KEY (manager_id) REFERENCES employee_profiles(employee_id) ON DELETE SET NULL
+    FOREIGN KEY (job_role_id) REFERENCES job_roles(job_role_id) ON DELETE SET NULL
 );
 
 -- Create document_management table
@@ -110,22 +101,6 @@ CREATE TABLE document_management (
     expiry_date DATE,
     document_status ENUM('Active', 'Expired', 'Pending Review') DEFAULT 'Active',
     notes TEXT,
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-    FOREIGN KEY (employee_id) REFERENCES employee_profiles(employee_id) ON DELETE CASCADE
-);
-
--- Create employee_training table
-CREATE TABLE employee_training (
-    training_id INT AUTO_INCREMENT PRIMARY KEY,
-    employee_id INT NOT NULL,
-    training_name VARCHAR(255) NOT NULL,
-    training_description TEXT,
-    start_date DATE NOT NULL,
-    end_date DATE,
-    training_status ENUM('Scheduled', 'In Progress', 'Completed', 'Cancelled') DEFAULT 'Scheduled',
-    trainer_name VARCHAR(100),
-    training_cost DECIMAL(10,2),
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
     FOREIGN KEY (employee_id) REFERENCES employee_profiles(employee_id) ON DELETE CASCADE
@@ -304,20 +279,18 @@ CREATE TABLE competencies (
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
 );
 
--- Create employee competencies table
+-- Create employee competencies table (no assessor reference)
 CREATE TABLE employee_competencies (
     employee_id INT NOT NULL,
     competency_id INT NOT NULL,
     rating INT NOT NULL,
     assessment_date DATE NOT NULL,
-    assessed_by INT,
     comments TEXT,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
     PRIMARY KEY (employee_id, competency_id, assessment_date),
     FOREIGN KEY (employee_id) REFERENCES employee_profiles(employee_id) ON DELETE CASCADE,
-    FOREIGN KEY (competency_id) REFERENCES competencies(competency_id) ON DELETE CASCADE,
-    FOREIGN KEY (assessed_by) REFERENCES employee_profiles(employee_id) ON DELETE SET NULL
+    FOREIGN KEY (competency_id) REFERENCES competencies(competency_id) ON DELETE CASCADE
 );
 
 -- Create performance review cycles table
@@ -331,11 +304,10 @@ CREATE TABLE performance_review_cycles (
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
 );
 
--- Create performance reviews table
+-- Create performance reviews table (no reviewer references)
 CREATE TABLE performance_reviews (
     review_id INT AUTO_INCREMENT PRIMARY KEY,
     employee_id INT NOT NULL,
-    reviewer_id INT NOT NULL,
     cycle_id INT NOT NULL,
     review_date DATE NOT NULL,
     overall_rating DECIMAL(3,2) NOT NULL,
@@ -346,29 +318,10 @@ CREATE TABLE performance_reviews (
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
     FOREIGN KEY (employee_id) REFERENCES employee_profiles(employee_id) ON DELETE CASCADE,
-    FOREIGN KEY (reviewer_id) REFERENCES employee_profiles(employee_id) ON DELETE CASCADE,
     FOREIGN KEY (cycle_id) REFERENCES performance_review_cycles(cycle_id) ON DELETE CASCADE
 );
 
--- Create feedback 360 table
-CREATE TABLE feedback_360 (
-    feedback_id INT AUTO_INCREMENT PRIMARY KEY,
-    reviewed_employee_id INT NOT NULL,
-    feedback_provider_id INT NOT NULL,
-    cycle_id INT NOT NULL,
-    feedback_date DATE NOT NULL,
-    rating DECIMAL(3,2),
-    comments TEXT,
-    is_anonymous BOOLEAN DEFAULT FALSE,
-    status ENUM('Pending', 'Submitted', 'Included') DEFAULT 'Pending',
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-    FOREIGN KEY (reviewed_employee_id) REFERENCES employee_profiles(employee_id) ON DELETE CASCADE,
-    FOREIGN KEY (feedback_provider_id) REFERENCES employee_profiles(employee_id) ON DELETE CASCADE,
-    FOREIGN KEY (cycle_id) REFERENCES performance_review_cycles(cycle_id) ON DELETE CASCADE
-);
-
--- Create goals table
+-- Create goals table (no supervisor reference)
 CREATE TABLE goals (
     goal_id INT AUTO_INCREMENT PRIMARY KEY,
     employee_id INT NOT NULL,
@@ -379,47 +332,40 @@ CREATE TABLE goals (
     status ENUM('Not Started', 'In Progress', 'Completed', 'Cancelled') DEFAULT 'Not Started',
     progress DECIMAL(5,2) DEFAULT 0,
     weight DECIMAL(5,2) DEFAULT 100.00,
-    supervisor_id INT,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-    FOREIGN KEY (employee_id) REFERENCES employee_profiles(employee_id) ON DELETE CASCADE,
-    FOREIGN KEY (supervisor_id) REFERENCES employee_profiles(employee_id) ON DELETE SET NULL
+    FOREIGN KEY (employee_id) REFERENCES employee_profiles(employee_id) ON DELETE CASCADE
 );
 
--- Create goal updates table
+-- Create goal updates table (no creator reference)
 CREATE TABLE goal_updates (
     update_id INT AUTO_INCREMENT PRIMARY KEY,
     goal_id INT NOT NULL,
     update_date DATE NOT NULL,
     progress DECIMAL(5,2) NOT NULL,
     comments TEXT,
-    created_by INT NOT NULL,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-    FOREIGN KEY (goal_id) REFERENCES goals(goal_id) ON DELETE CASCADE,
-    FOREIGN KEY (created_by) REFERENCES employee_profiles(employee_id) ON DELETE CASCADE
+    FOREIGN KEY (goal_id) REFERENCES goals(goal_id) ON DELETE CASCADE
 );
 
--- Create performance metrics table
+-- Create performance metrics table (no recorder reference)
 CREATE TABLE performance_metrics (
     metric_id INT AUTO_INCREMENT PRIMARY KEY,
     employee_id INT NOT NULL,
     metric_name VARCHAR(100) NOT NULL,
     metric_value DECIMAL(10,2) NOT NULL,
     recorded_date DATE NOT NULL,
-    recorded_by INT,
     comments TEXT,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-    FOREIGN KEY (employee_id) REFERENCES employee_profiles(employee_id) ON DELETE CASCADE,
-    FOREIGN KEY (recorded_by) REFERENCES employee_profiles(employee_id) ON DELETE SET NULL
+    FOREIGN KEY (employee_id) REFERENCES employee_profiles(employee_id) ON DELETE CASCADE
 );
 
--- Create development plans table
+-- Create development plans table (no coach reference)
 CREATE TABLE development_plans (
     plan_id INT AUTO_INCREMENT PRIMARY KEY,
     employee_id INT NOT NULL,
-    coach_id INT,
     plan_name VARCHAR(100) NOT NULL,
     plan_description TEXT,
     start_date DATE NOT NULL,
@@ -427,8 +373,7 @@ CREATE TABLE development_plans (
     status ENUM('Draft', 'Active', 'Completed', 'Cancelled') DEFAULT 'Draft',
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-    FOREIGN KEY (employee_id) REFERENCES employee_profiles(employee_id) ON DELETE CASCADE,
-    FOREIGN KEY (coach_id) REFERENCES employee_profiles(employee_id) ON DELETE SET NULL
+    FOREIGN KEY (employee_id) REFERENCES employee_profiles(employee_id) ON DELETE CASCADE
 );
 
 -- Create development activities table
@@ -490,7 +435,7 @@ CREATE TABLE leave_balances (
     FOREIGN KEY (leave_type_id) REFERENCES leave_types(leave_type_id) ON DELETE CASCADE
 );
 
--- Create leave requests table
+-- Create leave requests table (no approver reference)
 CREATE TABLE leave_requests (
     leave_id INT AUTO_INCREMENT PRIMARY KEY,
     employee_id INT NOT NULL,
@@ -501,14 +446,12 @@ CREATE TABLE leave_requests (
     reason TEXT,
     status ENUM('Pending', 'Approved', 'Rejected', 'Cancelled') DEFAULT 'Pending',
     applied_on DATETIME DEFAULT CURRENT_TIMESTAMP,
-    approved_by INT,
     approved_on DATETIME,
     rejection_reason TEXT,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
     FOREIGN KEY (employee_id) REFERENCES employee_profiles(employee_id) ON DELETE CASCADE,
-    FOREIGN KEY (leave_type_id) REFERENCES leave_types(leave_type_id) ON DELETE CASCADE,
-    FOREIGN KEY (approved_by) REFERENCES employee_profiles(employee_id) ON DELETE SET NULL
+    FOREIGN KEY (leave_type_id) REFERENCES leave_types(leave_type_id) ON DELETE CASCADE
 );
 
 -- Create shifts table
@@ -573,7 +516,7 @@ CREATE TABLE attendance_summary (
 -- EXIT MANAGEMENT
 -- ===============================
 
--- Create exits table
+-- Create exits table (no initiator/approver references)
 CREATE TABLE exits (
     exit_id INT AUTO_INCREMENT PRIMARY KEY,
     employee_id INT NOT NULL,
@@ -582,16 +525,12 @@ CREATE TABLE exits (
     notice_date DATE NOT NULL,
     exit_date DATE NOT NULL,
     status ENUM('Pending', 'Processing', 'Completed', 'Cancelled') DEFAULT 'Pending',
-    initiated_by INT NOT NULL,
-    approved_by INT,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-    FOREIGN KEY (employee_id) REFERENCES employee_profiles(employee_id) ON DELETE CASCADE,
-    FOREIGN KEY (initiated_by) REFERENCES employee_profiles(employee_id) ON DELETE CASCADE,
-    FOREIGN KEY (approved_by) REFERENCES employee_profiles(employee_id) ON DELETE SET NULL
+    FOREIGN KEY (employee_id) REFERENCES employee_profiles(employee_id) ON DELETE CASCADE
 );
 
--- Create exit checklist table
+-- Create exit checklist table (no completion reference)
 CREATE TABLE exit_checklist (
     checklist_id INT AUTO_INCREMENT PRIMARY KEY,
     exit_id INT NOT NULL,
@@ -600,20 +539,17 @@ CREATE TABLE exit_checklist (
     responsible_department VARCHAR(50) NOT NULL,
     status ENUM('Pending', 'Completed', 'Not Applicable') DEFAULT 'Pending',
     completed_date DATE,
-    completed_by INT,
     notes TEXT,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-    FOREIGN KEY (exit_id) REFERENCES exits(exit_id) ON DELETE CASCADE,
-    FOREIGN KEY (completed_by) REFERENCES employee_profiles(employee_id) ON DELETE SET NULL
+    FOREIGN KEY (exit_id) REFERENCES exits(exit_id) ON DELETE CASCADE
 );
 
--- Create exit interviews table
+-- Create exit interviews table (no interviewer reference)
 CREATE TABLE exit_interviews (
     interview_id INT AUTO_INCREMENT PRIMARY KEY,
     exit_id INT NOT NULL,
     employee_id INT NOT NULL,
-    interviewer_id INT NOT NULL,
     interview_date DATE NOT NULL,
     feedback TEXT,
     improvement_suggestions TEXT,
@@ -623,31 +559,26 @@ CREATE TABLE exit_interviews (
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
     FOREIGN KEY (exit_id) REFERENCES exits(exit_id) ON DELETE CASCADE,
-    FOREIGN KEY (employee_id) REFERENCES employee_profiles(employee_id) ON DELETE CASCADE,
-    FOREIGN KEY (interviewer_id) REFERENCES employee_profiles(employee_id) ON DELETE CASCADE
+    FOREIGN KEY (employee_id) REFERENCES employee_profiles(employee_id) ON DELETE CASCADE
 );
 
--- Create knowledge transfers table
+-- Create knowledge transfers table (no successor/completion references)
 CREATE TABLE knowledge_transfers (
     transfer_id INT AUTO_INCREMENT PRIMARY KEY,
     exit_id INT NOT NULL,
     employee_id INT NOT NULL,
-    successor_id INT,
     handover_details TEXT,
     start_date DATE,
     completion_date DATE,
     status ENUM('Not Started', 'In Progress', 'Completed', 'N/A') DEFAULT 'Not Started',
-    completed_by INT,
     notes TEXT,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
     FOREIGN KEY (exit_id) REFERENCES exits(exit_id) ON DELETE CASCADE,
-    FOREIGN KEY (employee_id) REFERENCES employee_profiles(employee_id) ON DELETE CASCADE,
-    FOREIGN KEY (successor_id) REFERENCES employee_profiles(employee_id) ON DELETE SET NULL,
-    FOREIGN KEY (completed_by) REFERENCES employee_profiles(employee_id) ON DELETE SET NULL
+    FOREIGN KEY (employee_id) REFERENCES employee_profiles(employee_id) ON DELETE CASCADE
 );
 
--- Create settlements table
+-- Create settlements table (no processor reference)
 CREATE TABLE settlements (
     settlement_id INT AUTO_INCREMENT PRIMARY KEY,
     exit_id INT NOT NULL,
@@ -661,17 +592,15 @@ CREATE TABLE settlements (
     payment_date DATE,
     payment_method VARCHAR(50),
     status ENUM('Pending', 'Processing', 'Completed') DEFAULT 'Pending',
-    processed_by INT,
     processed_date DATE,
     notes TEXT,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
     FOREIGN KEY (exit_id) REFERENCES exits(exit_id) ON DELETE CASCADE,
-    FOREIGN KEY (employee_id) REFERENCES employee_profiles(employee_id) ON DELETE CASCADE,
-    FOREIGN KEY (processed_by) REFERENCES employee_profiles(employee_id) ON DELETE SET NULL
+    FOREIGN KEY (employee_id) REFERENCES employee_profiles(employee_id) ON DELETE CASCADE
 );
 
--- Create exit documents table
+-- Create exit documents table (no uploader reference)
 CREATE TABLE exit_documents (
     document_id INT AUTO_INCREMENT PRIMARY KEY,
     exit_id INT NOT NULL,
@@ -680,13 +609,11 @@ CREATE TABLE exit_documents (
     document_name VARCHAR(255) NOT NULL,
     document_url VARCHAR(255) NOT NULL,
     uploaded_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    uploaded_by INT NOT NULL,
     notes TEXT,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
     FOREIGN KEY (exit_id) REFERENCES exits(exit_id) ON DELETE CASCADE,
-    FOREIGN KEY (employee_id) REFERENCES employee_profiles(employee_id) ON DELETE CASCADE,
-    FOREIGN KEY (uploaded_by) REFERENCES employee_profiles(employee_id) ON DELETE CASCADE
+    FOREIGN KEY (employee_id) REFERENCES employee_profiles(employee_id) ON DELETE CASCADE
 );
 
 -- Create post exit surveys table
@@ -703,16 +630,16 @@ CREATE TABLE post_exit_surveys (
     FOREIGN KEY (employee_id) REFERENCES employee_profiles(employee_id) ON DELETE CASCADE,
     FOREIGN KEY (exit_id) REFERENCES exits(exit_id) ON DELETE CASCADE
 );
+
 -- ===============================
 -- RECRUITMENT MANAGEMENT
 -- ===============================
 
--- Create job_openings table
+-- Create job_openings table (no hiring manager reference)
 CREATE TABLE job_openings (
     job_opening_id INT AUTO_INCREMENT PRIMARY KEY,
     job_role_id INT NOT NULL,
     department_id INT NOT NULL,
-    hiring_manager_id INT NOT NULL,
     title VARCHAR(255) NOT NULL,
     description TEXT NOT NULL,
     requirements TEXT NOT NULL,
@@ -730,8 +657,7 @@ CREATE TABLE job_openings (
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
     FOREIGN KEY (job_role_id) REFERENCES job_roles(job_role_id) ON DELETE CASCADE,
-    FOREIGN KEY (department_id) REFERENCES departments(department_id) ON DELETE CASCADE,
-    FOREIGN KEY (hiring_manager_id) REFERENCES employee_profiles(employee_id) ON DELETE CASCADE
+    FOREIGN KEY (department_id) REFERENCES departments(department_id) ON DELETE CASCADE
 );
 
 -- Create candidates table
@@ -781,12 +707,11 @@ CREATE TABLE interview_stages (
     FOREIGN KEY (job_opening_id) REFERENCES job_openings(job_opening_id) ON DELETE CASCADE
 );
 
--- Create interviews table
+-- Create interviews table (no interviewer reference)
 CREATE TABLE interviews (
     interview_id INT AUTO_INCREMENT PRIMARY KEY,
     application_id INT NOT NULL,
     stage_id INT NOT NULL,
-    interviewer_id INT NOT NULL,
     schedule_date DATETIME NOT NULL,
     duration INT NOT NULL COMMENT 'Duration in minutes',
     location VARCHAR(255),
@@ -799,11 +724,10 @@ CREATE TABLE interviews (
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
     FOREIGN KEY (application_id) REFERENCES job_applications(application_id) ON DELETE CASCADE,
-    FOREIGN KEY (stage_id) REFERENCES interview_stages(stage_id) ON DELETE CASCADE,
-    FOREIGN KEY (interviewer_id) REFERENCES employee_profiles(employee_id) ON DELETE CASCADE
+    FOREIGN KEY (stage_id) REFERENCES interview_stages(stage_id) ON DELETE CASCADE
 );
 
--- Create job_offers table
+-- Create job_offers table (no approver/creator references)
 CREATE TABLE job_offers (
     offer_id INT AUTO_INCREMENT PRIMARY KEY,
     application_id INT NOT NULL,
@@ -817,15 +741,11 @@ CREATE TABLE job_offers (
     offer_status ENUM('Draft', 'Sent', 'Accepted', 'Negotiating', 'Declined', 'Expired') DEFAULT 'Draft',
     offer_letter_url VARCHAR(255),
     notes TEXT,
-    approved_by INT,
-    created_by INT NOT NULL,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
     FOREIGN KEY (application_id) REFERENCES job_applications(application_id) ON DELETE CASCADE,
     FOREIGN KEY (job_opening_id) REFERENCES job_openings(job_opening_id) ON DELETE CASCADE,
-    FOREIGN KEY (candidate_id) REFERENCES candidates(candidate_id) ON DELETE CASCADE,
-    FOREIGN KEY (approved_by) REFERENCES employee_profiles(employee_id) ON DELETE SET NULL,
-    FOREIGN KEY (created_by) REFERENCES employee_profiles(employee_id) ON DELETE CASCADE
+    FOREIGN KEY (candidate_id) REFERENCES candidates(candidate_id) ON DELETE CASCADE
 );
 
 -- Create recruitment_analytics table
@@ -858,37 +778,31 @@ CREATE TABLE onboarding_tasks (
     FOREIGN KEY (department_id) REFERENCES departments(department_id) ON DELETE SET NULL
 );
 
--- Create employee_onboarding table
+-- Create employee_onboarding table (no hiring manager reference)
 CREATE TABLE employee_onboarding (
     onboarding_id INT AUTO_INCREMENT PRIMARY KEY,
     employee_id INT NOT NULL,
-    hiring_manager_id INT NOT NULL,
     start_date DATE NOT NULL,
     expected_completion_date DATE NOT NULL,
     status ENUM('Pending', 'In Progress', 'Completed') DEFAULT 'Pending',
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-    FOREIGN KEY (employee_id) REFERENCES employee_profiles(employee_id) ON DELETE CASCADE,
-    FOREIGN KEY (hiring_manager_id) REFERENCES employee_profiles(employee_id) ON DELETE CASCADE
+    FOREIGN KEY (employee_id) REFERENCES employee_profiles(employee_id) ON DELETE CASCADE
 );
 
--- Create employee_onboarding_tasks table
+-- Create employee_onboarding_tasks table (no assignment/completion references)
 CREATE TABLE employee_onboarding_tasks (
     employee_task_id INT AUTO_INCREMENT PRIMARY KEY,
     onboarding_id INT NOT NULL,
     task_id INT NOT NULL,
     due_date DATE NOT NULL,
-    assigned_to INT,
     status ENUM('Not Started', 'In Progress', 'Completed', 'Cancelled') DEFAULT 'Not Started',
     completion_date DATE,
-    completed_by INT,
     notes TEXT,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
     FOREIGN KEY (onboarding_id) REFERENCES employee_onboarding(onboarding_id) ON DELETE CASCADE,
-    FOREIGN KEY (task_id) REFERENCES onboarding_tasks(task_id) ON DELETE CASCADE,
-    FOREIGN KEY (assigned_to) REFERENCES employee_profiles(employee_id) ON DELETE SET NULL,
-    FOREIGN KEY (completed_by) REFERENCES employee_profiles(employee_id) ON DELETE SET NULL
+    FOREIGN KEY (task_id) REFERENCES onboarding_tasks(task_id) ON DELETE CASCADE
 );
 
 -- ===============================
@@ -911,10 +825,9 @@ CREATE TABLE training_courses (
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
 );
 
--- Create trainers table
+-- Create trainers table (no employee reference)
 CREATE TABLE trainers (
     trainer_id INT AUTO_INCREMENT PRIMARY KEY,
-    employee_id INT,
     first_name VARCHAR(50) NOT NULL,
     last_name VARCHAR(50) NOT NULL,
     email VARCHAR(100) NOT NULL,
@@ -923,8 +836,7 @@ CREATE TABLE trainers (
     bio TEXT,
     is_internal BOOLEAN DEFAULT TRUE,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-    FOREIGN KEY (employee_id) REFERENCES employee_profiles(employee_id) ON DELETE SET NULL
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
 );
 
 -- Create training_sessions table
@@ -945,7 +857,7 @@ CREATE TABLE training_sessions (
     FOREIGN KEY (trainer_id) REFERENCES trainers(trainer_id) ON DELETE CASCADE
 );
 
--- Create training_enrollments table
+-- Create training_enrollments table (no nominator reference)
 CREATE TABLE training_enrollments (
     enrollment_id INT AUTO_INCREMENT PRIMARY KEY,
     session_id INT NOT NULL,
@@ -956,12 +868,10 @@ CREATE TABLE training_enrollments (
     score DECIMAL(5,2),
     feedback TEXT,
     certificate_url VARCHAR(255),
-    nominated_by INT,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
     FOREIGN KEY (session_id) REFERENCES training_sessions(session_id) ON DELETE CASCADE,
-    FOREIGN KEY (employee_id) REFERENCES employee_profiles(employee_id) ON DELETE CASCADE,
-    FOREIGN KEY (nominated_by) REFERENCES employee_profiles(employee_id) ON DELETE SET NULL
+    FOREIGN KEY (employee_id) REFERENCES employee_profiles(employee_id) ON DELETE CASCADE
 );
 
 -- Create learning_resources table
@@ -979,13 +889,12 @@ CREATE TABLE learning_resources (
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
 );
 
--- Create employee_resources table (learning resources assigned to employees)
+-- Create employee_resources table (no assigner reference)
 CREATE TABLE employee_resources (
     employee_resource_id INT AUTO_INCREMENT PRIMARY KEY,
     employee_id INT NOT NULL,
     resource_id INT NOT NULL,
     assigned_date DATE NOT NULL,
-    assigned_by INT,
     due_date DATE,
     completed_date DATE,
     status ENUM('Assigned', 'In Progress', 'Completed', 'Overdue') DEFAULT 'Assigned',
@@ -994,8 +903,7 @@ CREATE TABLE employee_resources (
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
     FOREIGN KEY (employee_id) REFERENCES employee_profiles(employee_id) ON DELETE CASCADE,
-    FOREIGN KEY (resource_id) REFERENCES learning_resources(resource_id) ON DELETE CASCADE,
-    FOREIGN KEY (assigned_by) REFERENCES employee_profiles(employee_id) ON DELETE SET NULL
+    FOREIGN KEY (resource_id) REFERENCES learning_resources(resource_id) ON DELETE CASCADE
 );
 
 -- Create skill_matrix table
@@ -1008,29 +916,26 @@ CREATE TABLE skill_matrix (
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
 );
 
--- Create employee_skills table
+-- Create employee_skills table (no assessor reference)
 CREATE TABLE employee_skills (
     employee_skill_id INT AUTO_INCREMENT PRIMARY KEY,
     employee_id INT NOT NULL,
     skill_id INT NOT NULL,
     proficiency_level ENUM('Beginner', 'Intermediate', 'Advanced', 'Expert') NOT NULL,
     assessed_date DATE NOT NULL,
-    assessed_by INT,
     certification_url VARCHAR(255),
     expiry_date DATE,
     notes TEXT,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
     FOREIGN KEY (employee_id) REFERENCES employee_profiles(employee_id) ON DELETE CASCADE,
-    FOREIGN KEY (skill_id) REFERENCES skill_matrix(skill_id) ON DELETE CASCADE,
-    FOREIGN KEY (assessed_by) REFERENCES employee_profiles(employee_id) ON DELETE SET NULL
+    FOREIGN KEY (skill_id) REFERENCES skill_matrix(skill_id) ON DELETE CASCADE
 );
 
--- Create training_needs_assessment table
+-- Create training_needs_assessment table (no assessor reference)
 CREATE TABLE training_needs_assessment (
     assessment_id INT AUTO_INCREMENT PRIMARY KEY,
     employee_id INT NOT NULL,
-    assessor_id INT NOT NULL,
     assessment_date DATE NOT NULL,
     skills_gap TEXT,
     recommended_trainings TEXT,
@@ -1038,8 +943,7 @@ CREATE TABLE training_needs_assessment (
     status ENUM('Identified', 'In Progress', 'Completed') DEFAULT 'Identified',
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-    FOREIGN KEY (employee_id) REFERENCES employee_profiles(employee_id) ON DELETE CASCADE,
-    FOREIGN KEY (assessor_id) REFERENCES employee_profiles(employee_id) ON DELETE CASCADE
+    FOREIGN KEY (employee_id) REFERENCES employee_profiles(employee_id) ON DELETE CASCADE
 );
 
 -- Create career_paths table
@@ -1068,7 +972,7 @@ CREATE TABLE career_path_stages (
     FOREIGN KEY (job_role_id) REFERENCES job_roles(job_role_id) ON DELETE CASCADE
 );
 
--- Create employee_career_paths table
+-- Create employee_career_paths table (no mentor reference)
 CREATE TABLE employee_career_paths (
     employee_path_id INT AUTO_INCREMENT PRIMARY KEY,
     employee_id INT NOT NULL,
@@ -1077,185 +981,21 @@ CREATE TABLE employee_career_paths (
     start_date DATE NOT NULL,
     target_completion_date DATE,
     status ENUM('Active', 'Completed', 'On Hold', 'Abandoned') DEFAULT 'Active',
-    mentor_id INT,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
     FOREIGN KEY (employee_id) REFERENCES employee_profiles(employee_id) ON DELETE CASCADE,
     FOREIGN KEY (path_id) REFERENCES career_paths(path_id) ON DELETE CASCADE,
-    FOREIGN KEY (current_stage_id) REFERENCES career_path_stages(stage_id) ON DELETE CASCADE,
-    FOREIGN KEY (mentor_id) REFERENCES employee_profiles(employee_id) ON DELETE SET NULL
+    FOREIGN KEY (current_stage_id) REFERENCES career_path_stages(stage_id) ON DELETE CASCADE
 );
 
 -- ===============================
--- REPORTING AND ANALYTICS
+-- SAMPLE DATA FOR TESTING
 -- ===============================
 
--- Create report_definitions table
-CREATE TABLE report_definitions (
-    report_id INT AUTO_INCREMENT PRIMARY KEY,
-    report_name VARCHAR(100) NOT NULL,
-    description TEXT,
-    report_type ENUM('HR', 'Payroll', 'Performance', 'Recruitment', 'Training', 'Attendance', 'Custom') NOT NULL,
-    query_definition TEXT,
-    parameters JSON,
-    created_by INT NOT NULL,
-    is_public BOOLEAN DEFAULT FALSE,
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-    FOREIGN KEY (created_by) REFERENCES employee_profiles(employee_id) ON DELETE CASCADE
-);
-
--- Create report_schedules table
-CREATE TABLE report_schedules (
-    schedule_id INT AUTO_INCREMENT PRIMARY KEY,
-    report_id INT NOT NULL,
-    schedule_name VARCHAR(100) NOT NULL,
-    frequency ENUM('Daily', 'Weekly', 'Monthly', 'Quarterly', 'Yearly', 'One-time') NOT NULL,
-    next_run_date DATETIME,
-    recipients TEXT,
-    active BOOLEAN DEFAULT TRUE,
-    created_by INT NOT NULL,
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-    FOREIGN KEY (report_id) REFERENCES report_definitions(report_id) ON DELETE CASCADE,
-    FOREIGN KEY (created_by) REFERENCES employee_profiles(employee_id) ON DELETE CASCADE
-);
-
--- Create report_executions table
-CREATE TABLE report_executions (
-    execution_id INT AUTO_INCREMENT PRIMARY KEY,
-    report_id INT NOT NULL,
-    schedule_id INT,
-    executed_by INT NOT NULL,
-    execution_date DATETIME DEFAULT CURRENT_TIMESTAMP,
-    parameters JSON,
-    status ENUM('Running', 'Completed', 'Failed') DEFAULT 'Running',
-    result_file_path VARCHAR(255),
-    error_message TEXT,
-    execution_time INT COMMENT 'In seconds',
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-    FOREIGN KEY (report_id) REFERENCES report_definitions(report_id) ON DELETE CASCADE,
-    FOREIGN KEY (schedule_id) REFERENCES report_schedules(schedule_id) ON DELETE SET NULL,
-    FOREIGN KEY (executed_by) REFERENCES employee_profiles(employee_id) ON DELETE CASCADE
-);
-
--- Create dashboards table
-CREATE TABLE dashboards (
-    dashboard_id INT AUTO_INCREMENT PRIMARY KEY,
-    dashboard_name VARCHAR(100) NOT NULL,
-    description TEXT,
-    is_public BOOLEAN DEFAULT FALSE,
-    created_by INT NOT NULL,
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-    FOREIGN KEY (created_by) REFERENCES employee_profiles(employee_id) ON DELETE CASCADE
-);
-
--- Create dashboard_widgets table
-CREATE TABLE dashboard_widgets (
-    widget_id INT AUTO_INCREMENT PRIMARY KEY,
-    dashboard_id INT NOT NULL,
-    widget_name VARCHAR(100) NOT NULL,
-    widget_type ENUM('Chart', 'Table', 'KPI', 'Custom') NOT NULL,
-    data_source VARCHAR(255) NOT NULL,
-    configuration JSON,
-    position_x INT NOT NULL,
-    position_y INT NOT NULL,
-    width INT NOT NULL,
-    height INT NOT NULL,
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-    FOREIGN KEY (dashboard_id) REFERENCES dashboards(dashboard_id) ON DELETE CASCADE
-);
-
--- Create hr_metrics table
-CREATE TABLE hr_metrics (
-    metric_id INT AUTO_INCREMENT PRIMARY KEY,
-    metric_date DATE NOT NULL,
-    total_employees INT DEFAULT 0,
-    new_hires INT DEFAULT 0,
-    terminations INT DEFAULT 0,
-    open_positions INT DEFAULT 0,
-    average_tenure DECIMAL(5,2) DEFAULT 0 COMMENT 'In years',
-    turnover_rate DECIMAL(5,2) DEFAULT 0,
-    average_time_to_hire INT DEFAULT 0 COMMENT 'In days',
-    training_completion_rate DECIMAL(5,2) DEFAULT 0,
-    average_performance_score DECIMAL(3,2) DEFAULT 0,
-    employee_satisfaction_score DECIMAL(3,2) DEFAULT 0,
-    diversity_metrics JSON,
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
-);
-
--- Create department_metrics table
-CREATE TABLE department_metrics (
-    department_metric_id INT AUTO_INCREMENT PRIMARY KEY,
-    department_id INT NOT NULL,
-    metric_date DATE NOT NULL,
-    headcount INT DEFAULT 0,
-    budget_utilization DECIMAL(5,2) DEFAULT 0,
-    average_performance_score DECIMAL(3,2) DEFAULT 0,
-    turnover_rate DECIMAL(5,2) DEFAULT 0,
-    training_hours_avg DECIMAL(5,2) DEFAULT 0,
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-    FOREIGN KEY (department_id) REFERENCES departments(department_id) ON DELETE CASCADE
-);
-
--- ===============================
--- AUDIT AND SYSTEM LOGGING
--- ===============================
-
--- Create audit_logs table
-CREATE TABLE audit_logs (
-    log_id INT AUTO_INCREMENT PRIMARY KEY,
-    user_id INT,
-    action VARCHAR(50) NOT NULL,
-    table_name VARCHAR(50) NOT NULL,
-    record_id VARCHAR(50) NOT NULL,
-    old_values JSON,
-    new_values JSON,
-    ip_address VARCHAR(50),
-    user_agent VARCHAR(255),
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    FOREIGN KEY (user_id) REFERENCES users(user_id) ON DELETE SET NULL
-);
-
--- Create system_logs table
-CREATE TABLE system_logs (
-    system_log_id INT AUTO_INCREMENT PRIMARY KEY,
-    log_type ENUM('Info', 'Warning', 'Error', 'Critical') NOT NULL,
-    log_source VARCHAR(100) NOT NULL,
-    log_message TEXT NOT NULL,
-    stack_trace TEXT,
-    ip_address VARCHAR(50),
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-);
-
--- Create login_history table
-CREATE TABLE login_history (
-    login_id INT AUTO_INCREMENT PRIMARY KEY,
-    user_id INT NOT NULL,
-    login_time DATETIME NOT NULL,
-    logout_time DATETIME,
-    ip_address VARCHAR(50),
-    user_agent VARCHAR(255),
-    login_status ENUM('Success', 'Failed') NOT NULL,
-    failure_reason VARCHAR(255),
-    session_id VARCHAR(255),
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    FOREIGN KEY (user_id) REFERENCES users(user_id) ON DELETE CASCADE
-);
-
--- Insert sample data for users
+-- Insert sample data for users (Admin and HR only)
 INSERT INTO users (username, password, email, role) VALUES
-    ('john.admin', 'admin123', 'john.admin@company.com', 'admin'),
-    ('sara.hr', 'hr123', 'sara.hr@company.com', 'hr'),
-    ('mike.manager', 'manager123', 'mike.manager@company.com', 'manager'),
-    ('alice.dev', 'dev123', 'alice.dev@company.com', 'employee'),
-    ('bob.sales', 'sales123', 'bob.sales@company.com', 'employee'),
-    ('emma.marketing', 'marketing123', 'emma.marketing@company.com', 'employee');
+    ('admin', 'admin123', 'admin@company.com', 'admin'),
+    ('hr_manager', 'hr123', 'hr@company.com', 'hr');
 
 -- Insert sample data for personal_information
 INSERT INTO personal_information (first_name, last_name, date_of_birth, gender, marital_status, nationality, tax_id, social_security_number, phone_number, emergency_contact_name, emergency_contact_relationship, emergency_contact_phone) VALUES
@@ -1266,35 +1006,29 @@ INSERT INTO personal_information (first_name, last_name, date_of_birth, gender, 
 -- Insert sample data for job_roles
 INSERT INTO job_roles (title, description, department, min_salary, max_salary) VALUES
 ('Software Developer', 'Develops and maintains software applications.', 'IT', 70000.00, 120000.00),
-('HR Manager', 'Manages human resources and employee relations.', 'HR', 60000.00, 100000.00),
+('HR Specialist', 'Manages human resources and employee relations.', 'HR', 60000.00, 100000.00),
 ('Marketing Specialist', 'Plans and executes marketing strategies.', 'Marketing', 50000.00, 90000.00);
 
--- Insert sample data for employee_profiles
-INSERT INTO employee_profiles (user_id, personal_info_id, job_role_id, manager_id, employee_number, hire_date, employment_status, current_salary, work_email, work_phone, location, remote_work) VALUES
-(1, 1, 1, NULL, 'EMP001', '2020-01-10', 'Full-time', 85000.00, 'john.doe@company.com', '555-0001', 'New York', FALSE),
-(2, 2, 2, 1, 'EMP002', '2019-05-15', 'Full-time', 75000.00, 'alice.smith@company.com', '555-0002', 'Toronto', TRUE),
-(3, 3, 3, 1, 'EMP003', '2018-09-20', 'Part-time', 60000.00, 'michael.johnson@company.com', '555-0003', 'London', FALSE);
-
 -- Insert sample data for departments
-INSERT INTO departments (department_name, description, manager_id, location) VALUES
-('Information Technology', 'Handles all IT-related functions.', 1, 'New York'),
-('Human Resources', 'Manages employee relations and recruitment.', 2, 'Toronto'),
-('Marketing', 'Responsible for marketing and advertising.', 3, 'London');
+INSERT INTO departments (department_name, description, location) VALUES
+('Information Technology', 'Handles all IT-related functions.', 'New York'),
+('Human Resources', 'Manages employee relations and recruitment.', 'Toronto'),
+('Marketing', 'Responsible for marketing and advertising.', 'London');
+
+-- Insert sample data for employee_profiles
+INSERT INTO employee_profiles (personal_info_id, job_role_id, employee_number, hire_date, employment_status, current_salary, work_email, work_phone, location, remote_work) VALUES
+(1, 1, 'EMP001', '2020-01-10', 'Full-time', 85000.00, 'john.doe@company.com', '555-0001', 'New York', FALSE),
+(2, 2, 'EMP002', '2019-05-15', 'Full-time', 75000.00, 'alice.smith@company.com', '555-0002', 'Toronto', TRUE),
+(3, 3, 'EMP003', '2018-09-20', 'Part-time', 60000.00, 'michael.johnson@company.com', '555-0003', 'London', FALSE);
 
 -- Insert sample data for employment_history
-INSERT INTO employment_history (employee_id, job_role_id, start_date, end_date, salary, manager_id, reason_for_change) VALUES
-(1, 1, '2020-01-10', NULL, 85000.00, NULL, 'Initial Hire'),
-(2, 2, '2019-05-15', NULL, 75000.00, 1, 'Initial Hire'),
-(3, 3, '2018-09-20', NULL, 60000.00, 1, 'Initial Hire');
+INSERT INTO employment_history (employee_id, job_role_id, start_date, end_date, salary, reason_for_change) VALUES
+(1, 1, '2020-01-10', NULL, 85000.00, 'Initial Hire'),
+(2, 2, '2019-05-15', NULL, 75000.00, 'Initial Hire'),
+(3, 3, '2018-09-20', NULL, 60000.00, 'Initial Hire');
 
 -- Insert sample data for document_management
 INSERT INTO document_management (employee_id, document_type, document_name, file_path, expiry_date, document_status, notes) VALUES
 (1, 'Contract', 'Employment Contract', '/documents/contracts/john_doe_contract.pdf', '2025-01-10', 'Active', 'Initial employment contract'),
 (2, 'Resume', 'Resume', '/documents/resumes/alice_smith_resume.pdf', NULL, 'Active', 'Latest resume'),
 (3, 'Certificate', 'Marketing Certification', '/documents/certificates/michael_johnson_cert.pdf', '2024-12-31', 'Active', 'Marketing certification');
-
--- Insert sample data for employee_training
-INSERT INTO employee_training (employee_id, training_name, training_description, start_date, end_date, training_status, trainer_name, training_cost) VALUES
-(1, 'Advanced Software Development', 'Advanced training in software development techniques.', '2023-10-01', '2023-10-05', 'Completed', 'Jane Smith', 1500.00),
-(2, 'HR Management Workshop', 'Workshop on advanced HR management practices.', '2023-11-10', '2023-11-12', 'Scheduled', 'Robert Brown', 1200.00),
-(3, 'Digital Marketing Strategies', 'Training on the latest digital marketing strategies.', '2023-09-15', '2023-09-17', 'Completed', 'Emily Davis', 1000.00);
