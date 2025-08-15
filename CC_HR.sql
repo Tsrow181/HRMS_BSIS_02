@@ -1032,3 +1032,4 @@ INSERT INTO document_management (employee_id, document_type, document_name, file
 (1, 'Contract', 'Employment Contract', '/documents/contracts/john_doe_contract.pdf', '2025-01-10', 'Active', 'Initial employment contract'),
 (2, 'Resume', 'Resume', '/documents/resumes/alice_smith_resume.pdf', NULL, 'Active', 'Latest resume'),
 (3, 'Certificate', 'Marketing Certification', '/documents/certificates/michael_johnson_cert.pdf', '2024-12-31', 'Active', 'Marketing certification');
+
