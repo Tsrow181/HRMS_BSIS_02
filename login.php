@@ -20,30 +20,7 @@ $demo_users = [
         'role' => 'hr',
         'user_id' => 2
     ],
-    [
-        'username' => 'mike.manager',
-        'password' => 'manager123',
-        'role' => 'manager',
-        'user_id' => 3
-    ],
-    [
-        'username' => 'alice.dev',
-        'password' => 'dev123',
-        'role' => 'employee',
-        'user_id' => 4
-    ],
-    [
-        'username' => 'bob.sales',
-        'password' => 'sales123',
-        'role' => 'employee',
-        'user_id' => 5
-    ],
-    [
-        'username' => 'emma.marketing',
-        'password' => 'marketing123',
-        'role' => 'employee',
-        'user_id' => 6
-    ]
+
 ];
 
 if ($_SERVER['REQUEST_METHOD'] == 'POST') {
@@ -85,13 +62,8 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     <title>Login - HR System</title>
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link rel="stylesheet" href="styles.css">
     <style>
-        :root {
-            --primary-color: #800000;
-            --primary-dark: #5D0000;
-            --primary-light: #A60000;
-            --text-color: #333;
-        }
         
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
@@ -101,7 +73,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             align-items: center;
             justify-content: center;
             overflow: hidden;
-            background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+            background: linear-gradient(135deg, #F0F8FF 0%, #E3F2FD 100%);
         }
         
         /* Main animated background */
@@ -121,9 +93,9 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             width: 100%;
             height: 100%;
             background: linear-gradient(45deg, 
-                rgba(128, 0, 0, 0.1) 0%,
-                rgba(128, 0, 0, 0.2) 50%,
-                rgba(128, 0, 0, 0.1) 100%
+                rgba(0, 120, 212, 0.1) 0%,
+                rgba(0, 120, 212, 0.2) 50%,
+                rgba(0, 120, 212, 0.1) 100%
             );
             animation: wave 10s linear infinite;
             opacity: 0.5;
@@ -163,7 +135,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         .floating-element:nth-child(1) {
             width: 100px;
             height: 100px;
-            background: var(--primary-color);
+            background: #0078D4;
             border-radius: 50%;
             top: 10%;
             left: 20%;
@@ -173,7 +145,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         .floating-element:nth-child(2) {
             width: 80px;
             height: 80px;
-            background: var(--primary-light);
+            background: #1E88E5;
             border-radius: 10px;
             top: 30%;
             left: 60%;
@@ -183,7 +155,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         .floating-element:nth-child(3) {
             width: 60px;
             height: 60px;
-            background: var(--primary-dark);
+            background: #005A9E;
             border-radius: 50%;
             top: 70%;
             left: 40%;
@@ -212,9 +184,9 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             width: 100%;
             height: 100%;
             background: linear-gradient(45deg, 
-                rgba(128, 0, 0, 0.1) 0%,
-                rgba(128, 0, 0, 0.2) 50%,
-                rgba(128, 0, 0, 0.1) 100%
+                rgba(0, 120, 212, 0.1) 0%,
+                rgba(0, 120, 212, 0.2) 50%,
+                rgba(0, 120, 212, 0.1) 100%
             );
             animation: ray 12s linear infinite;
             opacity: 0.3;
@@ -254,7 +226,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         }
         
         .login-header h1 {
-            color: var(--primary-color);
+            color: #0078D4;
             font-size: 24px;
             margin: 0;
         }
@@ -271,13 +243,13 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         }
         
         .form-control:focus {
-            border-color: var(--primary-color);
-            box-shadow: 0 0 0 0.2rem rgba(128, 0, 0, 0.25);
+            border-color: #0078D4;
+            box-shadow: 0 0 0 0.2rem rgba(0, 120, 212, 0.25);
         }
         
         .btn-primary {
-            background-color: var(--primary-color);
-            border-color: var(--primary-color);
+            background-color: #0078D4;
+            border-color: #0078D4;
             padding: 12px;
             border-radius: 8px;
             font-weight: 600;
@@ -285,8 +257,8 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         }
         
         .btn-primary:hover {
-            background-color: var(--primary-dark);
-            border-color: var(--primary-dark);
+            background-color: #005A9E;
+            border-color: #005A9E;
         }
         
         .alert {
@@ -303,7 +275,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         }
         
         .demo-credentials h5 {
-            color: var(--primary-color);
+            color: #0078D4;
             margin-bottom: 15px;
         }
         
@@ -339,7 +311,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     
     <div class="login-container">
         <div class="login-header">
-            <img src="image/HR SYSTEM LOGO.jpg" alt="HR System Logo">
+            <img src="image/HR Company.jpg" alt="HR System Logo">
             <h1>HR System</h1>
         </div>
         
@@ -374,8 +346,6 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             <small>
                 <strong>Admin:</strong> john.admin / admin123<br>
                 <strong>HR:</strong> sara.hr / hr123<br>
-                <strong>Manager:</strong> mike.manager / manager123<br>
-                <strong>Employee:</strong> alice.dev / dev123
             </small>
         </div>
     </div>
