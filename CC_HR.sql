@@ -996,40 +996,78 @@ CREATE TABLE employee_career_paths (
 INSERT INTO users (username, password, email, role) VALUES
     ('admin', 'admin123', 'admin@company.com', 'admin'),
     ('hr_manager', 'hr123', 'hr@company.com', 'hr');
-
 -- Insert sample data for personal_information
-INSERT INTO personal_information (first_name, last_name, date_of_birth, gender, marital_status, nationality, tax_id, social_security_number, phone_number, emergency_contact_name, emergency_contact_relationship, emergency_contact_phone) VALUES
-('John', 'Doe', '1985-05-15', 'Male', 'Married', 'American', '123-45-6789', '123456789', '555-1234', 'Jane Doe', 'Spouse', '555-5678'),
-('Alice', 'Smith', '1990-08-22', 'Female', 'Single', 'Canadian', '987-65-4321', '987654321', '555-4321', 'Bob Smith', 'Father', '555-8765'),
-('Michael', 'Johnson', '1978-11-30', 'Male', 'Divorced', 'British', '456-78-9012', '456789012', '555-6789', 'Sarah Johnson', 'Sister', '555-2345');
 
--- Insert sample data for job_roles
-INSERT INTO job_roles (title, description, department, min_salary, max_salary) VALUES
-('Software Developer', 'Develops and maintains software applications.', 'IT', 70000.00, 120000.00),
-('HR Specialist', 'Manages human resources and employee relations.', 'HR', 60000.00, 100000.00),
-('Marketing Specialist', 'Plans and executes marketing strategies.', 'Marketing', 50000.00, 90000.00);
+INSERT INTO personal_information (first_name, last_name, date_of_birth, gender, marital_status, nationality, tax_id, social_security_number, phone_number, emergency_contact_name, emergency_contact_relationship, emergency_contact_phone) VALUES
+('Maria', 'Santos', '1987-03-12', 'Female', 'Married', 'Filipino', '123-45-6789', '123456789', '555-1234', 'Carlos Santos', 'Spouse', '555-5678'),
+('Roberto', 'Cruz', '1985-07-20', 'Male', 'Single', 'Filipino', '234-56-7890', '234567890', '555-2345', 'Elena Cruz', 'Mother', '555-6789'),
+('Jennifer', 'Reyes', '1992-11-08', 'Female', 'Single', 'Filipino', '345-67-8901', '345678901', '555-3456', 'Mark Reyes', 'Brother', '555-7890'),
+('Antonio', 'Garcia', '1980-01-25', 'Male', 'Married', 'Filipino', '456-78-9012', '456789012', '555-4567', 'Rosa Garcia', 'Spouse', '555-8901'),
+('Lisa', 'Mendoza', '1988-09-14', 'Female', 'Divorced', 'Filipino', '567-89-0123', '567890123', '555-5678', 'John Mendoza', 'Father', '555-9012'),
+('Michael', 'Torres', '1983-06-03', 'Male', 'Married', 'Filipino', '678-90-1234', '678901234', '555-6789', 'Anna Torres', 'Spouse', '555-0123'),
+('Carmen', 'Dela Cruz', '1990-12-18', 'Female', 'Single', 'Filipino', '789-01-2345', '789012345', '555-7890', 'Pedro Dela Cruz', 'Father', '555-1234'),
+('Ricardo', 'Villanueva', '1975-04-07', 'Male', 'Married', 'Filipino', '890-12-3456', '890123456', '555-8901', 'Diana Villanueva', 'Spouse', '555-2345'),
+('Sandra', 'Pascual', '1986-08-29', 'Female', 'Single', 'Filipino', '901-23-4567', '901234567', '555-9012', 'Luis Pascual', 'Brother', '555-3456');
 
 -- Insert sample data for departments
 INSERT INTO departments (department_name, description, location) VALUES
-('Information Technology', 'Handles all IT-related functions.', 'New York'),
-('Human Resources', 'Manages employee relations and recruitment.', 'Toronto'),
-('Marketing', 'Responsible for marketing and advertising.', 'London');
+('Pre-Press Department', 'Handles graphic design, layout, and pre-press preparation tasks', 'Floor 1 - Design Studio'),
+('Printing/Press Department', 'Operates printing machines and press equipment', 'Floor 1 - Production Floor'),
+('Post-Press/Finishing Department', 'Handles cutting, binding, lamination, and finishing work', 'Floor 2 - Finishing Area');
+
+-- Insert sample data for job_roles
+INSERT INTO job_roles (title, description, department, min_salary, max_salary) VALUES
+('Graphic Artist', 'Creates and designs graphics, layouts, and visual content for print materials', 'Pre-Press Department', 25000.00, 45000.00),
+('Machine Operator', 'Operates and maintains printing machines and equipment', 'Printing/Press Department', 22000.00, 38000.00),
+('Heat Press Operator', 'Operates heat press machines for transfer printing', 'Printing/Press Department', 20000.00, 32000.00),
+('Sublimation Printer', 'Specializes in sublimation printing processes and equipment', 'Printing/Press Department', 24000.00, 40000.00),
+('Embroidery Operator', 'Operates embroidery machines and creates embroidered products', 'Post-Press/Finishing Department', 22000.00, 36000.00),
+('Cutter', 'Operates cutting machines and tools for precise material cutting', 'Post-Press/Finishing Department', 18000.00, 28000.00),
+('Trimmer', 'Performs trimming and finishing operations on printed materials', 'Post-Press/Finishing Department', 18000.00, 28000.00),
+('Sewer', 'Performs sewing operations for textile and fabric products', 'Post-Press/Finishing Department', 20000.00, 32000.00),
+('Front Office Staff', 'Handles customer service, orders, and administrative tasks', 'Pre-Press Department', 22000.00, 35000.00),
+('Head Sewer', 'Supervises sewing operations and manages sewing department', 'Post-Press/Finishing Department', 30000.00, 50000.00);
 
 -- Insert sample data for employee_profiles
 INSERT INTO employee_profiles (personal_info_id, job_role_id, employee_number, hire_date, employment_status, current_salary, work_email, work_phone, location, remote_work) VALUES
-(1, 1, 'EMP001', '2020-01-10', 'Full-time', 85000.00, 'john.doe@company.com', '555-0001', 'New York', FALSE),
-(2, 2, 'EMP002', '2019-05-15', 'Full-time', 75000.00, 'alice.smith@company.com', '555-0002', 'Toronto', TRUE),
-(3, 3, 'EMP003', '2018-09-20', 'Part-time', 60000.00, 'michael.johnson@company.com', '555-0003', 'London', FALSE);
+(1, 1, 'PSH001', '2022-03-15', 'Full-time', 35000.00, 'maria.santos@printshop.com', '555-0001', 'Floor 1 - Design Studio', FALSE),
+(2, 2, 'PSH002', '2021-08-10', 'Full-time', 30000.00, 'roberto.cruz@printshop.com', '555-0002', 'Floor 1 - Production Floor', FALSE),
+(3, 3, 'PSH003', '2023-01-20', 'Full-time', 26000.00, 'jennifer.reyes@printshop.com', '555-0003', 'Floor 1 - Production Floor', FALSE),
+(4, 4, 'PSH004', '2022-07-05', 'Full-time', 32000.00, 'antonio.garcia@printshop.com', '555-0004', 'Floor 1 - Production Floor', FALSE),
+(5, 5, 'PSH005', '2021-11-12', 'Full-time', 28000.00, 'lisa.mendoza@printshop.com', '555-0005', 'Floor 2 - Finishing Area', FALSE),
+(6, 6, 'PSH006', '2023-02-28', 'Full-time', 23000.00, 'michael.torres@printshop.com', '555-0006', 'Floor 2 - Finishing Area', FALSE),
+(7, 7, 'PSH007', '2022-12-01', 'Part-time', 20000.00, 'carmen.delacruz@printshop.com', '555-0007', 'Floor 2 - Finishing Area', FALSE),
+(8, 8, 'PSH008', '2021-05-18', 'Full-time', 25000.00, 'ricardo.villanueva@printshop.com', '555-0008', 'Floor 2 - Finishing Area', FALSE),
+(9, 9, 'PSH009', '2022-09-10', 'Full-time', 28000.00, 'sandra.pascual@printshop.com', '555-0009', 'Floor 1 - Design Studio', FALSE);
 
 -- Insert sample data for employment_history
 INSERT INTO employment_history (employee_id, job_role_id, start_date, end_date, salary, reason_for_change) VALUES
-(1, 1, '2020-01-10', NULL, 85000.00, 'Initial Hire'),
-(2, 2, '2019-05-15', NULL, 75000.00, 'Initial Hire'),
-(3, 3, '2018-09-20', NULL, 60000.00, 'Initial Hire');
+(1, 1, '2022-03-15', NULL, 35000.00, 'Initial Hire'),
+(2, 2, '2021-08-10', NULL, 30000.00, 'Initial Hire'),
+(3, 3, '2023-01-20', NULL, 26000.00, 'Initial Hire'),
+(4, 4, '2022-07-05', NULL, 32000.00, 'Initial Hire'),
+(5, 5, '2021-11-12', NULL, 28000.00, 'Initial Hire'),
+(6, 6, '2023-02-28', NULL, 23000.00, 'Initial Hire'),
+(7, 7, '2022-12-01', NULL, 20000.00, 'Initial Hire'),
+(8, 8, '2021-05-18', NULL, 25000.00, 'Initial Hire'),
+(9, 9, '2022-09-10', NULL, 28000.00, 'Initial Hire'),
+-- Adding some employment history for promotions/role changes
+(2, 6, '2020-01-15', '2021-08-09', 21000.00, 'Promoted to Machine Operator'),
+(5, 8, '2020-06-01', '2021-11-11', 22000.00, 'Promoted to Embroidery Operator');
 
 -- Insert sample data for document_management
 INSERT INTO document_management (employee_id, document_type, document_name, file_path, expiry_date, document_status, notes) VALUES
-(1, 'Contract', 'Employment Contract', '/documents/contracts/john_doe_contract.pdf', '2025-01-10', 'Active', 'Initial employment contract'),
-(2, 'Resume', 'Resume', '/documents/resumes/alice_smith_resume.pdf', NULL, 'Active', 'Latest resume'),
-(3, 'Certificate', 'Marketing Certification', '/documents/certificates/michael_johnson_cert.pdf', '2024-12-31', 'Active', 'Marketing certification');
-
+(1, 'Contract', 'Employment Contract - Graphic Artist', '/documents/contracts/maria_santos_contract.pdf', '2025-03-15', 'Active', 'Full-time graphic artist contract'),
+(1, 'Resume', 'Resume - Maria Santos', '/documents/resumes/maria_santos_resume.pdf', NULL, 'Active', 'Latest resume with portfolio'),
+(2, 'Contract', 'Employment Contract - Machine Operator', '/documents/contracts/roberto_cruz_contract.pdf', '2024-08-10', 'Active', 'Machine operator contract'),
+(2, 'Certificate', 'Machine Safety Certification', '/documents/certificates/roberto_cruz_safety_cert.pdf', '2024-12-31', 'Active', 'Required safety certification'),
+(3, 'Contract', 'Employment Contract - Heat Press', '/documents/contracts/jennifer_reyes_contract.pdf', '2026-01-20', 'Active', 'Heat press operator contract'),
+(4, 'Contract', 'Employment Contract - Sublimation', '/documents/contracts/antonio_garcia_contract.pdf', '2025-07-05', 'Active', 'Sublimation printer contract'),
+(4, 'Certificate', 'Sublimation Training Certificate', '/documents/certificates/antonio_garcia_sublimation_cert.pdf', '2025-06-30', 'Active', 'Specialized sublimation training'),
+(5, 'Contract', 'Employment Contract - Embroidery', '/documents/contracts/lisa_mendoza_contract.pdf', '2024-11-12', 'Active', 'Embroidery operator contract'),
+(6, 'Contract', 'Employment Contract - Cutter', '/documents/contracts/michael_torres_contract.pdf', '2026-02-28', 'Active', 'Cutting specialist contract'),
+(7, 'Contract', 'Part-time Contract - Trimmer', '/documents/contracts/carmen_delacruz_contract.pdf', '2025-12-01', 'Active', 'Part-time trimmer contract'),
+(8, 'Contract', 'Employment Contract - Sewer', '/documents/contracts/ricardo_villanueva_contract.pdf', '2024-05-18', 'Active', 'Sewing specialist contract'),
+(8, 'Certificate', 'Advanced Sewing Techniques', '/documents/certificates/ricardo_villanueva_sewing_cert.pdf', '2025-03-31', 'Active', 'Advanced sewing certification'),
+(9, 'Contract', 'Employment Contract - Front Office', '/documents/contracts/sandra_pascual_contract.pdf', '2025-09-10', 'Active', 'Front office staff contract'),
+(9, 'Certificate', 'Customer Service Excellence', '/documents/certificates/sandra_pascual_service_cert.pdf', '2024-08-15', 'Active', 'Customer service training certificate');#
