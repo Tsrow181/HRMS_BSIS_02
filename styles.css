@@ -1,10 +1,10 @@
-/* HR System Color Scheme - Azure Blue Theme */
+/* HR System Color Scheme - Rose Red Theme */
 :root {
     /* Primary Colors - Azure Blue Theme */
-    --primary-color: #0078D4;
-    --primary-dark: #005A9E;
-    --primary-light: #1E88E5;
-    --primary-lighter: #42A5F5;
+    --primary-color: #E91E63;
+    --primary-dark: #C2185B;
+    --primary-light: #F06292;
+    --primary-lighter: #F8BBD0;
     
     /* Secondary Colors */
     --secondary-color: #00B4D8;
@@ -19,8 +19,8 @@
     --black: #000000;
     
     /* Background Colors */
-    --bg-primary: #F0F8FF;
-    --bg-secondary: #E3F2FD;
+    --bg-primary: #FCE4EC;
+    --bg-secondary: #F8BBD0;
     --bg-card: #FFFFFF;
     
     /* Text Colors */
@@ -36,14 +36,14 @@
     --info: #17A2B8;
     
     /* Border Colors */
-    --border-light: #E3F2FD;
-    --border-medium: #BBDEFB;
-    --border-dark: #90CAF9;
+    --border-light: #F8BBD0;
+    --border-medium: #F48FB1;
+    --border-dark: #F06292;
     
     /* Shadow Colors */
-    --shadow-light: rgba(0, 120, 212, 0.1);
-    --shadow-medium: rgba(0, 120, 212, 0.2);
-    --shadow-dark: rgba(0, 120, 212, 0.3);
+    --shadow-light: rgba(233, 30, 99, 0.1);
+    --shadow-medium: rgba(233, 30, 99, 0.2);
+    --shadow-dark: rgba(233, 30, 99, 0.3);
 }
 
 /* Global Styles */
@@ -210,7 +210,7 @@ body {
 
 .form-control:focus {
     border-color: var(--primary-color);
-    box-shadow: 0 0 0 0.2rem rgba(128, 0, 0, 0.25);
+    box-shadow: 0 0 0 0.2rem rgba(233, 30, 99, 0.25);
 }
 
 .form-label {
