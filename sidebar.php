@@ -87,19 +87,7 @@ $sidebar_stats = getSidebarStats();
         </div>
     </div>
 
-    <!-- Quick Stats -->
-    <div class="quick-stats mb-4">
-        <div class="stat-item">
-            <i class="fas fa-users text-info"></i>
-            <span class="stat-number"><?php echo $sidebar_stats['employees']; ?></span>
-            <small class="text-light">Employees</small>
-        </div>
-        <div class="stat-item">
-            <i class="fas fa-clock text-warning"></i>
-            <span class="stat-number"><?php echo $sidebar_stats['pending_leaves']; ?></span>
-            <small class="text-light">Pending</small>
-        </div>
-    </div>
+
 
     <h4 class="text-center mb-4" style="color: #fff;">HR Dashboard</h4>
     
@@ -138,7 +126,7 @@ $sidebar_stats = getSidebarStats();
                         </a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link <?php echo isActiveMenu('document_management.php'); ?>" href="employee_profiles/document_management.php">
+                        <a class="nav-link <?php echo isActiveMenu('document_management.php'); ?>" href="document_management.php">
                             <i class="fas fa-file-alt"></i> Document Management
                         </a>
                     </li>
@@ -378,7 +366,7 @@ $sidebar_stats = getSidebarStats();
             <a class="nav-link dropdown-toggle" data-toggle="collapse" href="#recruitmentCollapse" role="button" aria-expanded="false" aria-controls="recruitmentCollapse">
                 <i class="fas fa-user-plus"></i> Recruitment
                 <?php if ($sidebar_stats['job_openings'] > 0): ?>
-                    <span class="badge badge-info ml-2"><?php echo $sidebar_stats['job_openings']; ?></span>
+                    <span class="badge badge-primary ml-2"><?php echo $sidebar_stats['job_openings']; ?></span>
                 <?php endif; ?>
             </a>
             <div class="collapse" id="recruitmentCollapse">
@@ -529,6 +517,9 @@ $sidebar_stats = getSidebarStats();
 
 <style>
 /* Additional styles for the enhanced sidebar */
+.sidebar {
+    background: linear-gradient(135deg, #E91E63 0%, #C2185B 100%) !important;
+}
 .user-profile-section {
     padding: 15px;
     border-bottom: 1px solid rgba(255,255,255,0.1);
@@ -600,6 +591,17 @@ $sidebar_stats = getSidebarStats();
 
 .dropdown-toggle::after {
     transition: transform 0.3s ease;
+}
+
+/* Ensure active/focus states use rose, even if cached CSS is stale */
+.sidebar .nav-link.active {
+    background-color: #E91E63 !important;
+}
+.sidebar .nav-link:focus,
+.sidebar .nav-link:active {
+    background-color: rgba(233, 30, 99, 0.18) !important;
+    color: #fff !important;
+    outline: none;
 }
 </style>
 
