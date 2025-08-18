@@ -174,7 +174,7 @@ function getUserProfileImage($username) {
     }
     
     // Return default avatar from UI Avatars
-    return "https://ui-avatars.com/api/?name=" . urlencode($username) . "&background=0078d4&color=fff&size=35";
+    return "https://ui-avatars.com/api/?name=" . urlencode($username) . "&background=E91E63&color=fff&size=35";
 }
 
 function getLastLoginTime($user_id) {
@@ -206,7 +206,7 @@ $last_login = getLastLoginTime($_SESSION['user_id'] ?? 1);
 <!-- Top Navigation Bar -->
 <nav class="top-navbar">
     <div class="navbar-brand-section">
-        <img src="image/HR Company.jpg" alt="HR System Logo" class="navbar-logo">
+        <img src="image/GARAY.jpg" alt="HR System Logo" class="navbar-logo">
         <div class="navbar-title">
             <h4 class="mb-0">HR Management System</h4>
             <small class="text-muted">
@@ -244,7 +244,7 @@ $last_login = getLastLoginTime($_SESSION['user_id'] ?? 1);
         <?php if ($_SESSION['role'] == 'admin' || $_SESSION['role'] == 'hr'): ?>
         <li class="nav-item dropdown mr-3">
             <a class="nav-link-custom" href="#" id="statsDropdown" role="button" data-toggle="dropdown">
-                <i class="fas fa-chart-bar" style="color: #0078D4;"></i>
+                <i class="fas fa-chart-bar" style="color: #E91E63;"></i>
                 <span class="stat-badge">
                     <?php echo $quick_stats['urgent_tasks']; ?>
                 </span>
@@ -270,7 +270,7 @@ $last_login = getLastLoginTime($_SESSION['user_id'] ?? 1);
         <!-- Notifications -->
         <li class="nav-item dropdown mr-3">
             <a class="nav-link-custom" href="#" id="notificationsDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                <i class="fas fa-bell" style="color: #0078D4;"></i>
+                <i class="fas fa-bell" style="color: #E91E63;"></i>
                 <span class="notification-badge">
                     <?php echo $notification_count; ?>
                 </span>
@@ -388,12 +388,12 @@ $last_login = getLastLoginTime($_SESSION['user_id'] ?? 1);
     height: 45px;
     object-fit: contain;
     border-radius: 8px;
-    border: 2px solid #0078D4;
+    border: 2px solid #E91E63;
     padding: 2px;
 }
 
 .navbar-title h4 {
-    color: #0078D4;
+    color: #E91E63;
     font-weight: 600;
     margin: 0;
     font-size: 1.1rem;
@@ -429,7 +429,7 @@ $last_login = getLastLoginTime($_SESSION['user_id'] ?? 1);
 
 .datetime-display {
     padding: 5px 10px;
-    background: rgba(0, 120, 212, 0.1);
+    background: rgba(233, 30, 99, 0.1);
     border-radius: 15px;
 }
 
@@ -461,8 +461,8 @@ $last_login = getLastLoginTime($_SESSION['user_id'] ?? 1);
 }
 
 .nav-link-custom:hover {
-    background: rgba(0, 120, 212, 0.1);
-    color: #0078D4;
+    background: rgba(233, 30, 99, 0.1);
+    color: #E91E63;
     text-decoration: none;
 }
 
@@ -474,14 +474,14 @@ $last_login = getLastLoginTime($_SESSION['user_id'] ?? 1);
     width: 35px;
     height: 35px;
     border-radius: 50%;
-    border: 2px solid #0078D4;
+    border: 2px solid #E91E63;
 }
 
 .profile-image-large {
     width: 50px;
     height: 50px;
     border-radius: 50%;
-    border: 2px solid #0078D4;
+    border: 2px solid #E91E63;
 }
 
 .user-info {
@@ -551,7 +551,7 @@ $last_login = getLastLoginTime($_SESSION['user_id'] ?? 1);
 }
 
 .notification-item:hover {
-    background-color: rgba(0, 120, 212, 0.1);
+    background-color: rgba(233, 30, 99, 0.1);
     transform: translateX(5px);
 }
 
