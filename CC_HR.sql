@@ -996,78 +996,182 @@ CREATE TABLE employee_career_paths (
 INSERT INTO users (username, password, email, role) VALUES
     ('admin', 'admin123', 'admin@company.com', 'admin'),
     ('hr_manager', 'hr123', 'hr@company.com', 'hr');
--- Insert sample data for personal_information
 
+-- Insert sample personal information for municipal employees
 INSERT INTO personal_information (first_name, last_name, date_of_birth, gender, marital_status, nationality, tax_id, social_security_number, phone_number, emergency_contact_name, emergency_contact_relationship, emergency_contact_phone) VALUES
-('Maria', 'Santos', '1987-03-12', 'Female', 'Married', 'Filipino', '123-45-6789', '123456789', '555-1234', 'Carlos Santos', 'Spouse', '555-5678'),
-('Roberto', 'Cruz', '1985-07-20', 'Male', 'Single', 'Filipino', '234-56-7890', '234567890', '555-2345', 'Elena Cruz', 'Mother', '555-6789'),
-('Jennifer', 'Reyes', '1992-11-08', 'Female', 'Single', 'Filipino', '345-67-8901', '345678901', '555-3456', 'Mark Reyes', 'Brother', '555-7890'),
-('Antonio', 'Garcia', '1980-01-25', 'Male', 'Married', 'Filipino', '456-78-9012', '456789012', '555-4567', 'Rosa Garcia', 'Spouse', '555-8901'),
-('Lisa', 'Mendoza', '1988-09-14', 'Female', 'Divorced', 'Filipino', '567-89-0123', '567890123', '555-5678', 'John Mendoza', 'Father', '555-9012'),
-('Michael', 'Torres', '1983-06-03', 'Male', 'Married', 'Filipino', '678-90-1234', '678901234', '555-6789', 'Anna Torres', 'Spouse', '555-0123'),
-('Carmen', 'Dela Cruz', '1990-12-18', 'Female', 'Single', 'Filipino', '789-01-2345', '789012345', '555-7890', 'Pedro Dela Cruz', 'Father', '555-1234'),
-('Ricardo', 'Villanueva', '1975-04-07', 'Male', 'Married', 'Filipino', '890-12-3456', '890123456', '555-8901', 'Diana Villanueva', 'Spouse', '555-2345'),
-('Sandra', 'Pascual', '1986-08-29', 'Female', 'Single', 'Filipino', '901-23-4567', '901234567', '555-9012', 'Luis Pascual', 'Brother', '555-3456');
+('Maria', 'Santos', '1985-03-12', 'Female', 'Married', 'Filipino', '123-45-6789', '123456789', '0917-123-4567', 'Carlos Santos', 'Spouse', '0917-567-8901'),
+('Roberto', 'Cruz', '1978-07-20', 'Male', 'Married', 'Filipino', '234-56-7890', '234567890', '0917-234-5678', 'Elena Cruz', 'Spouse', '0917-678-9012'),
+('Jennifer', 'Reyes', '1988-11-08', 'Female', 'Single', 'Filipino', '345-67-8901', '345678901', '0917-345-6789', 'Mark Reyes', 'Brother', '0917-789-0123'),
+('Antonio', 'Garcia', '1975-01-25', 'Male', 'Married', 'Filipino', '456-78-9012', '456789012', '0917-456-7890', 'Rosa Garcia', 'Spouse', '0917-890-1234'),
+('Lisa', 'Mendoza', '1982-09-14', 'Female', 'Divorced', 'Filipino', '567-89-0123', '567890123', '0917-567-8901', 'John Mendoza', 'Father', '0917-901-2345'),
+('Michael', 'Torres', '1980-06-03', 'Male', 'Married', 'Filipino', '678-90-1234', '678901234', '0917-678-9012', 'Anna Torres', 'Spouse', '0917-012-3456'),
+('Carmen', 'Dela Cruz', '1987-12-18', 'Female', 'Single', 'Filipino', '789-01-2345', '789012345', '0917-789-0123', 'Pedro Dela Cruz', 'Father', '0917-123-4567'),
+('Ricardo', 'Villanueva', '1970-04-07', 'Male', 'Married', 'Filipino', '890-12-3456', '890123456', '0917-890-1234', 'Diana Villanueva', 'Spouse', '0917-234-5678'),
+('Sandra', 'Pascual', '1984-08-29', 'Female', 'Married', 'Filipino', '901-23-4567', '901234567', '0917-901-2345', 'Luis Pascual', 'Spouse', '0917-345-6789'),
+('Jose', 'Ramos', '1972-05-15', 'Male', 'Married', 'Filipino', '012-34-5678', '012345678', '0917-012-3456', 'Teresa Ramos', 'Spouse', '0917-456-7890'),
+('Ana', 'Morales', '1986-10-30', 'Female', 'Single', 'Filipino', '123-56-7890', '123567890', '0917-135-7890', 'Maria Morales', 'Mother', '0917-579-0123'),
+('Pablo', 'Fernandez', '1979-02-22', 'Male', 'Married', 'Filipino', '234-67-8901', '234678901', '0917-246-7890', 'Carmen Fernandez', 'Spouse', '0917-680-1234'),
+('Grace', 'Lopez', '1983-09-07', 'Female', 'Married', 'Filipino', '345-78-9012', '345789012', '0917-357-8901', 'David Lopez', 'Spouse', '0917-791-2345'),
+('Eduardo', 'Hernandez', '1977-12-03', 'Male', 'Married', 'Filipino', '456-89-0123', '456890123', '0917-468-9012', 'Sofia Hernandez', 'Spouse', '0917-802-3456'),
+('Rosario', 'Gonzales', '1989-06-28', 'Female', 'Single', 'Filipino', '567-90-1234', '567901234', '0917-579-0123', 'Miguel Gonzales', 'Father', '0917-913-4567');
 
 -- Insert sample data for departments
 INSERT INTO departments (department_name, description, location) VALUES
-('Pre-Press Department', 'Handles graphic design, layout, and pre-press preparation tasks', 'Floor 1 - Design Studio'),
-('Printing/Press Department', 'Operates printing machines and press equipment', 'Floor 1 - Production Floor'),
-('Post-Press/Finishing Department', 'Handles cutting, binding, lamination, and finishing work', 'Floor 2 - Finishing Area');
+('Office of the Mayor', 'Executive office responsible for municipal governance and administration', 'City Hall - 2nd Floor'),
+('Sangguniang Bayan', 'Municipal legislative body responsible for enacting local ordinances', 'City Hall - Session Hall'),
+('Municipal Treasurer''s Office', 'Handles municipal revenue collection, treasury operations, and financial management', 'City Hall - 1st Floor'),
+('Municipal Budget Office', 'Responsible for budget preparation, monitoring, and financial planning', 'City Hall - 1st Floor'),
+('Municipal Accountant''s Office', 'Manages municipal accounting, bookkeeping, and financial reporting', 'City Hall - 1st Floor'),
+('Municipal Planning & Development Office', 'Handles municipal planning, development programs, and project management', 'City Hall - 3rd Floor'),
+('Municipal Engineer''s Office', 'Oversees infrastructure projects, public works, and engineering services', 'Engineering Building'),
+('Municipal Civil Registrar''s Office', 'Manages civil registration services and vital statistics', 'City Hall - Ground Floor'),
+('Municipal Health Office', 'Provides public health services and healthcare programs', 'Health Center Building'),
+('Municipal Social Welfare & Development Office', 'Administers social services and community development programs', 'Social Services Building'),
+('Municipal Agriculture Office', 'Supports agricultural development and provides farming assistance', 'Agriculture Extension Office'),
+('Municipal Assessor''s Office', 'Conducts property assessment and real property taxation', 'City Hall - Ground Floor'),
+('Municipal Human Resource & Administrative Office', 'Manages personnel administration and human resources', 'City Hall - 2nd Floor'),
+('Municipal Disaster Risk Reduction & Management Office', 'Coordinates disaster preparedness and emergency response', 'Emergency Operations Center'),
+('General Services Office', 'Provides general administrative support and facility management', 'City Hall - Basement');
 
 -- Insert sample data for job_roles
 INSERT INTO job_roles (title, description, department, min_salary, max_salary) VALUES
-('Graphic Artist', 'Creates and designs graphics, layouts, and visual content for print materials', 'Pre-Press Department', 25000.00, 45000.00),
-('Machine Operator', 'Operates and maintains printing machines and equipment', 'Printing/Press Department', 22000.00, 38000.00),
-('Heat Press Operator', 'Operates heat press machines for transfer printing', 'Printing/Press Department', 20000.00, 32000.00),
-('Sublimation Printer', 'Specializes in sublimation printing processes and equipment', 'Printing/Press Department', 24000.00, 40000.00),
-('Embroidery Operator', 'Operates embroidery machines and creates embroidered products', 'Post-Press/Finishing Department', 22000.00, 36000.00),
-('Cutter', 'Operates cutting machines and tools for precise material cutting', 'Post-Press/Finishing Department', 18000.00, 28000.00),
-('Trimmer', 'Performs trimming and finishing operations on printed materials', 'Post-Press/Finishing Department', 18000.00, 28000.00),
-('Sewer', 'Performs sewing operations for textile and fabric products', 'Post-Press/Finishing Department', 20000.00, 32000.00),
-('Front Office Staff', 'Handles customer service, orders, and administrative tasks', 'Pre-Press Department', 22000.00, 35000.00),
-('Head Sewer', 'Supervises sewing operations and manages sewing department', 'Post-Press/Finishing Department', 30000.00, 50000.00);
+-- Elected Officials (Higher salary grades)
+('Mayor', 'Chief executive of the municipality responsible for overall governance', 'Office of the Mayor', 80000.00, 120000.00),
+('Vice Mayor', 'Presiding officer of Sangguniang Bayan and assistant to the Mayor', 'Sangguniang Bayan', 70000.00, 100000.00),
+('Councilor', 'Member of the municipal legislative body', 'Sangguniang Bayan', 60000.00, 85000.00),
+
+-- Department Heads / Appointed Officials
+('Municipal Treasurer', 'Head of treasury operations and revenue collection', 'Municipal Treasurer''s Office', 55000.00, 75000.00),
+('Municipal Budget Officer', 'Responsible for municipal budget preparation and monitoring', 'Municipal Budget Office', 50000.00, 70000.00),
+('Municipal Accountant', 'Chief accountant responsible for municipal financial records', 'Municipal Accountant''s Office', 50000.00, 70000.00),
+('Municipal Planning & Development Coordinator', 'Head of municipal planning and development programs', 'Municipal Planning & Development Office', 55000.00, 75000.00),
+('Municipal Engineer', 'Chief engineer overseeing infrastructure and public works', 'Municipal Engineer''s Office', 60000.00, 85000.00),
+('Municipal Civil Registrar', 'Head of civil registration services', 'Municipal Civil Registrar''s Office', 45000.00, 65000.00),
+('Municipal Health Officer', 'Chief medical officer and head of health services', 'Municipal Health Office', 70000.00, 95000.00),
+('Municipal Social Welfare Officer', 'Head of social welfare and development programs', 'Municipal Social Welfare & Development Office', 50000.00, 70000.00),
+('Municipal Agriculturist', 'Agricultural development officer and extension coordinator', 'Municipal Agriculture Office', 50000.00, 70000.00),
+('Municipal Assessor', 'Head of property assessment and real property taxation', 'Municipal Assessor''s Office', 50000.00, 70000.00),
+('Municipal HR Officer', 'Head of human resources and personnel administration', 'Municipal Human Resource & Administrative Office', 50000.00, 70000.00),
+('MDRRM Officer', 'Disaster risk reduction and management coordinator', 'Municipal Disaster Risk Reduction & Management Office', 45000.00, 65000.00),
+('General Services Officer', 'Head of general services and facility management', 'General Services Office', 40000.00, 60000.00),
+
+-- Technical & Professional Staff
+('Nurse', 'Provides nursing services and healthcare support', 'Municipal Health Office', 35000.00, 50000.00),
+('Midwife', 'Provides maternal and child health services', 'Municipal Health Office', 30000.00, 45000.00),
+('Sanitary Inspector', 'Conducts health and sanitation inspections', 'Municipal Health Office', 28000.00, 40000.00),
+('Social Worker', 'Provides social services and community assistance', 'Municipal Social Welfare & Development Office', 35000.00, 50000.00),
+('Agricultural Technician', 'Provides technical support for agricultural programs', 'Municipal Agriculture Office', 28000.00, 40000.00),
+('Civil Engineer', 'Designs and supervises infrastructure projects', 'Municipal Engineer''s Office', 45000.00, 65000.00),
+('CAD Operator', 'Creates technical drawings and engineering plans', 'Municipal Engineer''s Office', 30000.00, 45000.00),
+('Building Inspector', 'Inspects construction projects for code compliance', 'Municipal Engineer''s Office', 35000.00, 50000.00),
+('Budget Analyst', 'Analyzes budget data and prepares financial reports', 'Municipal Budget Office', 35000.00, 50000.00),
+('Accounting Staff', 'Handles bookkeeping and accounting transactions', 'Municipal Accountant''s Office', 25000.00, 38000.00),
+('Planning Staff', 'Assists in municipal planning and development activities', 'Municipal Planning & Development Office', 30000.00, 45000.00),
+
+-- Administrative & Support Staff
+('Administrative Aide', 'Provides administrative support to various departments', 'Municipal Human Resource & Administrative Office', 22000.00, 35000.00),
+('Clerk', 'Handles clerical work and document processing', 'Municipal Civil Registrar''s Office', 20000.00, 32000.00),
+('Cashier', 'Processes payments and financial transactions', 'Municipal Treasurer''s Office', 22000.00, 35000.00),
+('Collection Officer', 'Collects municipal revenues and taxes', 'Municipal Treasurer''s Office', 25000.00, 38000.00),
+('Property Custodian', 'Manages and maintains municipal property and assets', 'General Services Office', 22000.00, 35000.00),
+('Maintenance Worker', 'Performs maintenance and repair work on municipal facilities', 'General Services Office', 18000.00, 28000.00),
+('Utility Worker', 'Provides general utility and janitorial services', 'General Services Office', 16000.00, 25000.00),
+('Driver', 'Operates municipal vehicles and provides transportation services', 'General Services Office', 20000.00, 32000.00),
+('Security Personnel', 'Provides security services for municipal facilities', 'General Services Office', 18000.00, 28000.00),
+('Legislative Staff', 'Provides secretarial support to Sangguniang Bayan', 'Sangguniang Bayan', 25000.00, 38000.00);
 
 -- Insert sample data for employee_profiles
 INSERT INTO employee_profiles (personal_info_id, job_role_id, employee_number, hire_date, employment_status, current_salary, work_email, work_phone, location, remote_work) VALUES
-(1, 1, 'PSH001', '2022-03-15', 'Full-time', 35000.00, 'maria.santos@printshop.com', '555-0001', 'Floor 1 - Design Studio', FALSE),
-(2, 2, 'PSH002', '2021-08-10', 'Full-time', 30000.00, 'roberto.cruz@printshop.com', '555-0002', 'Floor 1 - Production Floor', FALSE),
-(3, 3, 'PSH003', '2023-01-20', 'Full-time', 26000.00, 'jennifer.reyes@printshop.com', '555-0003', 'Floor 1 - Production Floor', FALSE),
-(4, 4, 'PSH004', '2022-07-05', 'Full-time', 32000.00, 'antonio.garcia@printshop.com', '555-0004', 'Floor 1 - Production Floor', FALSE),
-(5, 5, 'PSH005', '2021-11-12', 'Full-time', 28000.00, 'lisa.mendoza@printshop.com', '555-0005', 'Floor 2 - Finishing Area', FALSE),
-(6, 6, 'PSH006', '2023-02-28', 'Full-time', 23000.00, 'michael.torres@printshop.com', '555-0006', 'Floor 2 - Finishing Area', FALSE),
-(7, 7, 'PSH007', '2022-12-01', 'Part-time', 20000.00, 'carmen.delacruz@printshop.com', '555-0007', 'Floor 2 - Finishing Area', FALSE),
-(8, 8, 'PSH008', '2021-05-18', 'Full-time', 25000.00, 'ricardo.villanueva@printshop.com', '555-0008', 'Floor 2 - Finishing Area', FALSE),
-(9, 9, 'PSH009', '2022-09-10', 'Full-time', 28000.00, 'sandra.pascual@printshop.com', '555-0009', 'Floor 1 - Design Studio', FALSE);
+-- Department Heads and Key Officials
+(1, 4, 'MUN001', '2019-07-01', 'Full-time', 65000.00, 'maria.santos@municipality.gov.ph', '034-123-0001', 'City Hall - 1st Floor', FALSE),
+(2, 8, 'MUN002', '2018-06-15', 'Full-time', 75000.00, 'roberto.cruz@municipality.gov.ph', '034-123-0002', 'Engineering Building', FALSE),
+(3, 17, 'MUN003', '2020-01-20', 'Full-time', 42000.00, 'jennifer.reyes@municipality.gov.ph', '034-123-0003', 'Municipal Health Office', FALSE),
+(4, 21, 'MUN004', '2019-03-10', 'Full-time', 38000.00, 'antonio.garcia@municipality.gov.ph', '034-123-0004', 'Municipal Engineer''s Office', FALSE),
+(5, 20, 'MUN005', '2021-09-05', 'Full-time', 45000.00, 'lisa.mendoza@municipality.gov.ph', '034-123-0005', 'Municipal Social Welfare & Development Office', FALSE),
+(6, 25, 'MUN006', '2020-11-12', 'Full-time', 28000.00, 'michael.torres@municipality.gov.ph', '034-123-0006', 'Municipal Accountant''s Office', FALSE),
+(7, 27, 'MUN007', '2022-02-28', 'Full-time', 30000.00, 'carmen.delacruz@municipality.gov.ph', '034-123-0007', 'Municipal Civil Registrar''s Office', FALSE),
+(8, 32, 'MUN008', '2021-05-18', 'Full-time', 22000.00, 'ricardo.villanueva@municipality.gov.ph', '034-123-0008', 'General Services Office', FALSE),
+(9, 28, 'MUN009', '2020-09-10', 'Full-time', 32000.00, 'sandra.pascual@municipality.gov.ph', '034-123-0009', 'Municipal Treasurer''s Office', FALSE),
+(10, 29, 'MUN010', '2019-12-01', 'Full-time', 35000.00, 'jose.ramos@municipality.gov.ph', '034-123-0010', 'Municipal Treasurer''s Office', FALSE),
+(11, 26, 'MUN011', '2022-04-15', 'Full-time', 28000.00, 'ana.morales@municipality.gov.ph', '034-123-0011', 'Municipal Human Resource & Administrative Office', FALSE),
+(12, 19, 'MUN012', '2021-08-20', 'Full-time', 40000.00, 'pablo.fernandez@municipality.gov.ph', '034-123-0012', 'Municipal Agriculture Office', FALSE),
+(13, 18, 'MUN013', '2020-06-30', 'Full-time', 42000.00, 'grace.lopez@municipality.gov.ph', '034-123-0013', 'Municipal Health Office', FALSE),
+(14, 31, 'MUN014', '2022-01-10', 'Full-time', 25000.00, 'eduardo.hernandez@municipality.gov.ph', '034-123-0014', 'General Services Office', FALSE),
+(15, 33, 'MUN015', '2021-11-05', 'Full-time', 24000.00, 'rosario.gonzales@municipality.gov.ph', '034-123-0015', 'General Services Office', FALSE);
 
 -- Insert sample data for employment_history
 INSERT INTO employment_history (employee_id, job_role_id, start_date, end_date, salary, reason_for_change) VALUES
-(1, 1, '2022-03-15', NULL, 35000.00, 'Initial Hire'),
-(2, 2, '2021-08-10', NULL, 30000.00, 'Initial Hire'),
-(3, 3, '2023-01-20', NULL, 26000.00, 'Initial Hire'),
-(4, 4, '2022-07-05', NULL, 32000.00, 'Initial Hire'),
-(5, 5, '2021-11-12', NULL, 28000.00, 'Initial Hire'),
-(6, 6, '2023-02-28', NULL, 23000.00, 'Initial Hire'),
-(7, 7, '2022-12-01', NULL, 20000.00, 'Initial Hire'),
-(8, 8, '2021-05-18', NULL, 25000.00, 'Initial Hire'),
-(9, 9, '2022-09-10', NULL, 28000.00, 'Initial Hire'),
--- Adding some employment history for promotions/role changes
-(2, 6, '2020-01-15', '2021-08-09', 21000.00, 'Promoted to Machine Operator'),
-(5, 8, '2020-06-01', '2021-11-11', 22000.00, 'Promoted to Embroidery Operator');
+-- Current positions
+(1, 4, '2019-07-01', NULL, 65000.00, 'Appointed as Municipal Treasurer'),
+(2, 8, '2018-06-15', NULL, 75000.00, 'Appointed as Municipal Engineer'),
+(3, 17, '2020-01-20', NULL, 42000.00, 'Hired as Nurse'),
+(4, 21, '2019-03-10', NULL, 38000.00, 'Hired as CAD Operator'),
+(5, 20, '2021-09-05', NULL, 45000.00, 'Hired as Social Worker'),
+(6, 25, '2020-11-12', NULL, 28000.00, 'Hired as Accounting Staff'),
+(7, 27, '2022-02-28', NULL, 30000.00, 'Hired as Clerk'),
+(8, 32, '2021-05-18', NULL, 22000.00, 'Hired as Maintenance Worker'),
+(9, 28, '2020-09-10', NULL, 32000.00, 'Hired as Cashier'),
+(10, 29, '2019-12-01', NULL, 35000.00, 'Hired as Collection Officer'),
+(11, 26, '2022-04-15', NULL, 28000.00, 'Hired as Administrative Aide'),
+(12, 19, '2021-08-20', NULL, 40000.00, 'Hired as Agricultural Technician'),
+(13, 18, '2020-06-30', NULL, 42000.00, 'Hired as Midwife'),
+(14, 31, '2022-01-10', NULL, 25000.00, 'Hired as Driver'),
+(15, 33, '2021-11-05', NULL, 24000.00, 'Hired as Security Personnel'),
+
+-- Previous positions showing career progression
+(1, 26, '2017-03-01', '2019-06-30', 25000.00, 'Started as Administrative Aide'),
+(2, 21, '2015-08-01', '2018-06-14', 32000.00, 'Started as CAD Operator'),
+(5, 26, '2019-01-15', '2021-09-04', 25000.00, 'Started as Administrative Aide'),
+(9, 27, '2018-05-01', '2020-09-09', 22000.00, 'Started as Clerk'),
+(10, 27, '2017-10-01', '2019-11-30', 20000.00, 'Started as Clerk');
 
 -- Insert sample data for document_management
 INSERT INTO document_management (employee_id, document_type, document_name, file_path, expiry_date, document_status, notes) VALUES
-(1, 'Contract', 'Employment Contract - Graphic Artist', '/documents/contracts/maria_santos_contract.pdf', '2025-03-15', 'Active', 'Full-time graphic artist contract'),
-(1, 'Resume', 'Resume - Maria Santos', '/documents/resumes/maria_santos_resume.pdf', NULL, 'Active', 'Latest resume with portfolio'),
-(2, 'Contract', 'Employment Contract - Machine Operator', '/documents/contracts/roberto_cruz_contract.pdf', '2024-08-10', 'Active', 'Machine operator contract'),
-(2, 'Certificate', 'Machine Safety Certification', '/documents/certificates/roberto_cruz_safety_cert.pdf', '2024-12-31', 'Active', 'Required safety certification'),
-(3, 'Contract', 'Employment Contract - Heat Press', '/documents/contracts/jennifer_reyes_contract.pdf', '2026-01-20', 'Active', 'Heat press operator contract'),
-(4, 'Contract', 'Employment Contract - Sublimation', '/documents/contracts/antonio_garcia_contract.pdf', '2025-07-05', 'Active', 'Sublimation printer contract'),
-(4, 'Certificate', 'Sublimation Training Certificate', '/documents/certificates/antonio_garcia_sublimation_cert.pdf', '2025-06-30', 'Active', 'Specialized sublimation training'),
-(5, 'Contract', 'Employment Contract - Embroidery', '/documents/contracts/lisa_mendoza_contract.pdf', '2024-11-12', 'Active', 'Embroidery operator contract'),
-(6, 'Contract', 'Employment Contract - Cutter', '/documents/contracts/michael_torres_contract.pdf', '2026-02-28', 'Active', 'Cutting specialist contract'),
-(7, 'Contract', 'Part-time Contract - Trimmer', '/documents/contracts/carmen_delacruz_contract.pdf', '2025-12-01', 'Active', 'Part-time trimmer contract'),
-(8, 'Contract', 'Employment Contract - Sewer', '/documents/contracts/ricardo_villanueva_contract.pdf', '2024-05-18', 'Active', 'Sewing specialist contract'),
-(8, 'Certificate', 'Advanced Sewing Techniques', '/documents/certificates/ricardo_villanueva_sewing_cert.pdf', '2025-03-31', 'Active', 'Advanced sewing certification'),
-(9, 'Contract', 'Employment Contract - Front Office', '/documents/contracts/sandra_pascual_contract.pdf', '2025-09-10', 'Active', 'Front office staff contract'),
-(9, 'Certificate', 'Customer Service Excellence', '/documents/certificates/sandra_pascual_service_cert.pdf', '2024-08-15', 'Active', 'Customer service training certificate');#
+-- Appointment papers and contracts
+(1, 'Appointment', 'Appointment Order - Municipal Treasurer', '/documents/appointments/maria_santos_appointment.pdf', NULL, 'Active', 'Appointed by Mayor per Civil Service guidelines'),
+(1, 'Contract', 'Employment Contract - Municipal Treasurer', '/documents/contracts/maria_santos_contract.pdf', '2025-07-01', 'Active', 'Department head contract'),
+(1, 'Resume', 'Resume - Maria Santos', '/documents/resumes/maria_santos_resume.pdf', NULL, 'Active', 'CPA with municipal finance experience'),
+
+(2, 'Appointment', 'Appointment Order - Municipal Engineer', '/documents/appointments/roberto_cruz_appointment.pdf', NULL, 'Active', 'Licensed Civil Engineer appointment'),
+(2, 'Certificate', 'Professional Engineer License', '/documents/licenses/roberto_cruz_pe_license.pdf', '2025-12-31', 'Active', 'Updated PRC license'),
+(2, 'Contract', 'Employment Contract - Municipal Engineer', '/documents/contracts/roberto_cruz_contract.pdf', '2024-06-15', 'Active', 'Engineering department head'),
+
+(3, 'Contract', 'Employment Contract - Nurse', '/documents/contracts/jennifer_reyes_contract.pdf', '2025-01-20', 'Active', 'Municipal health office nurse'),
+(3, 'Certificate', 'Nursing License', '/documents/licenses/jennifer_reyes_rn_license.pdf', '2025-08-31', 'Active', 'Updated PRC nursing license'),
+(3, 'Certificate', 'Basic Life Support Training', '/documents/certificates/jennifer_reyes_bls_cert.pdf', '2024-12-31', 'Active', 'Required medical certification'),
+
+(4, 'Contract', 'Employment Contract - CAD Operator', '/documents/contracts/antonio_garcia_contract.pdf', '2024-03-10', 'Active', 'Engineering support staff'),
+(4, 'Certificate', 'AutoCAD Certification', '/documents/certificates/antonio_garcia_autocad_cert.pdf', '2025-06-30', 'Active', 'Professional CAD certification'),
+
+(5, 'Contract', 'Employment Contract - Social Worker', '/documents/contracts/lisa_mendoza_contract.pdf', '2024-09-05', 'Active', 'MSWDO social worker'),
+(5, 'Certificate', 'Social Work License', '/documents/licenses/lisa_mendoza_sw_license.pdf', '2025-10-31', 'Active', 'Updated PRC social work license'),
+
+(6, 'Contract', 'Employment Contract - Accounting Staff', '/documents/contracts/michael_torres_contract.pdf', '2025-11-12', 'Active', 'Municipal accountant office staff'),
+(6, 'Certificate', 'Bookkeeping Certification', '/documents/certificates/michael_torres_bookkeeping_cert.pdf', '2024-12-31', 'Active', 'Professional bookkeeping certification'),
+
+(7, 'Contract', 'Employment Contract - Clerk', '/documents/contracts/carmen_delacruz_contract.pdf', '2025-02-28', 'Active', 'Civil registrar office clerk'),
+(7, 'Training', 'Civil Registration Training', '/documents/training/carmen_delacruz_civil_reg_training.pdf', NULL, 'Active', 'Specialized civil registration procedures'),
+
+(8, 'Contract', 'Employment Contract - Maintenance Worker', '/documents/contracts/ricardo_villanueva_contract.pdf', '2024-05-18', 'Active', 'General services maintenance'),
+(8, 'Certificate', 'Electrical Safety Training', '/documents/certificates/ricardo_villanueva_electrical_safety.pdf', '2024-12-31', 'Active', 'Safety certification for maintenance work'),
+
+(9, 'Contract', 'Employment Contract - Cashier', '/documents/contracts/sandra_pascual_contract.pdf', '2025-09-10', 'Active', 'Treasury office cashier'),
+(9, 'Training', 'Financial Management Training', '/documents/training/sandra_pascual_finance_training.pdf', NULL, 'Active', 'Municipal financial procedures training'),
+
+(10, 'Contract', 'Employment Contract - Collection Officer', '/documents/contracts/jose_ramos_contract.pdf', '2024-12-01', 'Active', 'Revenue collection specialist'),
+(10, 'Training', 'Revenue Collection Procedures', '/documents/training/jose_ramos_collection_training.pdf', NULL, 'Active', 'Specialized revenue collection training'),
+
+(11, 'Contract', 'Employment Contract - Administrative Aide', '/documents/contracts/ana_morales_contract.pdf', '2025-04-15', 'Active', 'HR office administrative support'),
+
+(12, 'Contract', 'Employment Contract - Agricultural Technician', '/documents/contracts/pablo_fernandez_contract.pdf', '2024-08-20', 'Active', 'Agriculture office technical staff'),
+(12, 'Certificate', 'Agricultural Extension Training', '/documents/certificates/pablo_fernandez_agri_ext_cert.pdf', '2025-07-31', 'Active', 'Agricultural extension certification'),
+
+(13, 'Contract', 'Employment Contract - Midwife', '/documents/contracts/grace_lopez_contract.pdf', '2025-06-30', 'Active', 'Municipal health office midwife'),
+(13, 'Certificate', 'Midwifery License', '/documents/licenses/grace_lopez_midwife_license.pdf', '2025-09-30', 'Active', 'Updated PRC midwifery license'),
+
+(14, 'Contract', 'Employment Contract - Driver', '/documents/contracts/eduardo_hernandez_contract.pdf', '2025-01-10', 'Active', 'Municipal vehicle operator'),
+(14, 'Certificate', 'Professional Driver License', '/documents/licenses/eduardo_hernandez_driver_license.pdf', '2025-12-31', 'Active', 'Professional driver''s license'),
+
+(15, 'Contract', 'Employment Contract - Security Personnel', '/documents/contracts/rosario_gonzales_contract.pdf', '2024-11-05', 'Active', 'Municipal facility security'),
+(15, 'Certificate', 'Security Guard License', '/documents/licenses/rosario_gonzales_security_license.pdf', '2025-08-31', 'Active', 'SOSIA security guard license');
+
