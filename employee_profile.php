@@ -132,15 +132,15 @@ $jobRoles = $stmt->fetchAll(PDO::FETCH_ASSOC);
     <title>Employee Profile Management - HR System</title>
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.1/css/all.min.css">
-    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="styles.css?v=rose">
     <style>
         /* Additional custom styles for employee profile page */
         :root {
-            --azure-blue: #0078D4;
-            --azure-blue-light: #106EBE;
-            --azure-blue-dark: #005A9E;
-            --azure-blue-lighter: #E3F2FD;
-            --azure-blue-pale: #F0F8FF;
+            --azure-blue: #E91E63;
+            --azure-blue-light: #F06292;
+            --azure-blue-dark: #C2185B;
+            --azure-blue-lighter: #F8BBD0;
+            --azure-blue-pale: #FCE4EC;
         }
 
         .section-title {
@@ -194,7 +194,7 @@ $jobRoles = $stmt->fetchAll(PDO::FETCH_ASSOC);
         .search-box input:focus {
             border-color: var(--azure-blue);
             outline: none;
-            box-shadow: 0 0 10px rgba(0, 120, 212, 0.3);
+            box-shadow: 0 0 10px rgba(233, 30, 99, 0.3);
         }
 
         .search-icon {
@@ -224,7 +224,7 @@ $jobRoles = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
         .btn-primary:hover {
             transform: translateY(-2px);
-            box-shadow: 0 5px 15px rgba(0, 120, 212, 0.4);
+            box-shadow: 0 5px 15px rgba(233, 30, 99, 0.4);
             background: linear-gradient(135deg, var(--azure-blue-light) 0%, var(--azure-blue-dark) 100%);
         }
 
@@ -381,7 +381,7 @@ $jobRoles = $stmt->fetchAll(PDO::FETCH_ASSOC);
         .form-control:focus {
             border-color: var(--azure-blue);
             outline: none;
-            box-shadow: 0 0 10px rgba(0, 120, 212, 0.3);
+            box-shadow: 0 0 10px rgba(233, 30, 99, 0.3);
         }
 
         .form-row {
