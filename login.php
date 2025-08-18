@@ -62,7 +62,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     <title>Login - HR System</title>
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
-    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="styles.css?v=rose">
     <style>
         
         body {
@@ -93,9 +93,9 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             width: 100%;
             height: 100%;
             background: linear-gradient(45deg, 
-                rgba(0, 120, 212, 0.1) 0%,
-                rgba(0, 120, 212, 0.2) 50%,
-                rgba(0, 120, 212, 0.1) 100%
+                rgba(233, 30, 99, 0.1) 0%,
+                rgba(233, 30, 99, 0.2) 50%,
+                rgba(233, 30, 99, 0.1) 100%
             );
             animation: wave 10s linear infinite;
             opacity: 0.5;
@@ -135,7 +135,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         .floating-element:nth-child(1) {
             width: 100px;
             height: 100px;
-            background: #0078D4;
+            background: #E91E63;
             border-radius: 50%;
             top: 10%;
             left: 20%;
@@ -145,7 +145,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         .floating-element:nth-child(2) {
             width: 80px;
             height: 80px;
-            background: #1E88E5;
+            background: #F06292;
             border-radius: 10px;
             top: 30%;
             left: 60%;
@@ -155,7 +155,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         .floating-element:nth-child(3) {
             width: 60px;
             height: 60px;
-            background: #005A9E;
+            background: #C2185B;
             border-radius: 50%;
             top: 70%;
             left: 40%;
@@ -184,9 +184,9 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             width: 100%;
             height: 100%;
             background: linear-gradient(45deg, 
-                rgba(0, 120, 212, 0.1) 0%,
-                rgba(0, 120, 212, 0.2) 50%,
-                rgba(0, 120, 212, 0.1) 100%
+                rgba(233, 30, 99, 0.1) 0%,
+                rgba(233, 30, 99, 0.2) 50%,
+                rgba(233, 30, 99, 0.1) 100%
             );
             animation: ray 12s linear infinite;
             opacity: 0.3;
@@ -226,7 +226,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         }
         
         .login-header h1 {
-            color: #0078D4;
+            color: #E91E63;
             font-size: 24px;
             margin: 0;
         }
@@ -243,13 +243,13 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         }
         
         .form-control:focus {
-            border-color: #0078D4;
-            box-shadow: 0 0 0 0.2rem rgba(0, 120, 212, 0.25);
+            border-color: #E91E63;
+            box-shadow: 0 0 0 0.2rem rgba(233, 30, 99, 0.25);
         }
         
         .btn-primary {
-            background-color: #0078D4;
-            border-color: #0078D4;
+            background-color: #E91E63;
+            border-color: #E91E63;
             padding: 12px;
             border-radius: 8px;
             font-weight: 600;
@@ -257,8 +257,8 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         }
         
         .btn-primary:hover {
-            background-color: #005A9E;
-            border-color: #005A9E;
+            background-color: #C2185B;
+            border-color: #C2185B;
         }
         
         .alert {
@@ -275,7 +275,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         }
         
         .demo-credentials h5 {
-            color: #0078D4;
+            color: #E91E63;
             margin-bottom: 15px;
         }
         
@@ -311,7 +311,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     
     <div class="login-container">
         <div class="login-header">
-            <img src="image/HR Company.jpg" alt="HR System Logo">
+            <img src="image/GARAY.jpg" alt="HR System Logo">
             <h1>HR System</h1>
         </div>
         
