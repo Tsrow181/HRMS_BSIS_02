@@ -481,7 +481,7 @@ $jobRoles = $stmt->fetchAll(PDO::FETCH_ASSOC);
         <div class="row">
             <?php include 'sidebar.php'; ?>
                         <div class="main-content">
-                <h2 class="section-title">Employee Profile Management</h2>
+                <h2 class="section-title">  Employee Onboarding</h2>
                 <div class="content">
                     <?php if ($message): ?>
                         <div class="alert alert-<?= $messageType ?>">
@@ -489,187 +489,11 @@ $jobRoles = $stmt->fetchAll(PDO::FETCH_ASSOC);
                         </div>
                     <?php endif; ?>
 
-                        <div class="controls">
-                            <div class="search-box">
-                                <span class="search-icon">🔍</span>
-                                <input type="text" id="searchInput" placeholder="Search employees by name, email, or employee number...">
-                            </div>
-                            <button class="btn btn-primary" onclick="openModal('add')">
-                                ➕ Add New Employee
-                            </button>
-                        </div>
 
-                        <div class="table-container">
-                            <table class="table" id="employeeTable">
-                                <thead>
-                                    <tr>
-                                        <th>Employee #</th>
-                                        <th>Name</th>
-                                        <th>Job Title</th>
-                                        <th>Department</th>
-                                        <th>Email</th>
-                                        <th>Salary</th>
-                                        <th>Status</th>
-                                        <th>Hire Date</th>
-                                        <th>Actions</th>
-                                    </tr>
-                                </thead>
-                                <tbody id="employeeTableBody">
-                                    <?php foreach ($employees as $employee): ?>
-                                    <tr>
-                                        <td><strong><?= htmlspecialchars($employee['employee_number']) ?></strong></td>
-                                        <td>
-                                            <div>
-                                                <strong><?= htmlspecialchars($employee['full_name']) ?></strong><br>
-                                                <small style="color: #666;">📞 <?= htmlspecialchars($employee['phone_number']) ?></small>
-                                            </div>
-                                        </td>
-                                        <td><?= htmlspecialchars($employee['job_title']) ?></td>
-                                        <td><?= htmlspecialchars($employee['department']) ?></td>
-                                        <td><?= htmlspecialchars($employee['work_email']) ?></td>
-                                        <td><strong>₱<?= number_format($employee['current_salary'], 2) ?></strong></td>
-                                        <td>
-                                            <span class="status-badge status-<?= strtolower($employee['employment_status']) === 'full-time' ? 'active' : 'inactive' ?>">
-                                                <?= htmlspecialchars($employee['employment_status']) ?>
-                                            </span>
-                                        </td>
-                                        <td><?= date('M d, Y', strtotime($employee['hire_date'])) ?></td>
-                                        <td>
-                                            <button class="btn btn-warning btn-small" onclick="editEmployee(<?= $employee['employee_id'] ?>)">
-                                                ✏️ Edit
-                                            </button>
-                                            <button class="btn btn-danger btn-small" onclick="deleteEmployee(<?= $employee['employee_id'] ?>)">
-                                                🗑️ Delete
-                                            </button>
-                                        </td>
-                                    </tr>
-                                    <?php endforeach; ?>
-                                </tbody>
-                            </table>
-                            
-                            <?php if (empty($employees)): ?>
-                            <div class="no-results">
-                                <i>👥</i>
-                                <h3>No employees found</h3>
-                                <p>Start by adding your first employee profile.</p>
-                            </div>
-                            <?php endif; ?>
-                        </div>
                     </div>
                 </div>
             </div>
         </div>
-    </div>
-
-    <!-- Add/Edit Employee Modal -->
-    <div id="employeeModal" class="modal">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h2 id="modalTitle">Add New Employee</h2>
-                <span class="close" onclick="closeModal()">&times;</span>
-            </div>
-            <div class="modal-body">
-                <form id="employeeForm" method="POST">
-                    <input type="hidden" id="action" name="action" value="add">
-                    <input type="hidden" id="employee_id" name="employee_id">
-
-                    <div class="form-row">
-                        <div class="form-col">
-                            <div class="form-group">
-                                <label for="personal_info_id">Personal Information</label>
-                                <select id="personal_info_id" name="personal_info_id" class="form-control" required>
-                                    <option value="">Select person...</option>
-                                    <?php foreach ($personalInfo as $person): ?>
-                                    <option value="<?= $person['personal_info_id'] ?>"><?= htmlspecialchars($person['full_name']) ?></option>
-                                    <?php endforeach; ?>
-                                </select>
-                            </div>
-                        </div>
-                        <div class="form-col">
-                            <div class="form-group">
-                                <label for="job_role_id">Job Role</label>
-                                <select id="job_role_id" name="job_role_id" class="form-control" required>
-                                    <option value="">Select job role...</option>
-                                    <?php foreach ($jobRoles as $role): ?>
-                                    <option value="<?= $role['job_role_id'] ?>"><?= htmlspecialchars($role['title']) ?> (<?= htmlspecialchars($role['department']) ?>)</option>
-                                    <?php endforeach; ?>
-                                </select>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="form-row">
-                        <div class="form-col">
-                            <div class="form-group">
-                                <label for="employee_number">Employee Number</label>
-                                <input type="text" id="employee_number" name="employee_number" class="form-control" required>
-                            </div>
-                        </div>
-                        <div class="form-col">
-                            <div class="form-group">
-                                <label for="hire_date">Hire Date</label>
-                                <input type="date" id="hire_date" name="hire_date" class="form-control" required>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="form-row">
-                        <div class="form-col">
-                            <div class="form-group">
-                                <label for="employment_status">Employment Status</label>
-                                <select id="employment_status" name="employment_status" class="form-control" required>
-                                    <option value="">Select status...</option>
-                                    <option value="Full-time">Full-time</option>
-                                    <option value="Part-time">Part-time</option>
-                                    <option value="Contract">Contract</option>
-                                    <option value="Intern">Intern</option>
-                                    <option value="Terminated">Terminated</option>
-                                </select>
-                            </div>
-                        </div>
-                        <div class="form-col">
-                            <div class="form-group">
-                                <label for="current_salary">Current Salary (₱)</label>
-                                <input type="number" id="current_salary" name="current_salary" class="form-control" step="0.01" required>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="form-row">
-                        <div class="form-col">
-                            <div class="form-group">
-                                <label for="work_email">Work Email</label>
-                                <input type="email" id="work_email" name="work_email" class="form-control">
-                            </div>
-                        </div>
-                        <div class="form-col">
-                            <div class="form-group">
-                                <label for="work_phone">Work Phone</label>
-                                <input type="tel" id="work_phone" name="work_phone" class="form-control">
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="form-group">
-                        <label for="location">Location</label>
-                        <input type="text" id="location" name="location" class="form-control">
-                    </div>
-
-                    <div class="form-group">
-                        <div class="checkbox-group">
-                            <input type="checkbox" id="remote_work" name="remote_work">
-                            <label for="remote_work">Remote Work Enabled</label>
-                        </div>
-                    </div>
-
-                    <div style="text-align: center; margin-top: 30px;">
-                        <button type="button" class="btn" style="background: #6c757d; color: white; margin-right: 10px;" onclick="closeModal()">Cancel</button>
-                        <button type="submit" class="btn btn-success">💾 Save Employee</button>
-                    </div>
-                </form>
-            </div>
-        </div>
-    </div>
 
     <script>
         // Global variables

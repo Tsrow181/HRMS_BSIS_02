@@ -1,3 +1,10 @@
+/* Adjust h2 padding for better visibility */
+h2 {
+    padding-top: 56px;
+    padding-bottom: 36px;
+    padding-left: 32px;
+    padding-right: 32px;
+}
 /* HR System Color Scheme - Rose Red Theme */
 :root {
     /* Primary Colors - Azure Blue Theme */
