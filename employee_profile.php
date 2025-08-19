@@ -15,7 +15,7 @@ require_once 'dp.php';
 
 // Database connection
 $host = 'localhost';
-$dbname = 'hr_system';
+$dbname = 'CC_HR';
 $username = 'root';
 $password = '';
 
