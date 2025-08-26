@@ -1,0 +1,12 @@
+2025-08-26 05:21:15 Error: [8] session_start(): Ignoring session_start() because a session is already active - C:\Program Files\xampp\htdocs\Human-Resources-Management-System-BSIS-02\holiday_actions.php:2
+2025-08-26 05:21:15 Error: [2] Undefined array key "REQUEST_METHOD" - C:\Program Files\xampp\htdocs\Human-Resources-Management-System-BSIS-02\holiday_actions.php:255
+2025-08-26 05:22:08 Error: [2] Undefined variable $pdo - C:\Program Files\xampp\htdocs\Human-Resources-Management-System-BSIS-02\describe_public_holidays.php:4
+2025-08-26 05:22:54 Error: [2] Undefined variable $pdo - C:\Program Files\xampp\htdocs\Human-Resources-Management-System-BSIS-02\describe_public_holidays.php:5
+2025-08-26 05:23:33 Error: [2] Undefined variable $pdo - C:\Program Files\xampp\htdocs\Human-Resources-Management-System-BSIS-02\describe_public_holidays.php:8
+2025-08-26 05:24:42 Error: [2] Undefined variable $pdo - C:\Program Files\xampp\htdocs\Human-Resources-Management-System-BSIS-02\add_holiday_type_column.php:6
+2025-08-26 05:26:08 Error: [8] session_start(): Ignoring session_start() because a session is already active - C:\Program Files\xampp\htdocs\Human-Resources-Management-System-BSIS-02\holiday_actions.php:2
+2025-08-26 05:26:08 Error: [2] Undefined array key "REQUEST_METHOD" - C:\Program Files\xampp\htdocs\Human-Resources-Management-System-BSIS-02\holiday_actions.php:289
+2025-08-26 05:28:13 Error: [8] session_start(): Ignoring session_start() because a session is already active - C:\Program Files\xampp\htdocs\Human-Resources-Management-System-BSIS-02\holiday_actions.php:2
+2025-08-26 05:28:13 Error: [2] Undefined array key "REQUEST_METHOD" - C:\Program Files\xampp\htdocs\Human-Resources-Management-System-BSIS-02\holiday_actions.php:354
+2025-08-26 05:28:40 Error: [8] session_start(): Ignoring session_start() because a session is already active - C:\Program Files\xampp\htdocs\Human-Resources-Management-System-BSIS-02\holiday_actions.php:2
+2025-08-26 05:28:40 Error: [2] Undefined array key "REQUEST_METHOD" - C:\Program Files\xampp\htdocs\Human-Resources-Management-System-BSIS-02\holiday_actions.php:354
