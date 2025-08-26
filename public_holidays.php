@@ -79,12 +79,17 @@ require_once 'dp.php';
                 <div class="row mb-4">
                     <div class="col-md-12">
                         <div class="card">
-                            <div class="card-header d-flex justify-content-between align-items-center">
-                                <h5 class="mb-0"><i class="fas fa-calendar-day mr-2"></i>Public Holidays List</h5>
-                                <button class="btn btn-primary" data-toggle="modal" data-target="#addHolidayModal">
-                                    <i class="fas fa-plus mr-2"></i>Add Holiday
-                                </button>
-                            </div>
+                                <div class="card-header d-flex justify-content-between align-items-center">
+                                    <h5 class="mb-0"><i class="fas fa-calendar-day mr-2"></i>Public Holidays List</h5>
+                                    <div>
+                                        <button class="btn btn-info mr-2" id="syncHolidaysBtn" onclick="syncHolidays()">
+                                            <i class="fas fa-sync-alt mr-2"></i>Sync from API
+                                        </button>
+                                        <button class="btn btn-primary" data-toggle="modal" data-target="#addHolidayModal">
+                                            <i class="fas fa-plus mr-2"></i>Add Holiday
+                                        </button>
+                                    </div>
+                                </div>
                             <div class="card-body">
                                 <div class="table-responsive">
                                     <table class="table table-striped" id="holidaysTable">
@@ -588,6 +593,38 @@ require_once 'dp.php';
         setTimeout(() => {
             $('#' + alertId).alert('close');
         }, 5000);
+    }
+
+    function syncHolidays() {
+        const syncBtn = $('#syncHolidaysBtn');
+        const originalText = syncBtn.html();
+        
+        // Show loading state
+        syncBtn.prop('disabled', true);
+        syncBtn.html('<i class="fas fa-spinner fa-spin mr-2"></i>Syncing...');
+        
+        $.ajax({
+            url: 'holiday_actions.php',
+            type: 'POST',
+            data: { action: 'sync_holidays' },
+            dataType: 'json',
+            success: function(response) {
+                syncBtn.prop('disabled', false);
+                syncBtn.html(originalText);
+                
+                if (response.success) {
+                    showAlert(response.message, 'success');
+                    loadHolidays(); // Reload the holidays list
+                } else {
+                    showAlert('Sync failed: ' + response.message, 'danger');
+                }
+            },
+            error: function() {
+                syncBtn.prop('disabled', false);
+                syncBtn.html(originalText);
+                showAlert('Error connecting to server. Please try again.', 'danger');
+            }
+        });
     }
 
     function escapeHtml(text) {

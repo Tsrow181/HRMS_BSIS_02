@@ -1,8 +1,238 @@
 <?php
 session_start();
 require_once 'config.php';
+require_once 'config/api_keys.php'; // Include API keys
 
-// Function to get all public holidays
+// Function to fetch public holidays from Calendarific API
+function fetchPublicHolidaysFromCalendarific($country = DEFAULT_COUNTRY, $year = null) {
+    global $conn;
+    
+    if ($year === null) {
+        $year = date('Y');
+    }
+    
+    $url = CALENDARIFIC_API_URL . '?api_key=' . CALENDARIFIC_API_KEY . '&country=' . $country . '&year=' . $year;
+    
+    $ch = curl_init();
+    curl_setopt($ch, CURLOPT_URL, $url);
+    curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+    curl_setopt($ch, CURLOPT_TIMEOUT, API_REQUEST_TIMEOUT);
+    
+    $response = curl_exec($ch);
+    $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+    curl_close($ch);
+    
+    if ($response === false || $httpCode !== 200) {
+        error_log("Error fetching holidays from Calendarific API. HTTP Code: " . $httpCode);
+        return ['success' => false, 'message' => 'Failed to fetch holidays from API'];
+    }
+
+    $data = json_decode($response, true);
+    
+    if (isset($data['response']['holidays']) && is_array($data['response']['holidays'])) {
+        $importedCount = 0;
+        $updatedCount = 0;
+        
+        foreach ($data['response']['holidays'] as $holiday) {
+            try {
+                // Check if holiday_type and source columns exist
+                $hasHolidayType = holidayTypeColumnExists();
+                $hasSource = sourceColumnExists();
+                
+                if ($hasHolidayType && $hasSource) {
+                    $stmt = $conn->prepare("INSERT INTO public_holidays (holiday_name, holiday_date, holiday_type, description, source) 
+                                           VALUES (?, ?, ?, ?, 'calendarific') 
+                                           ON DUPLICATE KEY UPDATE 
+                                           holiday_name = VALUES(holiday_name), 
+                                           holiday_type = VALUES(holiday_type), 
+                                           description = VALUES(description)");
+                    
+                    $stmt->execute([
+                        $holiday['name'],
+                        $holiday['date']['iso'],
+                        $holiday['type'][0] ?? 'National',
+                        $holiday['description'] ?? ''
+                    ]);
+                } elseif ($hasHolidayType) {
+                    $stmt = $conn->prepare("INSERT INTO public_holidays (holiday_name, holiday_date, holiday_type, description) 
+                                           VALUES (?, ?, ?, ?) 
+                                           ON DUPLICATE KEY UPDATE 
+                                           holiday_name = VALUES(holiday_name), 
+                                           holiday_type = VALUES(holiday_type), 
+                                           description = VALUES(description)");
+                    
+                    $stmt->execute([
+                        $holiday['name'],
+                        $holiday['date']['iso'],
+                        $holiday['type'][0] ?? 'National',
+                        $holiday['description'] ?? ''
+                    ]);
+                } elseif ($hasSource) {
+                    $stmt = $conn->prepare("INSERT INTO public_holidays (holiday_name, holiday_date, description, source) 
+                                           VALUES (?, ?, ?, 'calendarific') 
+                                           ON DUPLICATE KEY UPDATE 
+                                           holiday_name = VALUES(holiday_name), 
+                                           description = VALUES(description)");
+                    
+                    $stmt->execute([
+                        $holiday['name'],
+                        $holiday['date']['iso'],
+                        $holiday['description'] ?? ''
+                    ]);
+                } else {
+                    $stmt = $conn->prepare("INSERT INTO public_holidays (holiday_name, holiday_date, description) 
+                                           VALUES (?, ?, ?) 
+                                           ON DUPLICATE KEY UPDATE 
+                                           holiday_name = VALUES(holiday_name), 
+                                           description = VALUES(description)");
+                    
+                    $stmt->execute([
+                        $holiday['name'],
+                        $holiday['date']['iso'],
+                        $holiday['description'] ?? ''
+                    ]);
+                }
+                
+                if ($stmt->rowCount() > 0) {
+                    $importedCount++;
+                } else {
+                    $updatedCount++;
+                }
+            } catch (PDOException $e) {
+                error_log("Error processing holiday: " . $e->getMessage());
+                continue;
+            }
+        }
+        
+        return [
+            'success' => true, 
+            'message' => "Successfully imported {$importedCount} holidays, updated {$updatedCount} holidays from Calendarific API"
+        ];
+    }
+    
+    return ['success' => false, 'message' => 'No holidays found in API response'];
+}
+
+// Function to fetch public holidays from Nager.Date API (fallback)
+function fetchPublicHolidaysFromNager($country = DEFAULT_COUNTRY, $year = null) {
+    global $conn;
+    
+    if ($year === null) {
+        $year = date('Y');
+    }
+    
+    $url = NAGER_API_URL . '/' . $year . '/' . $country;
+    
+    $ch = curl_init();
+    curl_setopt($ch, CURLOPT_URL, $url);
+    curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+    curl_setopt($ch, CURLOPT_TIMEOUT, API_REQUEST_TIMEOUT);
+    
+    $response = curl_exec($ch);
+    $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+    curl_close($ch);
+    
+    if ($response === false || $httpCode !== 200) {
+        error_log("Error fetching holidays from Nager.Date API. HTTP Code: " . $httpCode);
+        return ['success' => false, 'message' => 'Failed to fetch holidays from Nager.Date API'];
+    }
+
+    $holidays = json_decode($response, true);
+    
+    if (is_array($holidays)) {
+        $importedCount = 0;
+        $updatedCount = 0;
+        
+        foreach ($holidays as $holiday) {
+            try {
+                // Check if holiday_type and source columns exist
+                $hasHolidayType = holidayTypeColumnExists();
+                $hasSource = sourceColumnExists();
+                
+                if ($hasHolidayType && $hasSource) {
+                    $stmt = $conn->prepare("INSERT INTO public_holidays (holiday_name, holiday_date, holiday_type, description, source) 
+                                           VALUES (?, ?, ?, ?, 'nager') 
+                                           ON DUPLICATE KEY UPDATE 
+                                           holiday_name = VALUES(holiday_name), 
+                                           description = VALUES(description)");
+                    
+                    $stmt->execute([
+                        $holiday['name'],
+                        $holiday['date'],
+                        'National', // Nager.Date doesn't provide type, default to National
+                        $holiday['localName'] ?? $holiday['name']
+                    ]);
+                } elseif ($hasHolidayType) {
+                    $stmt = $conn->prepare("INSERT INTO public_holidays (holiday_name, holiday_date, holiday_type, description) 
+                                           VALUES (?, ?, ?, ?) 
+                                           ON DUPLICATE KEY UPDATE 
+                                           holiday_name = VALUES(holiday_name), 
+                                           description = VALUES(description)");
+                    
+                    $stmt->execute([
+                        $holiday['name'],
+                        $holiday['date'],
+                        'National', // Nager.Date doesn't provide type, default to National
+                        $holiday['localName'] ?? $holiday['name']
+                    ]);
+                } elseif ($hasSource) {
+                    $stmt = $conn->prepare("INSERT INTO public_holidays (holiday_name, holiday_date, description, source) 
+                                           VALUES (?, ?, ?, 'nager') 
+                                           ON DUPLICATE KEY UPDATE 
+                                           holiday_name = VALUES(holiday_name), 
+                                           description = VALUES(description)");
+                    
+                    $stmt->execute([
+                        $holiday['name'],
+                        $holiday['date'],
+                        $holiday['localName'] ?? $holiday['name']
+                    ]);
+                } else {
+                    $stmt = $conn->prepare("INSERT INTO public_holidays (holiday_name, holiday_date, description) 
+                                           VALUES (?, ?, ?) 
+                                           ON DUPLICATE KEY UPDATE 
+                                           holiday_name = VALUES(holiday_name), 
+                                           description = VALUES(description)");
+                    
+                    $stmt->execute([
+                        $holiday['name'],
+                        $holiday['date'],
+                        $holiday['localName'] ?? $holiday['name']
+                    ]);
+                }
+                
+                if ($stmt->rowCount() > 0) {
+                    $importedCount++;
+                } else {
+                    $updatedCount++;
+                }
+            } catch (PDOException $e) {
+                error_log("Error processing holiday: " . $e->getMessage());
+                continue;
+            }
+        }
+        
+        return [
+            'success' => true, 
+            'message' => "Successfully imported {$importedCount} holidays, updated {$updatedCount} holidays from Nager.Date API"
+        ];
+    }
+    
+    return ['success' => false, 'message' => 'No holidays found in API response'];
+}
+
+// Function to automatically sync holidays from available APIs
+function syncHolidaysFromAPI($country = DEFAULT_COUNTRY) {
+    // Try Calendarific first
+    $result = fetchPublicHolidaysFromCalendarific($country);
+    
+    if (!$result['success']) {
+        // Fallback to Nager.Date
+        $result = fetchPublicHolidaysFromNager($country);
+    }
+    
+    return $result;
+}
 function getPublicHolidays() {
     global $conn;
     try {
@@ -49,6 +279,18 @@ function holidayTypeColumnExists() {
         return $stmt->rowCount() > 0;
     } catch (PDOException $e) {
         error_log("Error checking holiday_type column: " . $e->getMessage());
+        return false;
+    }
+}
+
+// Function to check if source column exists
+function sourceColumnExists() {
+    global $conn;
+    try {
+        $stmt = $conn->query("SHOW COLUMNS FROM public_holidays LIKE 'source'");
+        return $stmt->rowCount() > 0;
+    } catch (PDOException $e) {
+        error_log("Error checking source column: " . $e->getMessage());
         return false;
     }
 }
@@ -162,6 +404,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         case 'get_holidays':
             $holidays = getPublicHolidays();
             $response = ['success' => true, 'holidays' => $holidays];
+            break;
+
+        case 'sync_holidays':
+            $country = $_POST['country'] ?? DEFAULT_COUNTRY;
+            $year = $_POST['year'] ?? date('Y');
+            $response = syncHolidaysFromAPI($country, $year);
             break;
     }
 
