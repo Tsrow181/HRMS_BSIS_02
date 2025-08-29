@@ -1174,4 +1174,3 @@ INSERT INTO document_management (employee_id, document_type, document_name, file
 
 (15, 'Contract', 'Employment Contract - Security Personnel', '/documents/contracts/rosario_gonzales_contract.pdf', '2024-11-05', 'Active', 'Municipal facility security'),
 (15, 'Certificate', 'Security Guard License', '/documents/licenses/rosario_gonzales_security_license.pdf', '2025-08-31', 'Active', 'SOSIA security guard license');
-

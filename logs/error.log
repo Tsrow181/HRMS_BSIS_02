@@ -10,6 +10,7 @@
 2025-08-26 05:28:13 Error: [2] Undefined array key "REQUEST_METHOD" - C:\Program Files\xampp\htdocs\Human-Resources-Management-System-BSIS-02\holiday_actions.php:354
 2025-08-26 05:28:40 Error: [8] session_start(): Ignoring session_start() because a session is already active - C:\Program Files\xampp\htdocs\Human-Resources-Management-System-BSIS-02\holiday_actions.php:2
 2025-08-26 05:28:40 Error: [2] Undefined array key "REQUEST_METHOD" - C:\Program Files\xampp\htdocs\Human-Resources-Management-System-BSIS-02\holiday_actions.php:354
+<<<<<<< HEAD
 2025-08-26 06:16:06 Error: [2] Undefined array key "REQUEST_METHOD" - C:\Program Files\xampp\htdocs\Human-Resources-Management-System-BSIS-02\holiday_actions.php:354
 2025-08-26 07:30:55 Error: [8] session_start(): Ignoring session_start() because a session is already active - C:\Program Files\xampp\htdocs\Human-Resources-Management-System-BSIS-02\leave_types.php:2
 2025-08-26 07:30:56 Error: [8] session_start(): Ignoring session_start() because a session is already active - C:\Program Files\xampp\htdocs\Human-Resources-Management-System-BSIS-02\leave_types.php:2
@@ -78,3 +79,47 @@
 2025-08-26 08:01:04 Error: [8] session_start(): Ignoring session_start() because a session is already active - C:\Program Files\xampp\htdocs\Human-Resources-Management-System-BSIS-02\leave_types.php:2
 2025-08-26 08:03:49 Error: [8] session_start(): Ignoring session_start() because a session is already active - C:\Program Files\xampp\htdocs\Human-Resources-Management-System-BSIS-02\leave_types.php:2
 2025-08-26 08:04:45 Error: [8] session_start(): Ignoring session_start() because a session is already active - C:\Program Files\xampp\htdocs\Human-Resources-Management-System-BSIS-02\leave_types.php:2
+=======
+2025-08-27 04:23:00 Error: [2] Undefined variable $message - C:\xampp\htdocs\Human-Resources-Management-System-BSIS-02\competencies.php:55
+2025-08-27 04:23:00 Error: [2] Undefined variable $employees - C:\xampp\htdocs\Human-Resources-Management-System-BSIS-02\competencies.php:87
+2025-08-27 04:23:00 Error: [2] foreach() argument must be of type array|object, null given - C:\xampp\htdocs\Human-Resources-Management-System-BSIS-02\competencies.php:87
+2025-08-27 04:23:00 Error: [2] Undefined variable $personalInfo - C:\xampp\htdocs\Human-Resources-Management-System-BSIS-02\competencies.php:151
+2025-08-27 04:23:00 Error: [2] foreach() argument must be of type array|object, null given - C:\xampp\htdocs\Human-Resources-Management-System-BSIS-02\competencies.php:151
+2025-08-27 04:23:00 Error: [2] Undefined variable $jobRoles - C:\xampp\htdocs\Human-Resources-Management-System-BSIS-02\competencies.php:162
+2025-08-27 04:23:00 Error: [2] foreach() argument must be of type array|object, null given - C:\xampp\htdocs\Human-Resources-Management-System-BSIS-02\competencies.php:162
+2025-08-27 04:23:01 Error: [2] Undefined variable $message - C:\xampp\htdocs\Human-Resources-Management-System-BSIS-02\competencies.php:55
+2025-08-27 04:23:01 Error: [2] Undefined variable $employees - C:\xampp\htdocs\Human-Resources-Management-System-BSIS-02\competencies.php:87
+2025-08-27 04:23:01 Error: [2] foreach() argument must be of type array|object, null given - C:\xampp\htdocs\Human-Resources-Management-System-BSIS-02\competencies.php:87
+2025-08-27 04:23:01 Error: [2] Undefined variable $personalInfo - C:\xampp\htdocs\Human-Resources-Management-System-BSIS-02\competencies.php:151
+2025-08-27 04:23:01 Error: [2] foreach() argument must be of type array|object, null given - C:\xampp\htdocs\Human-Resources-Management-System-BSIS-02\competencies.php:151
+2025-08-27 04:23:01 Error: [2] Undefined variable $jobRoles - C:\xampp\htdocs\Human-Resources-Management-System-BSIS-02\competencies.php:162
+2025-08-27 04:23:01 Error: [2] foreach() argument must be of type array|object, null given - C:\xampp\htdocs\Human-Resources-Management-System-BSIS-02\competencies.php:162
+2025-08-27 04:23:01 Error: [2] Undefined variable $message - C:\xampp\htdocs\Human-Resources-Management-System-BSIS-02\competencies.php:55
+2025-08-27 04:23:01 Error: [2] Undefined variable $employees - C:\xampp\htdocs\Human-Resources-Management-System-BSIS-02\competencies.php:87
+2025-08-27 04:23:01 Error: [2] foreach() argument must be of type array|object, null given - C:\xampp\htdocs\Human-Resources-Management-System-BSIS-02\competencies.php:87
+2025-08-27 04:23:01 Error: [2] Undefined variable $personalInfo - C:\xampp\htdocs\Human-Resources-Management-System-BSIS-02\competencies.php:151
+2025-08-27 04:23:01 Error: [2] foreach() argument must be of type array|object, null given - C:\xampp\htdocs\Human-Resources-Management-System-BSIS-02\competencies.php:151
+2025-08-27 04:23:01 Error: [2] Undefined variable $jobRoles - C:\xampp\htdocs\Human-Resources-Management-System-BSIS-02\competencies.php:162
+2025-08-27 04:23:01 Error: [2] foreach() argument must be of type array|object, null given - C:\xampp\htdocs\Human-Resources-Management-System-BSIS-02\competencies.php:162
+2025-08-27 04:23:01 Error: [2] Undefined variable $message - C:\xampp\htdocs\Human-Resources-Management-System-BSIS-02\competencies.php:55
+2025-08-27 04:23:01 Error: [2] Undefined variable $employees - C:\xampp\htdocs\Human-Resources-Management-System-BSIS-02\competencies.php:87
+2025-08-27 04:23:01 Error: [2] foreach() argument must be of type array|object, null given - C:\xampp\htdocs\Human-Resources-Management-System-BSIS-02\competencies.php:87
+2025-08-27 04:23:01 Error: [2] Undefined variable $personalInfo - C:\xampp\htdocs\Human-Resources-Management-System-BSIS-02\competencies.php:151
+2025-08-27 04:23:01 Error: [2] foreach() argument must be of type array|object, null given - C:\xampp\htdocs\Human-Resources-Management-System-BSIS-02\competencies.php:151
+2025-08-27 04:23:01 Error: [2] Undefined variable $jobRoles - C:\xampp\htdocs\Human-Resources-Management-System-BSIS-02\competencies.php:162
+2025-08-27 04:23:01 Error: [2] foreach() argument must be of type array|object, null given - C:\xampp\htdocs\Human-Resources-Management-System-BSIS-02\competencies.php:162
+2025-08-27 04:23:05 Error: [2] Undefined variable $message - C:\xampp\htdocs\Human-Resources-Management-System-BSIS-02\competencies.php:55
+2025-08-27 04:23:05 Error: [2] Undefined variable $employees - C:\xampp\htdocs\Human-Resources-Management-System-BSIS-02\competencies.php:87
+2025-08-27 04:23:05 Error: [2] foreach() argument must be of type array|object, null given - C:\xampp\htdocs\Human-Resources-Management-System-BSIS-02\competencies.php:87
+2025-08-27 04:23:05 Error: [2] Undefined variable $personalInfo - C:\xampp\htdocs\Human-Resources-Management-System-BSIS-02\competencies.php:151
+2025-08-27 04:23:05 Error: [2] foreach() argument must be of type array|object, null given - C:\xampp\htdocs\Human-Resources-Management-System-BSIS-02\competencies.php:151
+2025-08-27 04:23:05 Error: [2] Undefined variable $jobRoles - C:\xampp\htdocs\Human-Resources-Management-System-BSIS-02\competencies.php:162
+2025-08-27 04:23:05 Error: [2] foreach() argument must be of type array|object, null given - C:\xampp\htdocs\Human-Resources-Management-System-BSIS-02\competencies.php:162
+2025-08-27 04:23:33 Error: [2] Undefined variable $message - C:\xampp\htdocs\Human-Resources-Management-System-BSIS-02\competencies.php:55
+2025-08-27 04:23:33 Error: [2] Undefined variable $employees - C:\xampp\htdocs\Human-Resources-Management-System-BSIS-02\competencies.php:87
+2025-08-27 04:23:33 Error: [2] foreach() argument must be of type array|object, null given - C:\xampp\htdocs\Human-Resources-Management-System-BSIS-02\competencies.php:87
+2025-08-27 04:23:33 Error: [2] Undefined variable $personalInfo - C:\xampp\htdocs\Human-Resources-Management-System-BSIS-02\competencies.php:151
+2025-08-27 04:23:33 Error: [2] foreach() argument must be of type array|object, null given - C:\xampp\htdocs\Human-Resources-Management-System-BSIS-02\competencies.php:151
+2025-08-27 04:23:33 Error: [2] Undefined variable $jobRoles - C:\xampp\htdocs\Human-Resources-Management-System-BSIS-02\competencies.php:162
+2025-08-27 04:23:33 Error: [2] foreach() argument must be of type array|object, null given - C:\xampp\htdocs\Human-Resources-Management-System-BSIS-02\competencies.php:162
+>>>>>>> upstream/main
