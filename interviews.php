@@ -1,647 +1,381 @@
 <?php
-// Start session if not already started
-if (session_status() === PHP_SESSION_NONE) {
-    session_start();
-}
-
-// Check if user is logged in
+session_start();
 if (!isset($_SESSION['loggedin']) || $_SESSION['loggedin'] !== true) {
-    header("Location: login.php");
+    header('Location: login.php');
     exit;
 }
-
-// Include database connection and helper functions
-require_once 'dp.php';
-
-// Database connection
-$host = 'localhost';
-$dbname = 'CC_HR';
-$username = 'root';
-$password = '';
-
-try {
-    $pdo = new PDO("mysql:host=$host;dbname=$dbname", $username, $password);
-    $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
-} catch(PDOException $e) {
-    die("Connection failed: " . $e->getMessage());
-}
+require_once 'config.php';
+require_once 'email_config.php';
 
 // Handle form submissions
-$message = '';
-$messageType = '';
-
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     if (isset($_POST['action'])) {
         switch ($_POST['action']) {
-            case 'add':
-                // Add new employee
-                try {
-                    $stmt = $pdo->prepare("INSERT INTO employee_profiles (personal_info_id, job_role_id, employee_number, hire_date, employment_status, current_salary, work_email, work_phone, location, remote_work) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
-                    $stmt->execute([
-                        $_POST['personal_info_id'],
-                        $_POST['job_role_id'],
-                        $_POST['employee_number'],
-                        $_POST['hire_date'],
-                        $_POST['employment_status'],
-                        $_POST['current_salary'],
-                        $_POST['work_email'],
-                        $_POST['work_phone'],
-                        $_POST['location'],
-                        isset($_POST['remote_work']) ? 1 : 0
-                    ]);
-                    $message = "Employee profile added successfully!";
-                    $messageType = "success";
-                } catch (PDOException $e) {
-                    $message = "Error adding employee: " . $e->getMessage();
-                    $messageType = "error";
+            case 'schedule_interview':
+                $application_id = $_POST['application_id'];
+                $stage_id = $_POST['stage_id'];
+                $schedule_date = $_POST['schedule_date'];
+                $duration = $_POST['duration'];
+                $location = $_POST['location'];
+                $interview_type = $_POST['interview_type'];
+                
+                $stmt = $conn->prepare("INSERT INTO interviews (application_id, stage_id, schedule_date, duration, location, interview_type, status) VALUES (?, ?, ?, ?, ?, ?, 'Scheduled')");
+                $stmt->execute([$application_id, $stage_id, $schedule_date, $duration, $location, $interview_type]);
+                break;
+                
+            case 'complete_interview':
+                $interview_id = $_POST['interview_id'];
+                $feedback = $_POST['feedback'];
+                $rating = $_POST['rating'];
+                $recommendation = $_POST['recommendation'];
+                
+                $stmt = $conn->prepare("UPDATE interviews SET status = 'Completed', feedback = ?, rating = ?, recommendation = ?, completed_date = NOW() WHERE interview_id = ?");
+                $stmt->execute([$feedback, $rating, $recommendation, $interview_id]);
+                
+                // Get interview and application details
+                $stmt = $conn->prepare("SELECT i.application_id, ja.candidate_id FROM interviews i JOIN job_applications ja ON i.application_id = ja.application_id WHERE i.interview_id = ?");
+                $stmt->execute([$interview_id]);
+                $interview_data = $stmt->fetch(PDO::FETCH_ASSOC);
+                
+                // Get candidate email for notification
+                $candidate_stmt = $conn->prepare("SELECT c.email, c.first_name, c.last_name, jo.title FROM candidates c JOIN job_applications ja ON c.candidate_id = ja.candidate_id JOIN job_openings jo ON ja.job_opening_id = jo.job_opening_id WHERE ja.application_id = ?");
+                $candidate_stmt->execute([$interview_data['application_id']]);
+                $candidate = $candidate_stmt->fetch(PDO::FETCH_ASSOC);
+                
+                if ($recommendation == 'Strong Yes' || $recommendation == 'Yes') {
+                    // Check if there are more interview stages
+                    $next_stage_stmt = $conn->prepare("SELECT stage_id FROM interview_stages WHERE job_opening_id = (SELECT ja.job_opening_id FROM job_applications ja WHERE ja.application_id = ?) AND stage_order > (SELECT stage_order FROM interview_stages WHERE stage_id = ?) ORDER BY stage_order LIMIT 1");
+                    $next_stage_stmt->execute([$interview_data['application_id'], $_POST['stage_id']]);
+                    $next_stage = $next_stage_stmt->fetch(PDO::FETCH_ASSOC);
+                    
+                    if ($next_stage) {
+                        // Keep status as Interview for next stage
+                        $stmt = $conn->prepare("UPDATE job_applications SET status = 'Interview' WHERE application_id = ?");
+                        $stmt->execute([$interview_data['application_id']]);
+                        
+                        // Send next stage email
+                        sendEmail($candidate['email'], '', '', $candidate['first_name'] . ' ' . $candidate['last_name'], $candidate['title'], 'Interview', $conn);
+                    } else {
+                        // No more stages, move to Pending
+                        $stmt = $conn->prepare("UPDATE job_applications SET status = 'Pending' WHERE application_id = ?");
+                        $stmt->execute([$interview_data['application_id']]);
+                        
+                        // Send completion email
+                        sendEmail($candidate['email'], '', '', $candidate['first_name'] . ' ' . $candidate['last_name'], $candidate['title'], 'Pending', $conn);
+                    }
+                } else {
+                    // Update application status to Rejected
+                    $stmt = $conn->prepare("UPDATE job_applications SET status = 'Rejected' WHERE application_id = ?");
+                    $stmt->execute([$interview_data['application_id']]);
+                    
+                    // Send AI-generated rejection email
+                    sendEmail($candidate['email'], '', '', $candidate['first_name'] . ' ' . $candidate['last_name'], $candidate['title'], 'Rejected', $conn);
                 }
                 break;
+        }
+        $success_message = "Interview completed successfully! AI-generated email sent to candidate.";
+        if ($recommendation == 'Strong Yes' || $recommendation == 'Yes') {
+            // Check if moved to next stage or pending
+            $next_stage_stmt = $conn->prepare("SELECT stage_id FROM interview_stages WHERE job_opening_id = (SELECT ja.job_opening_id FROM job_applications ja WHERE ja.application_id = ?) AND stage_order > (SELECT stage_order FROM interview_stages WHERE stage_id = ?) ORDER BY stage_order LIMIT 1");
+            $next_stage_stmt->execute([$interview_data['application_id'], $_POST['stage_id']]);
+            $has_next_stage = $next_stage_stmt->fetch(PDO::FETCH_ASSOC);
             
-            case 'update':
-                // Update employee
-                try {
-                    $stmt = $pdo->prepare("UPDATE employee_profiles SET personal_info_id=?, job_role_id=?, employee_number=?, hire_date=?, employment_status=?, current_salary=?, work_email=?, work_phone=?, location=?, remote_work=? WHERE employee_id=?");
-                    $stmt->execute([
-                        $_POST['personal_info_id'],
-                        $_POST['job_role_id'],
-                        $_POST['employee_number'],
-                        $_POST['hire_date'],
-                        $_POST['employment_status'],
-                        $_POST['current_salary'],
-                        $_POST['work_email'],
-                        $_POST['work_phone'],
-                        $_POST['location'],
-                        isset($_POST['remote_work']) ? 1 : 0,
-                        $_POST['employee_id']
-                    ]);
-                    $message = "Employee profile updated successfully!";
-                    $messageType = "success";
-                } catch (PDOException $e) {
-                    $message = "Error updating employee: " . $e->getMessage();
-                    $messageType = "error";
-                }
-                break;
-            
-            case 'delete':
-                // Delete employee
-                try {
-                    $stmt = $pdo->prepare("DELETE FROM employee_profiles WHERE employee_id=?");
-                    $stmt->execute([$_POST['employee_id']]);
-                    $message = "Employee profile deleted successfully!";
-                    $messageType = "success";
-                } catch (PDOException $e) {
-                    $message = "Error deleting employee: " . $e->getMessage();
-                    $messageType = "error";
-                }
-                break;
+            if ($has_next_stage) {
+                $success_message .= " Candidate progressed to next interview stage.";
+            } else {
+                $success_message .= " All interview stages completed. Moved to Pending status.";
+            }
         }
     }
 }
 
-// Fetch employees with related data
-$stmt = $pdo->query("
-    SELECT 
-        ep.*,
-        CONCAT(pi.first_name, ' ', pi.last_name) as full_name,
-        pi.first_name,
-        pi.last_name,
-        pi.phone_number,
-        jr.title as job_title,
-        jr.department
-    FROM employee_profiles ep
-    LEFT JOIN personal_information pi ON ep.personal_info_id = pi.personal_info_id
-    LEFT JOIN job_roles jr ON ep.job_role_id = jr.job_role_id
-    ORDER BY ep.employee_id DESC
-");
-$employees = $stmt->fetchAll(PDO::FETCH_ASSOC);
+// Get interviews with application and candidate info
+$interviews_query = "SELECT i.*, ja.application_id, c.first_name, c.last_name, c.email, 
+                     jo.title as job_title, d.department_name, ist.stage_name
+                     FROM interviews i
+                     JOIN job_applications ja ON i.application_id = ja.application_id
+                     JOIN candidates c ON ja.candidate_id = c.candidate_id
+                     JOIN job_openings jo ON ja.job_opening_id = jo.job_opening_id
+                     JOIN departments d ON jo.department_id = d.department_id
+                     JOIN interview_stages ist ON i.stage_id = ist.stage_id
+                     ORDER BY i.schedule_date DESC";
+$interviews = $conn->query($interviews_query)->fetchAll(PDO::FETCH_ASSOC);
 
-// Fetch personal information for dropdown
-$stmt = $pdo->query("SELECT personal_info_id, CONCAT(first_name, ' ', last_name) as full_name FROM personal_information ORDER BY first_name");
-$personalInfo = $stmt->fetchAll(PDO::FETCH_ASSOC);
+// Get pending applications for scheduling
+$pending_apps = $conn->query("SELECT ja.*, c.first_name, c.last_name, jo.title as job_title, jo.job_opening_id
+                              FROM job_applications ja 
+                              JOIN candidates c ON ja.candidate_id = c.candidate_id
+                              JOIN job_openings jo ON ja.job_opening_id = jo.job_opening_id
+                              WHERE ja.status = 'Interview'")->fetchAll(PDO::FETCH_ASSOC);
 
-// Fetch job roles for dropdown
-$stmt = $pdo->query("SELECT job_role_id, title, department FROM job_roles ORDER BY title");
-$jobRoles = $stmt->fetchAll(PDO::FETCH_ASSOC);
+// Get interview stages
+$stages = $conn->query("SELECT * FROM interview_stages ORDER BY stage_order")->fetchAll(PDO::FETCH_ASSOC);
 ?>
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Employee Profile Management - HR System</title>
+    <title>Interviews - HR Management System</title>
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.1/css/all.min.css">
     <link rel="stylesheet" href="styles.css?v=rose">
-    <style>
-        /* Additional custom styles for employee profile page */
-        :root {
-            --azure-blue: #E91E63;
-            --azure-blue-light: #F06292;
-            --azure-blue-dark: #C2185B;
-            --azure-blue-lighter: #F8BBD0;
-            --azure-blue-pale: #FCE4EC;
-        }
-
-        .section-title {
-            color: var(--azure-blue);
-            margin-bottom: 30px;
-            font-weight: 600;
-        }
-        
-        .container-fluid {
-            padding: 0;
-        }
-        
-        .row {
-            margin-right: 0;
-            margin-left: 0;
-        }
-
-        body {
-            background: var(--azure-blue-pale);
-        }
-
-        .main-content {
-            background: var(--azure-blue-pale);
-            padding: 20px;
-        }
-
-        .controls {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 30px;
-            flex-wrap: wrap;
-            gap: 15px;
-        }
-
-        .search-box {
-            position: relative;
-            flex: 1;
-            max-width: 400px;
-        }
-
-        .search-box input {
-            width: 100%;
-            padding: 12px 15px 12px 45px;
-            border: 2px solid #e0e0e0;
-            border-radius: 25px;
-            font-size: 16px;
-            transition: all 0.3s ease;
-        }
-
-        .search-box input:focus {
-            border-color: var(--azure-blue);
-            outline: none;
-            box-shadow: 0 0 10px rgba(233, 30, 99, 0.3);
-        }
-
-        .search-icon {
-            position: absolute;
-            left: 15px;
-            top: 50%;
-            transform: translateY(-50%);
-            color: #666;
-        }
-
-        .btn {
-            padding: 12px 25px;
-            border: none;
-            border-radius: 25px;
-            font-size: 16px;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            text-decoration: none;
-            display: inline-block;
-        }
-
-        .btn-primary {
-            background: linear-gradient(135deg, var(--azure-blue) 0%, var(--azure-blue-light) 100%);
-            color: white;
-        }
-
-        .btn-primary:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 5px 15px rgba(233, 30, 99, 0.4);
-            background: linear-gradient(135deg, var(--azure-blue-light) 0%, var(--azure-blue-dark) 100%);
-        }
-
-        .btn-success {
-            background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
-            color: white;
-        }
-
-        .btn-danger {
-            background: linear-gradient(135deg, #dc3545 0%, #c82333 100%);
-            color: white;
-        }
-
-        .btn-warning {
-            background: linear-gradient(135deg, #ffc107 0%, #e0a800 100%);
-            color: white;
-        }
-
-        .btn-small {
-            padding: 8px 15px;
-            font-size: 14px;
-            margin: 0 3px;
-        }
-
-        .table-container {
-            background: white;
-            border-radius: 10px;
-            overflow: hidden;
-            box-shadow: 0 5px 15px rgba(0,0,0,0.08);
-        }
-
-        .table {
-            width: 100%;
-            border-collapse: collapse;
-        }
-
-        .table th {
-            background: linear-gradient(135deg, var(--azure-blue-lighter) 0%, #e9ecef 100%);
-            padding: 15px;
-            text-align: left;
-            font-weight: 600;
-            color: var(--azure-blue-dark);
-            border-bottom: 2px solid #dee2e6;
-        }
-
-        .table td {
-            padding: 15px;
-            border-bottom: 1px solid #f1f1f1;
-            vertical-align: middle;
-        }
-
-        .table tbody tr:hover {
-            background-color: var(--azure-blue-lighter);
-            transform: scale(1.01);
-            transition: all 0.2s ease;
-        }
-
-        .status-badge {
-            padding: 5px 12px;
-            border-radius: 20px;
-            font-size: 12px;
-            font-weight: 600;
-            text-transform: uppercase;
-        }
-
-        .status-active {
-            background: #d4edda;
-            color: #155724;
-        }
-
-        .status-inactive {
-            background: #f8d7da;
-            color: #721c24;
-        }
-
-        .modal {
-            display: none;
-            position: fixed;
-            z-index: 1000;
-            left: 0;
-            top: 0;
-            width: 100%;
-            height: 100%;
-            background-color: rgba(0,0,0,0.5);
-            backdrop-filter: blur(5px);
-        }
-
-        .modal-content {
-            background: white;
-            margin: 5% auto;
-            padding: 0;
-            border-radius: 15px;
-            width: 90%;
-            max-width: 600px;
-            max-height: 90vh;
-            overflow-y: auto;
-            box-shadow: 0 20px 40px rgba(0,0,0,0.3);
-            animation: slideIn 0.3s ease;
-        }
-
-        @keyframes slideIn {
-            from { transform: translateY(-50px); opacity: 0; }
-            to { transform: translateY(0); opacity: 1; }
-        }
-
-        .modal-header {
-            background: linear-gradient(135deg, var(--azure-blue) 0%, var(--azure-blue-light) 100%);
-            color: white;
-            padding: 20px 30px;
-            border-radius: 15px 15px 0 0;
-        }
-
-        .modal-header h2 {
-            margin: 0;
-        }
-
-        .close {
-            float: right;
-            font-size: 28px;
-            font-weight: bold;
-            cursor: pointer;
-            color: white;
-            opacity: 0.7;
-        }
-
-        .close:hover {
-            opacity: 1;
-        }
-
-        .modal-body {
-            padding: 30px;
-        }
-
-        .form-group {
-            margin-bottom: 20px;
-        }
-
-        .form-group label {
-            display: block;
-            margin-bottom: 8px;
-            font-weight: 600;
-            color: var(--azure-blue-dark);
-        }
-
-        .form-control {
-            width: 100%;
-            padding: 12px 15px;
-            border: 2px solid #e0e0e0;
-            border-radius: 8px;
-            font-size: 16px;
-            transition: all 0.3s ease;
-        }
-
-        .form-control:focus {
-            border-color: var(--azure-blue);
-            outline: none;
-            box-shadow: 0 0 10px rgba(233, 30, 99, 0.3);
-        }
-
-        .form-row {
-            display: flex;
-            gap: 20px;
-        }
-
-        .form-col {
-            flex: 1;
-        }
-
-        .checkbox-group {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            margin-top: 10px;
-        }
-
-        .alert {
-            padding: 15px 20px;
-            margin-bottom: 20px;
-            border-radius: 8px;
-            font-weight: 500;
-        }
-
-        .alert-success {
-            background: #d4edda;
-            color: #155724;
-            border: 1px solid #c3e6cb;
-        }
-
-        .alert-error {
-            background: #f8d7da;
-            color: #721c24;
-            border: 1px solid #f5c6cb;
-        }
-
-        .no-results {
-            text-align: center;
-            padding: 50px;
-            color: #666;
-        }
-
-        .no-results i {
-            font-size: 4rem;
-            margin-bottom: 20px;
-            color: #ddd;
-        }
-
-        .loading {
-            text-align: center;
-            padding: 40px;
-        }
-
-        .spinner {
-            border: 4px solid #f3f3f3;
-            border-top: 4px solid var(--azure-blue);
-            border-radius: 50%;
-            width: 40px;
-            height: 40px;
-            animation: spin 1s linear infinite;
-            margin: 0 auto;
-        }
-
-        @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
-        }
-
-        @media (max-width: 768px) {
-            .controls {
-                flex-direction: column;
-                align-items: stretch;
-            }
-
-            .search-box {
-                max-width: none;
-            }
-
-            .form-row {
-                flex-direction: column;
-            }
-
-            .table-container {
-                overflow-x: auto;
-            }
-
-            .content {
-                padding: 20px;
-            }
-        }
-    </style>
 </head>
 <body>
     <div class="container-fluid">
         <?php include 'navigation.php'; ?>
         <div class="row">
             <?php include 'sidebar.php'; ?>
-                        <div class="main-content">
-                <h2 class="section-title">Interviews</h2>
-                <div class="content">
-                    <?php if ($message): ?>
-                        <div class="alert alert-<?= $messageType ?>">
-                            <?= htmlspecialchars($message) ?>
+            <div class="main-content">
+                <div class="row mb-4">
+                    <div class="col-md-6">
+                        <div class="card">
+                            <div class="card-header">
+                                <h5><i class="fas fa-calendar-plus"></i> Schedule Interview</h5>
+                            </div>
+                            <div class="card-body">
+                                <?php if (count($pending_apps) > 0): ?>
+                                <form method="POST">
+                                    <input type="hidden" name="action" value="schedule_interview">
+                                    <div class="form-group">
+                                        <label>Candidate</label>
+                                        <select name="application_id" class="form-control" required>
+                                            <option value="">Select Candidate</option>
+                                            <?php foreach($pending_apps as $app): ?>
+                                            <option value="<?php echo $app['application_id']; ?>">
+                                                <?php echo htmlspecialchars($app['first_name'] . ' ' . $app['last_name'] . ' - ' . $app['job_title']); ?>
+                                            </option>
+                                            <?php endforeach; ?>
+                                        </select>
+                                    </div>
+                                    <div class="row">
+                                        <div class="col-md-6">
+                                            <div class="form-group">
+                                                <label>Interview Stage</label>
+                                                <select name="stage_id" class="form-control" required>
+                                                    <option value="">Select Stage</option>
+                                                    <?php foreach($stages as $stage): ?>
+                                                    <option value="<?php echo $stage['stage_id']; ?>">
+                                                        <?php echo htmlspecialchars($stage['stage_name']); ?>
+                                                    </option>
+                                                    <?php endforeach; ?>
+                                                </select>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <div class="form-group">
+                                                <label>Interview Type</label>
+                                                <select name="interview_type" class="form-control" required>
+                                                    <option value="In-person">In-person</option>
+                                                    <option value="Video Call">Video Call</option>
+                                                    <option value="Phone">Phone</option>
+                                                    <option value="Technical Assessment">Technical Assessment</option>
+                                                </select>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="row">
+                                        <div class="col-md-6">
+                                            <div class="form-group">
+                                                <label>Schedule Date & Time</label>
+                                                <input type="datetime-local" name="schedule_date" class="form-control" required>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <div class="form-group">
+                                                <label>Duration (minutes)</label>
+                                                <input type="number" name="duration" class="form-control" value="60" min="15" required>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="form-group">
+                                        <label>Location</label>
+                                        <input type="text" name="location" class="form-control" placeholder="HR Office / Zoom Link / Phone Number">
+                                    </div>
+                                    <button type="submit" class="btn btn-primary">Schedule Interview</button>
+                                </form>
+                                <?php else: ?>
+                                <p class="text-muted">No candidates pending interview scheduling.</p>
+                                <?php endif; ?>
+                            </div>
                         </div>
-                    <?php endif; ?>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="card">
+                            <div class="card-header">
+                                <h5><i class="fas fa-chart-bar"></i> Interview Statistics</h5>
+                            </div>
+                            <div class="card-body">
+                                <?php
+                                $scheduled = count(array_filter($interviews, function($i) { return $i['status'] == 'Scheduled'; }));
+                                $completed = count(array_filter($interviews, function($i) { return $i['status'] == 'Completed'; }));
+                                ?>
+                                <div class="row text-center">
+                                    <div class="col-md-6">
+                                        <h3 class="text-warning"><?php echo $scheduled; ?></h3>
+                                        <p>Scheduled</p>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <h3 class="text-success"><?php echo $completed; ?></h3>
+                                        <p>Completed</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <div class="card-header">
+                        <h5><i class="fas fa-calendar-alt"></i> Interview Schedule</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="table-responsive">
+                            <table class="table table-striped">
+                                <thead>
+                                    <tr>
+                                        <th>Candidate</th>
+                                        <th>Position</th>
+                                        <th>Stage</th>
+                                        <th>Schedule</th>
+                                        <th>Type</th>
+                                        <th>Status</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <?php if (count($interviews) > 0): ?>
+                                        <?php foreach($interviews as $interview): ?>
+                                            <tr>
+                                                <td>
+                                                    <strong><?php echo htmlspecialchars($interview['first_name'] . ' ' . $interview['last_name']); ?></strong><br>
+                                                    <small class="text-muted"><?php echo htmlspecialchars($interview['email']); ?></small>
+                                                </td>
+                                                <td>
+                                                    <strong><?php echo htmlspecialchars($interview['job_title']); ?></strong><br>
+                                                    <small class="text-muted"><?php echo htmlspecialchars($interview['department_name']); ?></small>
+                                                </td>
+                                                <td><?php echo htmlspecialchars($interview['stage_name']); ?></td>
+                                                <td>
+                                                    <?php echo date('M d, Y', strtotime($interview['schedule_date'])); ?><br>
+                                                    <small class="text-muted"><?php echo date('h:i A', strtotime($interview['schedule_date'])); ?></small>
+                                                </td>
+                                                <td><?php echo $interview['interview_type']; ?></td>
+                                                <td>
+                                                    <span class="badge badge-<?php echo $interview['status'] == 'Scheduled' ? 'warning' : 'success'; ?>">
+                                                        <?php echo $interview['status']; ?>
+                                                    </span>
+                                                </td>
+                                                <td>
+                                                    <?php if ($interview['status'] == 'Scheduled'): ?>
+                                                        <button class="btn btn-success btn-sm" onclick="openCompleteModal(<?php echo $interview['interview_id']; ?>)">
+                                                            <i class="fas fa-check"></i> Complete
+                                                        </button>
+                                                    <?php else: ?>
+                                                        <span class="badge badge-info">Rating: <?php echo $interview['rating']; ?></span>
+                                                    <?php endif; ?>
+                                                </td>
+                                            </tr>
 
 
+                                        <?php endforeach; ?>
+                                    <?php else: ?>
+                                        <tr>
+                                            <td colspan="7" class="text-center">No interviews scheduled</td>
+                                        </tr>
+                                    <?php endif; ?>
+                                </tbody>
+                            </table>
+                        </div>
                     </div>
                 </div>
             </div>
         </div>
+    </div>
+
+    <!-- Success Modal -->
+    <?php if (isset($success_message)): ?>
+    <div class="modal fade" id="successModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header bg-success text-white">
+                    <h5 class="modal-title"><i class="fas fa-check-circle"></i> Success</h5>
+                    <button type="button" class="close text-white" data-dismiss="modal">&times;</button>
+                </div>
+                <div class="modal-body">
+                    <p><?php echo $success_message; ?></p>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-success" data-dismiss="modal">OK</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    <?php endif; ?>
+
+    <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+    
+    <!-- Complete Interview Modal -->
+    <div class="modal fade" id="completeModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Complete Interview</h5>
+                    <button type="button" class="close" data-dismiss="modal">&times;</button>
+                </div>
+                <form method="POST">
+                    <div class="modal-body">
+                        <input type="hidden" name="action" value="complete_interview">
+                        <input type="hidden" name="interview_id" id="modalInterviewId">
+                        
+                        <div class="form-group">
+                            <label>Feedback</label>
+                            <textarea name="feedback" class="form-control" rows="3" required></textarea>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label>Rating (1-5)</label>
+                                    <input type="number" name="rating" class="form-control" min="1" max="5" step="0.1" required>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label>Recommendation</label>
+                                    <select name="recommendation" class="form-control" required>
+                                        <option value="Strong Yes">Strong Yes</option>
+                                        <option value="Yes">Yes</option>
+                                        <option value="Maybe">Maybe</option>
+                                        <option value="No">No</option>
+                                        <option value="Strong No">Strong No</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
+                        <button type="submit" class="btn btn-success">Complete Interview</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
 
     <script>
-        // Global variables
-        let employeesData = <?= json_encode($employees) ?>;
-
-        // Search functionality
-        document.getElementById('searchInput').addEventListener('input', function() {
-            const searchTerm = this.value.toLowerCase();
-            const tableBody = document.getElementById('employeeTableBody');
-            const rows = tableBody.getElementsByTagName('tr');
-
-            for (let i = 0; i < rows.length; i++) {
-                const row = rows[i];
-                const text = row.textContent.toLowerCase();
-                
-                if (text.includes(searchTerm)) {
-                    row.style.display = '';
-                } else {
-                    row.style.display = 'none';
-                }
-            }
-        });
-
-        // Modal functions
-        function openModal(mode, employeeId = null) {
-            const modal = document.getElementById('employeeModal');
-            const form = document.getElementById('employeeForm');
-            const title = document.getElementById('modalTitle');
-            const action = document.getElementById('action');
-
-            if (mode === 'add') {
-                title.textContent = 'Add New Employee';
-                action.value = 'add';
-                form.reset();
-                document.getElementById('employee_id').value = '';
-            } else if (mode === 'edit' && employeeId) {
-                title.textContent = 'Edit Employee';
-                action.value = 'update';
-                document.getElementById('employee_id').value = employeeId;
-                populateEditForm(employeeId);
-            }
-
-            modal.style.display = 'block';
-            document.body.style.overflow = 'hidden';
+        function openCompleteModal(interviewId) {
+            document.getElementById('modalInterviewId').value = interviewId;
+            $('#completeModal').modal('show');
         }
+    </script>
 
-        function closeModal() {
-            const modal = document.getElementById('employeeModal');
-            modal.style.display = 'none';
-            document.body.style.overflow = 'auto';
-        }
-
-        function populateEditForm(employeeId) {
-            // This would typically fetch data via AJAX
-            // For now, we'll use the existing data
-            const employee = employeesData.find(emp => emp.employee_id == employeeId);
-            if (employee) {
-                document.getElementById('personal_info_id').value = employee.personal_info_id || '';
-                document.getElementById('job_role_id').value = employee.job_role_id || '';
-                document.getElementById('employee_number').value = employee.employee_number || '';
-                document.getElementById('hire_date').value = employee.hire_date || '';
-                document.getElementById('employment_status').value = employee.employment_status || '';
-                document.getElementById('current_salary').value = employee.current_salary || '';
-                document.getElementById('work_email').value = employee.work_email || '';
-                document.getElementById('work_phone').value = employee.work_phone || '';
-                document.getElementById('location').value = employee.location || '';
-                document.getElementById('remote_work').checked = employee.remote_work == 1;
-            }
-        }
-
-        function editEmployee(employeeId) {
-            openModal('edit', employeeId);
-        }
-
-        function deleteEmployee(employeeId) {
-            if (confirm('Are you sure you want to delete this employee? This action cannot be undone.')) {
-                const form = document.createElement('form');
-                form.method = 'POST';
-                form.innerHTML = `
-                    <input type="hidden" name="action" value="delete">
-                    <input type="hidden" name="employee_id" value="${employeeId}">
-                `;
-                document.body.appendChild(form);
-                form.submit();
-            }
-        }
-
-        // Close modal when clicking outside
-        window.onclick = function(event) {
-            const modal = document.getElementById('employeeModal');
-            if (event.target === modal) {
-                closeModal();
-            }
-        }
-
-        // Form validation
-        document.getElementById('employeeForm').addEventListener('submit', function(e) {
-            const salary = document.getElementById('current_salary').value;
-            if (salary <= 0) {
-                e.preventDefault();
-                alert('Salary must be greater than 0');
-                return;
-            }
-
-            const email = document.getElementById('work_email').value;
-            if (email && !isValidEmail(email)) {
-                e.preventDefault();
-                alert('Please enter a valid email address');
-                return;
-            }
-        });
-
-        function isValidEmail(email) {
-            const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-            return emailRegex.test(email);
-        }
-
-        // Auto-hide alerts
-        setTimeout(function() {
-            const alerts = document.querySelectorAll('.alert');
-            alerts.forEach(function(alert) {
-                alert.style.transition = 'opacity 0.5s';
-                alert.style.opacity = '0';
-                setTimeout(function() {
-                    alert.remove();
-                }, 500);
-            });
-        }, 5000);
-
-        // Initialize tooltips and animations
-        document.addEventListener('DOMContentLoaded', function() {
-            // Add hover effects to table rows
-            const tableRows = document.querySelectorAll('#employeeTable tbody tr');
-            tableRows.forEach(row => {
-                row.addEventListener('mouseenter', function() {
-                    this.style.transform = 'scale(1.02)';
-                });
-                
-                row.addEventListener('mouseleave', function() {
-                    this.style.transform = 'scale(1)';
-                });
-            });
-
-
+    <?php if (isset($success_message)): ?>
+    <script>
+        $(document).ready(function() {
+            $('#successModal').modal('show');
         });
     </script>
-    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.1/dist/umd/popper.min.js"></script>
-    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+    <?php endif; ?>
 </body>
 </html>

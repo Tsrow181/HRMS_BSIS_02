@@ -52,3 +52,11 @@
 2025-08-27 04:23:33 Error: [2] foreach() argument must be of type array|object, null given - C:\xampp\htdocs\Human-Resources-Management-System-BSIS-02\competencies.php:151
 2025-08-27 04:23:33 Error: [2] Undefined variable $jobRoles - C:\xampp\htdocs\Human-Resources-Management-System-BSIS-02\competencies.php:162
 2025-08-27 04:23:33 Error: [2] foreach() argument must be of type array|object, null given - C:\xampp\htdocs\Human-Resources-Management-System-BSIS-02\competencies.php:162
+2025-09-03 06:40:09 Error: [2] Undefined array key "job_opening_id" - C:\xampp\htdocs\Human-Resources-Management-System-BSIS-02\job_applications.php:18
+2025-09-03 06:54:11 Error: [2] Undefined array key "job_opening_id" - C:\xampp\htdocs\Human-Resources-Management-System-BSIS-02\job_applications.php:18
+2025-09-03 06:54:27 Error: [2] Undefined array key "job_opening_id" - C:\xampp\htdocs\Human-Resources-Management-System-BSIS-02\job_applications.php:18
+2025-09-03 07:14:15 Error: [2] Undefined array key "job_opening_id" - C:\xampp\htdocs\Human-Resources-Management-System-BSIS-02\job_applications.php:18
+2025-09-03 07:14:30 Error: [2] Undefined array key "job_opening_id" - C:\xampp\htdocs\Human-Resources-Management-System-BSIS-02\job_applications.php:18
+2025-09-03 08:52:00 Error: [2] mail(): Failed to connect to mailserver at &quot;localhost&quot; port 25, verify your &quot;SMTP&quot; and &quot;smtp_port&quot; setting in php.ini or use ini_set() - C:\xampp\htdocs\Human-Resources-Management-System-BSIS-02\email_config.php:70
+2025-09-03 08:53:26 Error: [2] mail(): Failed to connect to mailserver at &quot;localhost&quot; port 25, verify your &quot;SMTP&quot; and &quot;smtp_port&quot; setting in php.ini or use ini_set() - C:\xampp\htdocs\Human-Resources-Management-System-BSIS-02\email_config.php:55
+2025-09-03 08:53:28 Error: [2] mail(): Failed to connect to mailserver at &quot;localhost&quot; port 25, verify your &quot;SMTP&quot; and &quot;smtp_port&quot; setting in php.ini or use ini_set() - C:\xampp\htdocs\Human-Resources-Management-System-BSIS-02\email_config.php:55
