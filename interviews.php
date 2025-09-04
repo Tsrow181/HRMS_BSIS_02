@@ -1,4 +1,6 @@
 <?php
+error_reporting(E_ALL);
+ini_set('display_errors', 1);
 session_start();
 if (!isset($_SESSION['loggedin']) || $_SESSION['loggedin'] !== true) {
     header('Location: login.php');
@@ -22,6 +24,70 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 $success_message = "📅 Interview scheduled successfully!";
                 break;
                 
+            case 'auto_schedule_all':
+                // Auto-schedule all pending interviews
+                $pending = $conn->query("SELECT interview_id FROM interviews WHERE status = 'Rescheduled'");
+                $count = 0;
+                
+                foreach ($pending->fetchAll(PDO::FETCH_ASSOC) as $interview) {
+                    // AI picks next available business day + random time between 9 AM - 4 PM
+                    $next_day = date('Y-m-d', strtotime('+' . ($count + 1) . ' weekday'));
+                    $hour = rand(9, 16); // 9 AM to 4 PM
+                    $minute = rand(0, 1) * 30; // 0 or 30 minutes
+                    $schedule_time = $next_day . ' ' . sprintf('%02d:%02d:00', $hour, $minute);
+                    
+                    $stmt = $conn->prepare("UPDATE interviews SET schedule_date = ?, duration = 60, location = 'HR Office', interview_type = 'In-person', status = 'Scheduled' WHERE interview_id = ?");
+                    $stmt->execute([$schedule_time, $interview['interview_id']]);
+                    $count++;
+                }
+                
+                $success_message = "🤖 Auto-scheduled $count interviews successfully!";
+                break;
+                
+            case 'auto_complete_all':
+                // Auto-complete all scheduled interviews
+                $scheduled = $conn->query("SELECT i.interview_id, i.application_id, i.stage_id, ja.candidate_id, ist.job_opening_id, ist.stage_order, ist.stage_name FROM interviews i JOIN job_applications ja ON i.application_id = ja.application_id JOIN interview_stages ist ON i.stage_id = ist.stage_id WHERE i.status = 'Scheduled'");
+                $count = 0;
+                
+                $feedbacks = ['Good communication skills', 'Strong technical knowledge', 'Excellent problem-solving abilities', 'Great team player', 'Shows leadership potential'];
+                $recommendations = ['Strong Yes', 'Yes', 'Strong Yes', 'Yes'];
+                
+                foreach ($scheduled->fetchAll(PDO::FETCH_ASSOC) as $interview) {
+                    $feedback = $feedbacks[array_rand($feedbacks)];
+                    $rating = rand(35, 50) / 10; // 3.5 to 5.0
+                    $recommendation = $recommendations[array_rand($recommendations)];
+                    
+                    // Complete interview
+                    $stmt = $conn->prepare("UPDATE interviews SET status = 'Completed', feedback = ?, rating = ?, recommendation = ?, completed_date = NOW() WHERE interview_id = ?");
+                    $stmt->execute([$feedback, $rating, $recommendation, $interview['interview_id']]);
+                    
+                    // Check if there's a next stage
+                    $next_stage = $conn->prepare("SELECT stage_id, stage_name FROM interview_stages WHERE job_opening_id = ? AND stage_order = ?");
+                    $next_stage->execute([$interview['job_opening_id'], $interview['stage_order'] + 1]);
+                    $next_stage_info = $next_stage->fetch(PDO::FETCH_ASSOC);
+                    
+                    if ($next_stage_info) {
+                        // Move to next stage
+                        $stmt = $conn->prepare("UPDATE candidates SET source = ? WHERE candidate_id = ?");
+                        $stmt->execute([$next_stage_info['stage_name'], $interview['candidate_id']]);
+                        
+                        // Create next interview
+                        $stmt = $conn->prepare("INSERT INTO interviews (application_id, stage_id, schedule_date, duration, interview_type, status) VALUES (?, ?, NOW(), 60, 'Interview', 'Rescheduled')");
+                        $stmt->execute([$interview['application_id'], $next_stage_info['stage_id']]);
+                    } else {
+                        // No more stages
+                        $stmt = $conn->prepare("UPDATE job_applications SET status = 'Completed All Stages' WHERE application_id = ?");
+                        $stmt->execute([$interview['application_id']]);
+                        
+                        $stmt = $conn->prepare("UPDATE candidates SET source = 'Completed All Stages' WHERE candidate_id = ?");
+                        $stmt->execute([$interview['candidate_id']]);
+                    }
+                    $count++;
+                }
+                
+                $success_message = "🤖 Auto-completed $count interviews successfully!";
+                break;
+                
             case 'complete_interview':
                 $interview_id = $_POST['interview_id'];
                 $feedback = $_POST['feedback'];
@@ -31,26 +97,53 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 $stmt = $conn->prepare("UPDATE interviews SET status = 'Completed', feedback = ?, rating = ?, recommendation = ?, completed_date = NOW() WHERE interview_id = ?");
                 $stmt->execute([$feedback, $rating, $recommendation, $interview_id]);
                 
-                $stmt = $conn->prepare("SELECT i.application_id, ja.candidate_id FROM interviews i JOIN job_applications ja ON i.application_id = ja.application_id WHERE i.interview_id = ?");
+                // Get interview and stage information
+                $stmt = $conn->prepare("SELECT i.application_id, i.stage_id, ja.candidate_id, ist.job_opening_id, ist.stage_order, ist.stage_name 
+                                       FROM interviews i 
+                                       JOIN job_applications ja ON i.application_id = ja.application_id 
+                                       JOIN interview_stages ist ON i.stage_id = ist.stage_id 
+                                       WHERE i.interview_id = ?");
                 $stmt->execute([$interview_id]);
                 $interview_data = $stmt->fetch(PDO::FETCH_ASSOC);
                 
                 if ($recommendation == 'Strong Yes' || $recommendation == 'Yes') {
-                    $stmt = $conn->prepare("UPDATE job_applications SET status = 'Assessment' WHERE application_id = ?");
+                    // Check if there's a next stage
+                    $next_stage = $conn->prepare("SELECT stage_id, stage_name FROM interview_stages WHERE job_opening_id = ? AND stage_order = ?");
+                    $next_stage->execute([$interview_data['job_opening_id'], $interview_data['stage_order'] + 1]);
+                    $next_stage_info = $next_stage->fetch(PDO::FETCH_ASSOC);
+                    
+                    if ($next_stage_info) {
+                        // Move to next interview stage
+                        $stmt = $conn->prepare("UPDATE candidates SET source = ? WHERE candidate_id = ?");
+                        $stmt->execute([$next_stage_info['stage_name'], $interview_data['candidate_id']]);
+                        
+                        // Create next interview with Rescheduled status
+                        $stmt = $conn->prepare("INSERT INTO interviews (application_id, stage_id, schedule_date, duration, interview_type, status) VALUES (?, ?, NOW(), 60, 'Interview', 'Rescheduled')");
+                        $stmt->execute([$interview_data['application_id'], $next_stage_info['stage_id']]);
+                        
+                        $success_message = "✅ Interview completed! Candidate moved to {$next_stage_info['stage_name']}.";
+                    } else {
+                        // No more stages - mark as completed all stages
+                        $stmt = $conn->prepare("UPDATE job_applications SET status = 'Completed All Stages' WHERE application_id = ?");
+                        $stmt->execute([$interview_data['application_id']]);
+                        
+                        $stmt = $conn->prepare("UPDATE candidates SET source = 'Completed All Stages' WHERE candidate_id = ?");
+                        $stmt->execute([$interview_data['candidate_id']]);
+                        
+                        $success_message = "✅ All interview stages completed! Ready for final approval.";
+                    }
+                } else {
+                    // Clear all interview history for this candidate
+                    $stmt = $conn->prepare("DELETE FROM interviews WHERE application_id = ?");
                     $stmt->execute([$interview_data['application_id']]);
                     
-                    $stmt = $conn->prepare("UPDATE candidates SET source = 'Assessment' WHERE candidate_id = ?");
-                    $stmt->execute([$interview_data['candidate_id']]);
-                    
-                    $success_message = "✅ Interview completed! Candidate moved to Assessment stage.";
-                } else {
                     $stmt = $conn->prepare("UPDATE job_applications SET status = 'Rejected' WHERE application_id = ?");
                     $stmt->execute([$interview_data['application_id']]);
                     
                     $stmt = $conn->prepare("UPDATE candidates SET source = 'Rejected' WHERE candidate_id = ?");
                     $stmt->execute([$interview_data['candidate_id']]);
                     
-                    $success_message = "❌ Interview completed. Candidate rejected.";
+                    $success_message = "❌ Candidate rejected and interview history cleared.";
                 }
                 break;
                 
@@ -61,8 +154,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 $stmt->execute([$interview_id]);
                 $interview_data = $stmt->fetch(PDO::FETCH_ASSOC);
                 
-                $stmt = $conn->prepare("DELETE FROM interviews WHERE interview_id = ?");
-                $stmt->execute([$interview_id]);
+                // Clear all interview history for this candidate
+                $stmt = $conn->prepare("DELETE FROM interviews WHERE application_id = ?");
+                $stmt->execute([$interview_data['application_id']]);
                 
                 $stmt = $conn->prepare("UPDATE job_applications SET status = 'Rejected' WHERE application_id = ?");
                 $stmt->execute([$interview_data['application_id']]);
@@ -70,7 +164,30 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 $stmt = $conn->prepare("UPDATE candidates SET source = 'Rejected' WHERE candidate_id = ?");
                 $stmt->execute([$interview_data['candidate_id']]);
                 
-                $success_message = "❌ Interview removed and candidate rejected!";
+                $success_message = "❌ Candidate rejected and interview history cleared!";
+                break;
+                
+            case 'reopen_candidate':
+                $application_id = $_POST['application_id'];
+                
+                // Get candidate info
+                $stmt = $conn->prepare("SELECT ja.candidate_id FROM job_applications ja WHERE ja.application_id = ?");
+                $stmt->execute([$application_id]);
+                $app_data = $stmt->fetch(PDO::FETCH_ASSOC);
+                
+                // Clear any existing interview history
+                $stmt = $conn->prepare("DELETE FROM interviews WHERE application_id = ?");
+                $stmt->execute([$application_id]);
+                
+                // Reset application status to Applied
+                $stmt = $conn->prepare("UPDATE job_applications SET status = 'Applied' WHERE application_id = ?");
+                $stmt->execute([$application_id]);
+                
+                // Reset candidate source
+                $stmt = $conn->prepare("UPDATE candidates SET source = 'Job Application' WHERE candidate_id = ?");
+                $stmt->execute([$app_data['candidate_id']]);
+                
+                $success_message = "🔄 Candidate reopened with fresh start!";
                 break;
         }
     }
@@ -197,8 +314,16 @@ $stats = [
                     </div>
                     <div class="card-body">
                         <?php if (count($pending_interviews) > 0): ?>
-                            <div class="alert alert-warning">
-                                <i class="fas fa-exclamation-triangle"></i> <strong><?php echo count($pending_interviews); ?> candidates</strong> moved to interview stage - click to schedule
+                            <div class="alert alert-warning d-flex justify-content-between align-items-center">
+                                <div>
+                                    <i class="fas fa-exclamation-triangle"></i> <strong><?php echo count($pending_interviews); ?> candidates</strong> moved to interview stage
+                                </div>
+                                <form method="POST" style="display:inline;">
+                                    <input type="hidden" name="action" value="auto_schedule_all">
+                                    <button type="submit" class="btn btn-primary btn-sm" onclick="return confirm('Auto-schedule all pending interviews?')">
+                                        <i class="fas fa-robot"></i> Auto-Schedule All
+                                    </button>
+                                </form>
                             </div>
                             <div class="row">
                                 <?php foreach($pending_interviews as $interview): ?>
@@ -228,8 +353,16 @@ $stats = [
 
                 <!-- Today's Interviews -->
                 <div class="card mb-4">
-                    <div class="card-header">
+                    <div class="card-header d-flex justify-content-between align-items-center">
                         <h5><i class="fas fa-calendar-day"></i> Today's Interviews</h5>
+                        <?php if (count($today_interviews) > 0): ?>
+                            <form method="POST" style="display:inline;">
+                                <input type="hidden" name="action" value="auto_complete_all">
+                                <button type="submit" class="btn btn-success btn-sm" onclick="return confirm('Auto-complete all scheduled interviews?')">
+                                    <i class="fas fa-robot"></i> Auto-Complete All
+                                </button>
+                            </form>
+                        <?php endif; ?>
                     </div>
                     <div class="card-body">
                         <?php if (count($today_interviews) > 0): ?>

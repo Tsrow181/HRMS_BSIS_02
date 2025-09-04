@@ -23,11 +23,36 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 $stmt = $conn->prepare("UPDATE job_applications SET status = 'Screening' WHERE application_id = ?");
                 $stmt->execute([$application_id]);
                 
-                // Update candidate source to make it appear in candidates dashboard
-                $stmt = $conn->prepare("UPDATE candidates SET source = 'Approved' WHERE candidate_id = ?");
-                $stmt->execute([$app_data['candidate_id']]);
+                // Get job opening ID and first interview stage
+                $job_stmt = $conn->prepare("SELECT job_opening_id FROM job_applications WHERE application_id = ?");
+                $job_stmt->execute([$application_id]);
+                $job_data = $job_stmt->fetch(PDO::FETCH_ASSOC);
                 
-                $success_message = "✅ Application approved successfully!";
+                $first_stage_stmt = $conn->prepare("SELECT stage_id, stage_name FROM interview_stages WHERE job_opening_id = ? ORDER BY stage_order LIMIT 1");
+                $first_stage_stmt->execute([$job_data['job_opening_id']]);
+                $first_stage = $first_stage_stmt->fetch(PDO::FETCH_ASSOC);
+                
+                if ($first_stage) {
+                    // Move to Interview status and first interview stage
+                    $stmt = $conn->prepare("UPDATE job_applications SET status = 'Interview' WHERE application_id = ?");
+                    $stmt->execute([$application_id]);
+                    
+                    // Update candidate source to first interview stage
+                    $stmt = $conn->prepare("UPDATE candidates SET source = ? WHERE candidate_id = ?");
+                    $stmt->execute([$first_stage['stage_name'], $app_data['candidate_id']]);
+                    
+                    // Create first interview automatically
+                    $stmt = $conn->prepare("INSERT INTO interviews (application_id, stage_id, schedule_date, duration, interview_type, status) VALUES (?, ?, NOW(), 60, 'Interview', 'Rescheduled')");
+                    $stmt->execute([$application_id, $first_stage['stage_id']]);
+                    
+                    $success_message = "✅ Application approved and interview created automatically!";
+                } else {
+                    // No interview stages defined, just move to screening
+                    $stmt = $conn->prepare("UPDATE candidates SET source = 'Approved' WHERE candidate_id = ?");
+                    $stmt->execute([$app_data['candidate_id']]);
+                    
+                    $success_message = "✅ Application approved successfully!";
+                }
                 break;
                 
             case 'reject_candidate':
@@ -38,6 +63,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 $app_stmt->execute([$application_id]);
                 $app_data = $app_stmt->fetch(PDO::FETCH_ASSOC);
                 
+                // Clear any existing interview history
+                $stmt = $conn->prepare("DELETE FROM interviews WHERE application_id = ?");
+                $stmt->execute([$application_id]);
+                
                 // Update application status to rejected
                 $stmt = $conn->prepare("UPDATE job_applications SET status = 'Rejected' WHERE application_id = ?");
                 $stmt->execute([$application_id]);
@@ -46,7 +75,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 $stmt = $conn->prepare("UPDATE candidates SET source = 'Rejected' WHERE candidate_id = ?");
                 $stmt->execute([$app_data['candidate_id']]);
                 
-                $success_message = "❌ Application rejected!";
+                $success_message = "❌ Application rejected and interview history cleared!";
                 break;
                 
             case 'reopen_application':
@@ -57,6 +86,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 $app_stmt->execute([$application_id]);
                 $app_data = $app_stmt->fetch(PDO::FETCH_ASSOC);
                 
+                // Clear any existing interview history
+                $stmt = $conn->prepare("DELETE FROM interviews WHERE application_id = ?");
+                $stmt->execute([$application_id]);
+                
                 // Update application status
                 $stmt = $conn->prepare("UPDATE job_applications SET status = 'Applied' WHERE application_id = ?");
                 $stmt->execute([$application_id]);
@@ -65,7 +98,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 $stmt = $conn->prepare("UPDATE candidates SET source = 'Job Application' WHERE candidate_id = ?");
                 $stmt->execute([$app_data['candidate_id']]);
                 
-                $success_message = "🔄 Application reopened for review!";
+                $success_message = "🔄 Application reopened with fresh start!";
                 break;
         }
     }
@@ -105,7 +138,7 @@ if ($show_archived) {
                            JOIN candidates c ON ja.candidate_id = c.candidate_id 
                            JOIN job_openings jo ON ja.job_opening_id = jo.job_opening_id
                            JOIN departments d ON jo.department_id = d.department_id
-                           WHERE ja.status IN ('Applied', 'Screening', 'Interview', 'Assessment')";
+                           WHERE ja.status IN ('Applied', 'Screening', 'Interview', 'Assessment', 'Reference Check')";
 }
 
 if ($job_id) {
@@ -168,6 +201,7 @@ $applications = $stmt->fetchAll(PDO::FETCH_ASSOC);
                             'Approved' => count(array_filter($applications, function($a) { return $a['status'] == 'Screening'; })),
                             'Interview' => count(array_filter($applications, function($a) { return $a['status'] == 'Interview'; })),
                             'Assessment' => count(array_filter($applications, function($a) { return $a['status'] == 'Assessment'; })),
+                            'Rejected' => count(array_filter($applications, function($a) { return $a['status'] == 'Rejected'; })),
                             'Total' => count($applications)
                         ];
                     }
@@ -254,17 +288,6 @@ $applications = $stmt->fetchAll(PDO::FETCH_ASSOC);
                         <div class="col-md-2">
                             <div class="stats-card card">
                                 <div class="card-body text-center">
-                                    <div class="activity-icon bg-danger">
-                                        <i class="fas fa-times"></i>
-                                    </div>
-                                    <h3 class="stats-number"><?php echo $stats['Rejected']; ?></h3>
-                                    <p class="stats-label">Rejected</p>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="col-md-2">
-                            <div class="stats-card card">
-                                <div class="card-body text-center">
                                     <div class="activity-icon bg-secondary">
                                         <i class="fas fa-users"></i>
                                     </div>
@@ -317,27 +340,40 @@ $applications = $stmt->fetchAll(PDO::FETCH_ASSOC);
                                                 <td><?php echo htmlspecialchars($application['department_name']); ?></td>
                                                 <td><?php echo date('M d, Y', strtotime($application['application_date'])); ?></td>
                                                 <td>
-                                                    <span class="badge badge-<?php 
-                                                        echo $application['status'] == 'Applied' ? 'warning' : 
-                                                            ($application['status'] == 'Approved' ? 'success' : 
-                                                            ($application['status'] == 'Interview' ? 'primary' : 
-                                                            ($application['status'] == 'Assessment' ? 'info' : 
-                                                            ($application['status'] == 'Hired' ? 'success' : 
-                                                            ($application['status'] == 'Declined' ? 'secondary' : 'danger'))))); 
-                                                    ?>">
-                                                        <?php 
-                                                        $status_display = [
-                                                            'Applied' => '📝 Pending Review',
-                                                            'Approved' => '✅ Approved',
-                                                            'Interview' => '🗣️ Interview',
-                                                            'Assessment' => '📋 Assessment',
-                                                            'Rejected' => '❌ Rejected',
-                                                            'Hired' => '🎉 Hired',
-                                                            'Declined' => '📋 Declined'
-                                                        ];
-                                                        echo $status_display[$application['status']] ?? $application['status'];
-                                                        ?>
-                                                    </span>
+                                                    <?php 
+                                                    // Get current interview status for better status display
+                                                    $current_interview = $conn->prepare("SELECT i.status as interview_status, ist.stage_name 
+                                                                                         FROM interviews i 
+                                                                                         JOIN interview_stages ist ON i.stage_id = ist.stage_id 
+                                                                                         WHERE i.application_id = ? AND i.status != 'Completed' 
+                                                                                         ORDER BY ist.stage_order DESC LIMIT 1");
+                                                    $current_interview->execute([$application['application_id']]);
+                                                    $interview_info = $current_interview->fetch(PDO::FETCH_ASSOC);
+                                                    
+                                                    if ($application['status'] == 'Assessment' && $interview_info) {
+                                                        if ($interview_info['interview_status'] == 'Rescheduled') {
+                                                            echo '<span class="badge badge-warning">🗓️ Interview Pending</span>';
+                                                        } elseif ($interview_info['interview_status'] == 'Scheduled') {
+                                                            echo '<span class="badge badge-primary">🎯 Interview Scheduled</span>';
+                                                        } else {
+                                                            echo '<span class="badge badge-info">📋 In Assessment</span>';
+                                                        }
+                                                    } elseif ($application['status'] == 'Screening') {
+                                                        echo '<span class="badge badge-info">🔍 Under Review</span>';
+                                                    } elseif ($application['status'] == 'Applied') {
+                                                        echo '<span class="badge badge-warning">📝 Awaiting Review</span>';
+                                                    } elseif ($application['status'] == 'Reference Check') {
+                                                        echo '<span class="badge badge-info">📋 Reference Check</span>';
+                                                    } elseif ($application['status'] == 'Approval') {
+                                                        echo '<span class="badge badge-warning">📋 Pending HR Approval</span>';
+                                                    } elseif ($application['status'] == 'Hired') {
+                                                        echo '<span class="badge badge-success">🎉 Successfully Hired</span>';
+                                                    } elseif ($application['status'] == 'Rejected') {
+                                                        echo '<span class="badge badge-danger">❌ Application Rejected</span>';
+                                                    } else {
+                                                        echo '<span class="badge badge-secondary">' . htmlspecialchars($application['status']) . '</span>';
+                                                    }
+                                                    ?>
                                                 </td>
                                                 <td>
                                                     <button type="button" class="btn btn-info btn-sm action-btn" data-toggle="modal" data-target="#reviewModal<?php echo $application['application_id']; ?>">
@@ -417,23 +453,38 @@ $applications = $stmt->fetchAll(PDO::FETCH_ASSOC);
                                             <p><strong>Department:</strong> <?php echo htmlspecialchars($application['department_name']); ?></p>
                                             <p><strong>Application Date:</strong> <?php echo date('M d, Y', strtotime($application['application_date'])); ?></p>
                                             <p><strong>Status:</strong> 
-                                                <span class="badge badge-<?php 
-                                                    echo $application['status'] == 'Applied' ? 'warning' : 
-                                                        ($application['status'] == 'Approved' ? 'success' : 
-                                                        ($application['status'] == 'Interview' ? 'primary' : 
-                                                        ($application['status'] == 'Assessment' ? 'info' : 'danger'))); 
-                                                ?>">
-                                                    <?php 
-                                                    $status_display = [
-                                                        'Applied' => '📝 Pending Review',
-                                                        'Approved' => '✅ Approved',
-                                                        'Interview' => '🗣️ Interview',
-                                                        'Assessment' => '📋 Assessment',
-                                                        'Rejected' => '❌ Rejected'
-                                                    ];
-                                                    echo $status_display[$application['status']] ?? $application['status'];
-                                                    ?>
-                                                </span>
+                                                <?php 
+                                                // Get current interview status for modal display
+                                                $current_interview = $conn->prepare("SELECT i.status as interview_status, ist.stage_name 
+                                                                                     FROM interviews i 
+                                                                                     JOIN interview_stages ist ON i.stage_id = ist.stage_id 
+                                                                                     WHERE i.application_id = ? AND i.status != 'Completed' 
+                                                                                     ORDER BY ist.stage_order DESC LIMIT 1");
+                                                $current_interview->execute([$application['application_id']]);
+                                                $interview_info = $current_interview->fetch(PDO::FETCH_ASSOC);
+                                                
+                                                if ($application['status'] == 'Assessment' && $interview_info) {
+                                                    if ($interview_info['interview_status'] == 'Rescheduled') {
+                                                        echo '<span class="badge badge-warning">🗓️ Interview Awaiting Schedule</span>';
+                                                    } elseif ($interview_info['interview_status'] == 'Scheduled') {
+                                                        echo '<span class="badge badge-primary">🎯 Interview Scheduled</span>';
+                                                    } else {
+                                                        echo '<span class="badge badge-info">📋 In Assessment Process</span>';
+                                                    }
+                                                } elseif ($application['status'] == 'Screening') {
+                                                    echo '<span class="badge badge-info">🔍 Under Initial Review</span>';
+                                                } elseif ($application['status'] == 'Applied') {
+                                                    echo '<span class="badge badge-warning">📝 Awaiting Initial Review</span>';
+                                                } elseif ($application['status'] == 'Approval') {
+                                                    echo '<span class="badge badge-warning">📋 Awaiting HR Approval</span>';
+                                                } elseif ($application['status'] == 'Hired') {
+                                                    echo '<span class="badge badge-success">🎉 Successfully Hired</span>';
+                                                } elseif ($application['status'] == 'Rejected') {
+                                                    echo '<span class="badge badge-danger">❌ Application Rejected</span>';
+                                                } else {
+                                                    echo '<span class="badge badge-secondary">' . htmlspecialchars($application['status']) . '</span>';
+                                                }
+                                                ?>
                                             </p>
                                         </div>
                                     </div>

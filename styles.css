@@ -641,18 +641,3 @@ body {
     overflow: hidden;
     box-shadow: 0 4px 15px rgba(0,0,0,0.1);
 }
-
-.table th {
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-    color: white;
-    font-weight: 600;
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
-    font-size: 0.85rem;
-}
-
-.table td {
-    vertical-align: middle;
-    padding: 15px;
-    border-color: rgba(0,0,0,0.05);
-}
