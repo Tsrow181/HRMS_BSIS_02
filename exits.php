@@ -33,64 +33,61 @@ $messageType = '';
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     if (isset($_POST['action'])) {
         switch ($_POST['action']) {
-            case 'add':
-                // Add new employee
+            case 'create_exit':
                 try {
-                    $stmt = $pdo->prepare("INSERT INTO employee_profiles (personal_info_id, job_role_id, employee_number, hire_date, employment_status, current_salary, work_email, work_phone, location, remote_work) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
+                    $stmt = $pdo->prepare("INSERT INTO exits (employee_id, exit_type, exit_reason, notice_date, exit_date, status) VALUES (?, ?, ?, ?, ?, 'Pending')");
                     $stmt->execute([
-                        $_POST['personal_info_id'],
-                        $_POST['job_role_id'],
-                        $_POST['employee_number'],
-                        $_POST['hire_date'],
-                        $_POST['employment_status'],
-                        $_POST['current_salary'],
-                        $_POST['work_email'],
-                        $_POST['work_phone'],
-                        $_POST['location'],
-                        isset($_POST['remote_work']) ? 1 : 0
+                        $_POST['employee_id'],
+                        $_POST['exit_type'],
+                        $_POST['exit_reason'],
+                        $_POST['notice_date'],
+                        $_POST['exit_date']
                     ]);
-                    $message = "Employee profile added successfully!";
+                    
+                    // Create suggestion for job opening if it's a resignation or retirement
+                    if (in_array($_POST['exit_type'], ['Resignation', 'Retirement', 'End of Contract'])) {
+                        // Get employee details for job opening suggestion
+                        $stmt = $pdo->prepare("SELECT ep.job_role_id, jr.department, jr.title FROM employee_profiles ep JOIN job_roles jr ON ep.job_role_id = jr.job_role_id WHERE ep.employee_id = ?");
+                        $stmt->execute([$_POST['employee_id']]);
+                        $emp_data = $stmt->fetch(PDO::FETCH_ASSOC);
+                        
+                        if ($emp_data) {
+                            // Create a draft job opening
+                            $dept_stmt = $pdo->prepare("SELECT department_id FROM departments WHERE department_name = ?");
+                            $dept_stmt->execute([$emp_data['department']]);
+                            $dept_data = $dept_stmt->fetch(PDO::FETCH_ASSOC);
+                            
+                            if ($dept_data) {
+                                $job_stmt = $pdo->prepare("INSERT INTO job_openings (job_role_id, department_id, title, description, requirements, responsibilities, location, employment_type, vacancy_count, posting_date, status) VALUES (?, ?, ?, ?, ?, ?, ?, 'Full-time', 1, CURDATE(), 'Draft')");
+                                $job_stmt->execute([
+                                    $emp_data['job_role_id'],
+                                    $dept_data['department_id'],
+                                    'Replacement for ' . $emp_data['title'],
+                                    'Position available due to employee ' . $_POST['exit_type'],
+                                    'To be defined by HR',
+                                    'To be defined by department head',
+                                    'Municipal Office'
+                                ]);
+                            }
+                        }
+                    }
+                    
+                    $message = "Exit record created successfully! Job opening suggestion has been generated.";
                     $messageType = "success";
                 } catch (PDOException $e) {
-                    $message = "Error adding employee: " . $e->getMessage();
+                    $message = "Error creating exit record: " . $e->getMessage();
                     $messageType = "error";
                 }
                 break;
-            
-            case 'update':
-                // Update employee
+                
+            case 'update_status':
                 try {
-                    $stmt = $pdo->prepare("UPDATE employee_profiles SET personal_info_id=?, job_role_id=?, employee_number=?, hire_date=?, employment_status=?, current_salary=?, work_email=?, work_phone=?, location=?, remote_work=? WHERE employee_id=?");
-                    $stmt->execute([
-                        $_POST['personal_info_id'],
-                        $_POST['job_role_id'],
-                        $_POST['employee_number'],
-                        $_POST['hire_date'],
-                        $_POST['employment_status'],
-                        $_POST['current_salary'],
-                        $_POST['work_email'],
-                        $_POST['work_phone'],
-                        $_POST['location'],
-                        isset($_POST['remote_work']) ? 1 : 0,
-                        $_POST['employee_id']
-                    ]);
-                    $message = "Employee profile updated successfully!";
+                    $stmt = $pdo->prepare("UPDATE exits SET status = ? WHERE exit_id = ?");
+                    $stmt->execute([$_POST['new_status'], $_POST['exit_id']]);
+                    $message = "Exit status updated successfully!";
                     $messageType = "success";
                 } catch (PDOException $e) {
-                    $message = "Error updating employee: " . $e->getMessage();
-                    $messageType = "error";
-                }
-                break;
-            
-            case 'delete':
-                // Delete employee
-                try {
-                    $stmt = $pdo->prepare("DELETE FROM employee_profiles WHERE employee_id=?");
-                    $stmt->execute([$_POST['employee_id']]);
-                    $message = "Employee profile deleted successfully!";
-                    $messageType = "success";
-                } catch (PDOException $e) {
-                    $message = "Error deleting employee: " . $e->getMessage();
+                    $message = "Error updating status: " . $e->getMessage();
                     $messageType = "error";
                 }
                 break;
@@ -98,30 +95,34 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     }
 }
 
-// Fetch employees with related data
+// Fetch exits with employee data
 $stmt = $pdo->query("
     SELECT 
-        ep.*,
-        CONCAT(pi.first_name, ' ', pi.last_name) as full_name,
-        pi.first_name,
-        pi.last_name,
-        pi.phone_number,
+        e.*,
+        CONCAT(pi.first_name, ' ', pi.last_name) as employee_name,
         jr.title as job_title,
         jr.department
+    FROM exits e
+    JOIN employee_profiles ep ON e.employee_id = ep.employee_id
+    JOIN personal_information pi ON ep.personal_info_id = pi.personal_info_id
+    JOIN job_roles jr ON ep.job_role_id = jr.job_role_id
+    ORDER BY e.exit_date DESC
+");
+$exits = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+// Fetch active employees for dropdown
+$stmt = $pdo->query("
+    SELECT 
+        ep.employee_id,
+        CONCAT(pi.first_name, ' ', pi.last_name) as full_name,
+        jr.title as job_title
     FROM employee_profiles ep
-    LEFT JOIN personal_information pi ON ep.personal_info_id = pi.personal_info_id
-    LEFT JOIN job_roles jr ON ep.job_role_id = jr.job_role_id
-    ORDER BY ep.employee_id DESC
+    JOIN personal_information pi ON ep.personal_info_id = pi.personal_info_id
+    JOIN job_roles jr ON ep.job_role_id = jr.job_role_id
+    WHERE ep.employment_status != 'Terminated'
+    ORDER BY pi.first_name
 ");
 $employees = $stmt->fetchAll(PDO::FETCH_ASSOC);
-
-// Fetch personal information for dropdown
-$stmt = $pdo->query("SELECT personal_info_id, CONCAT(first_name, ' ', last_name) as full_name FROM personal_information ORDER BY first_name");
-$personalInfo = $stmt->fetchAll(PDO::FETCH_ASSOC);
-
-// Fetch job roles for dropdown
-$stmt = $pdo->query("SELECT job_role_id, title, department FROM job_roles ORDER BY title");
-$jobRoles = $stmt->fetchAll(PDO::FETCH_ASSOC);
 ?>
 
 <!DOCTYPE html>
@@ -481,7 +482,7 @@ $jobRoles = $stmt->fetchAll(PDO::FETCH_ASSOC);
         <div class="row">
             <?php include 'sidebar.php'; ?>
                         <div class="main-content">
-                <h2 class="section-title">Exits</h2>
+                <h2 class="section-title">Exit Management</h2>
                 <div class="content">
                     <?php if ($message): ?>
                         <div class="alert alert-<?= $messageType ?>">
@@ -489,15 +490,161 @@ $jobRoles = $stmt->fetchAll(PDO::FETCH_ASSOC);
                         </div>
                     <?php endif; ?>
 
+                    <div class="controls">
+                        <div class="search-box">
+                            <i class="fas fa-search search-icon"></i>
+                            <input type="text" id="searchInput" placeholder="Search exits...">
+                        </div>
+                        <button class="btn btn-primary" data-toggle="modal" data-target="#addExitModal"><i class="fas fa-plus mr-2"></i>Add Exit Record</button>
+                    </div>
 
+                    <div class="table-container">
+                        <table class="table" id="exitsTable">
+                            <thead>
+                                <tr>
+                                    <th>Employee</th>
+                                    <th>Job Title</th>
+                                    <th>Department</th>
+                                    <th>Exit Type</th>
+                                    <th>Notice Date</th>
+                                    <th>Exit Date</th>
+                                    <th>Status</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <?php if (count($exits) > 0): ?>
+                                    <?php foreach ($exits as $exit): ?>
+                                        <tr>
+                                            <td><?= htmlspecialchars($exit['employee_name']) ?></td>
+                                            <td><?= htmlspecialchars($exit['job_title']) ?></td>
+                                            <td><?= htmlspecialchars($exit['department']) ?></td>
+                                            <td><?= htmlspecialchars($exit['exit_type']) ?></td>
+                                            <td><?= date('M d, Y', strtotime($exit['notice_date'])) ?></td>
+                                            <td><?= date('M d, Y', strtotime($exit['exit_date'])) ?></td>
+                                            <td>
+                                                <span class="status-badge status-<?= strtolower($exit['status']) ?>">
+                                                    <?= htmlspecialchars($exit['status']) ?>
+                                                </span>
+                                            </td>
+                                            <td>
+                                                <?php if ($exit['status'] == 'Pending'): ?>
+                                                    <form method="POST" style="display:inline;">
+                                                        <input type="hidden" name="action" value="update_status">
+                                                        <input type="hidden" name="exit_id" value="<?= $exit['exit_id'] ?>">
+                                                        <input type="hidden" name="new_status" value="Processing">
+                                                        <button type="submit" class="btn btn-warning btn-small">Process</button>
+                                                    </form>
+                                                <?php endif; ?>
+                                                <?php if ($exit['status'] == 'Processing'): ?>
+                                                    <form method="POST" style="display:inline;">
+                                                        <input type="hidden" name="action" value="update_status">
+                                                        <input type="hidden" name="exit_id" value="<?= $exit['exit_id'] ?>">
+                                                        <input type="hidden" name="new_status" value="Completed">
+                                                        <button type="submit" class="btn btn-success btn-small">Complete</button>
+                                                    </form>
+                                                <?php endif; ?>
+                                            </td>
+                                        </tr>
+                                    <?php endforeach; ?>
+                                <?php else: ?>
+                                    <tr>
+                                        <td colspan="8" class="no-results">
+                                            <i class="fas fa-inbox"></i>
+                                            <p>No exit records found.</p>
+                                        </td>
+                                    </tr>
+                                <?php endif; ?>
+                            </tbody>
+                        </table>
                     </div>
                 </div>
             </div>
+            </div>
         </div>
 
-   
-    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+    <!-- Add Exit Modal -->
+    <div class="modal fade" id="addExitModal" tabindex="-1" role="dialog">
+        <div class="modal-dialog modal-lg" role="document">
+            <div class="modal-content" style="border-radius: 15px; border: none; box-shadow: 0 10px 30px rgba(233, 30, 99, 0.3);">
+                <div class="modal-header" style="background: linear-gradient(135deg, #E91E63 0%, #F06292 100%); color: white; border-radius: 15px 15px 0 0; border-bottom: none;">
+                    <h5 class="modal-title" style="font-weight: 600;"><i class="fas fa-sign-out-alt mr-2"></i>Create Exit Record</h5>
+                    <button type="button" class="close" data-dismiss="modal" style="color: white; opacity: 0.8; text-shadow: none;">
+                        <span>&times;</span>
+                    </button>
+                </div>
+                <form method="POST">
+                    <div class="modal-body" style="padding: 30px;">
+                        <input type="hidden" name="action" value="create_exit">
+                        
+                        <div class="form-group">
+                            <label style="color: #C2185B; font-weight: 600;">Employee</label>
+                            <select name="employee_id" class="form-control" style="border: 2px solid #F8BBD0; border-radius: 8px; padding: 12px;" required>
+                                <option value="">Select Employee</option>
+                                <?php foreach ($employees as $employee): ?>
+                                    <option value="<?= $employee['employee_id'] ?>">
+                                        <?= htmlspecialchars($employee['full_name']) ?> - <?= htmlspecialchars($employee['job_title']) ?>
+                                    </option>
+                                <?php endforeach; ?>
+                            </select>
+                        </div>
+                        
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label style="color: #C2185B; font-weight: 600;">Exit Type</label>
+                                    <select name="exit_type" class="form-control" style="border: 2px solid #F8BBD0; border-radius: 8px; padding: 12px;" required>
+                                        <option value="">Select Type</option>
+                                        <option value="Resignation">Resignation</option>
+                                        <option value="Termination">Termination</option>
+                                        <option value="Retirement">Retirement</option>
+                                        <option value="End of Contract">End of Contract</option>
+                                        <option value="Other">Other</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label style="color: #C2185B; font-weight: 600;">Notice Date</label>
+                                    <input type="date" name="notice_date" class="form-control" style="border: 2px solid #F8BBD0; border-radius: 8px; padding: 12px;" required>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label style="color: #C2185B; font-weight: 600;">Exit Date</label>
+                            <input type="date" name="exit_date" class="form-control" style="border: 2px solid #F8BBD0; border-radius: 8px; padding: 12px;" required>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label style="color: #C2185B; font-weight: 600;">Exit Reason</label>
+                            <textarea name="exit_reason" class="form-control" rows="4" style="border: 2px solid #F8BBD0; border-radius: 8px; padding: 12px;" placeholder="Provide details about the exit reason..."></textarea>
+                        </div>
+                    </div>
+                    <div class="modal-footer" style="border-top: 1px solid #F8BBD0; padding: 20px 30px;">
+                        <button type="button" class="btn btn-light" data-dismiss="modal" style="border: 2px solid #F8BBD0; color: #C2185B; font-weight: 600; border-radius: 25px; padding: 10px 25px;">Cancel</button>
+                        <button type="submit" class="btn" style="background: linear-gradient(135deg, #E91E63 0%, #F06292 100%); color: white; border: none; font-weight: 600; border-radius: 25px; padding: 10px 25px;"><i class="fas fa-plus mr-2"></i>Create Exit Record</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.1/dist/umd/popper.min.js"></script>
     <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+    
+    <script>
+        // Search functionality
+        document.getElementById('searchInput').addEventListener('keyup', function() {
+            const searchTerm = this.value.toLowerCase();
+            const tableRows = document.querySelectorAll('#exitsTable tbody tr');
+            
+            tableRows.forEach(row => {
+                const text = row.textContent.toLowerCase();
+                row.style.display = text.includes(searchTerm) ? '' : 'none';
+            });
+        });
+    </script>
 </body>
 </html>

@@ -1,127 +1,94 @@
 <?php
-// Start session if not already started
-if (session_status() === PHP_SESSION_NONE) {
-    session_start();
-}
+session_start();
 
-// Check if user is logged in
 if (!isset($_SESSION['loggedin']) || $_SESSION['loggedin'] !== true) {
-    header("Location: login.php");
+    header('Location: login.php');
     exit;
 }
 
-// Include database connection and helper functions
-require_once 'dp.php';
-
-// Database connection
-$host = 'localhost';
-$dbname = 'CC_HR';
-$username = 'root';
-$password = '';
-
-try {
-    $pdo = new PDO("mysql:host=$host;dbname=$dbname", $username, $password);
-    $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
-} catch(PDOException $e) {
-    die("Connection failed: " . $e->getMessage());
-}
+require_once 'config.php';
 
 // Handle form submissions
-$message = '';
-$messageType = '';
-
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     if (isset($_POST['action'])) {
         switch ($_POST['action']) {
-            case 'add':
-                // Add new employee
-                try {
-                    $stmt = $pdo->prepare("INSERT INTO employee_profiles (personal_info_id, job_role_id, employee_number, hire_date, employment_status, current_salary, work_email, work_phone, location, remote_work) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
-                    $stmt->execute([
-                        $_POST['personal_info_id'],
-                        $_POST['job_role_id'],
-                        $_POST['employee_number'],
-                        $_POST['hire_date'],
-                        $_POST['employment_status'],
-                        $_POST['current_salary'],
-                        $_POST['work_email'],
-                        $_POST['work_phone'],
-                        $_POST['location'],
-                        isset($_POST['remote_work']) ? 1 : 0
-                    ]);
-                    $message = "Employee profile added successfully!";
-                    $messageType = "success";
-                } catch (PDOException $e) {
-                    $message = "Error adding employee: " . $e->getMessage();
-                    $messageType = "error";
-                }
+            case 'create_task':
+                $task_name = $_POST['task_name'];
+                $description = $_POST['description'];
+                $department_id = $_POST['department_id'] ?: null;
+                $task_type = $_POST['task_type'];
+                $is_mandatory = isset($_POST['is_mandatory']) ? 1 : 0;
+                $default_due_days = $_POST['default_due_days'];
+                
+                $stmt = $conn->prepare("INSERT INTO onboarding_tasks (task_name, description, department_id, task_type, is_mandatory, default_due_days) VALUES (?, ?, ?, ?, ?, ?)");
+                $stmt->execute([$task_name, $description, $department_id, $task_type, $is_mandatory, $default_due_days]);
                 break;
-            
-            case 'update':
-                // Update employee
-                try {
-                    $stmt = $pdo->prepare("UPDATE employee_profiles SET personal_info_id=?, job_role_id=?, employee_number=?, hire_date=?, employment_status=?, current_salary=?, work_email=?, work_phone=?, location=?, remote_work=? WHERE employee_id=?");
-                    $stmt->execute([
-                        $_POST['personal_info_id'],
-                        $_POST['job_role_id'],
-                        $_POST['employee_number'],
-                        $_POST['hire_date'],
-                        $_POST['employment_status'],
-                        $_POST['current_salary'],
-                        $_POST['work_email'],
-                        $_POST['work_phone'],
-                        $_POST['location'],
-                        isset($_POST['remote_work']) ? 1 : 0,
-                        $_POST['employee_id']
-                    ]);
-                    $message = "Employee profile updated successfully!";
-                    $messageType = "success";
-                } catch (PDOException $e) {
-                    $message = "Error updating employee: " . $e->getMessage();
-                    $messageType = "error";
-                }
+                
+            case 'update_task':
+                $task_id = $_POST['task_id'];
+                $task_name = $_POST['task_name'];
+                $description = $_POST['description'];
+                $department_id = $_POST['department_id'] ?: null;
+                $task_type = $_POST['task_type'];
+                $is_mandatory = isset($_POST['is_mandatory']) ? 1 : 0;
+                $default_due_days = $_POST['default_due_days'];
+                
+                $stmt = $conn->prepare("UPDATE onboarding_tasks SET task_name = ?, description = ?, department_id = ?, task_type = ?, is_mandatory = ?, default_due_days = ? WHERE task_id = ?");
+                $stmt->execute([$task_name, $description, $department_id, $task_type, $is_mandatory, $default_due_days, $task_id]);
                 break;
-            
-            case 'delete':
-                // Delete employee
-                try {
-                    $stmt = $pdo->prepare("DELETE FROM employee_profiles WHERE employee_id=?");
-                    $stmt->execute([$_POST['employee_id']]);
-                    $message = "Employee profile deleted successfully!";
-                    $messageType = "success";
-                } catch (PDOException $e) {
-                    $message = "Error deleting employee: " . $e->getMessage();
-                    $messageType = "error";
-                }
+                
+            case 'delete_task':
+                $task_id = $_POST['task_id'];
+                $stmt = $conn->prepare("DELETE FROM onboarding_tasks WHERE task_id = ?");
+                $stmt->execute([$task_id]);
                 break;
         }
+        header('Location: onboarding_tasks_modern.php');
+        exit;
     }
 }
 
-// Fetch employees with related data
-$stmt = $pdo->query("
-    SELECT 
-        ep.*,
-        CONCAT(pi.first_name, ' ', pi.last_name) as full_name,
-        pi.first_name,
-        pi.last_name,
-        pi.phone_number,
-        jr.title as job_title,
-        jr.department
-    FROM employee_profiles ep
-    LEFT JOIN personal_information pi ON ep.personal_info_id = pi.personal_info_id
-    LEFT JOIN job_roles jr ON ep.job_role_id = jr.job_role_id
-    ORDER BY ep.employee_id DESC
-");
-$employees = $stmt->fetchAll(PDO::FETCH_ASSOC);
+// Get onboarding tasks
+try {
+    $tasks_query = "SELECT ot.*, d.department_name,
+                    COUNT(eot.employee_task_id) as usage_count
+                    FROM onboarding_tasks ot
+                    LEFT JOIN departments d ON ot.department_id = d.department_id
+                    LEFT JOIN employee_onboarding_tasks eot ON ot.task_id = eot.task_id
+                    GROUP BY ot.task_id
+                    ORDER BY ot.task_type, ot.task_name";
+    
+    $tasks = $conn->query($tasks_query)->fetchAll(PDO::FETCH_ASSOC);
+} catch (Exception $e) {
+    $tasks = [];
+}
 
-// Fetch personal information for dropdown
-$stmt = $pdo->query("SELECT personal_info_id, CONCAT(first_name, ' ', last_name) as full_name FROM personal_information ORDER BY first_name");
-$personalInfo = $stmt->fetchAll(PDO::FETCH_ASSOC);
+// Get departments
+try {
+    $departments = $conn->query("SELECT * FROM departments ORDER BY department_name")->fetchAll(PDO::FETCH_ASSOC);
+} catch (Exception $e) {
+    $departments = [];
+}
 
-// Fetch job roles for dropdown
-$stmt = $pdo->query("SELECT job_role_id, title, department FROM job_roles ORDER BY title");
-$jobRoles = $stmt->fetchAll(PDO::FETCH_ASSOC);
+// Get statistics
+$stats = ['total_tasks' => 0, 'mandatory_tasks' => 0, 'by_type' => [], 'most_used' => 0];
+try {
+    $stmt = $conn->query("SELECT COUNT(*) as count FROM onboarding_tasks");
+    $stats['total_tasks'] = $stmt->fetch(PDO::FETCH_ASSOC)['count'];
+    $stmt = $conn->query("SELECT COUNT(*) as count FROM onboarding_tasks WHERE is_mandatory = 1");
+    $stats['mandatory_tasks'] = $stmt->fetch(PDO::FETCH_ASSOC)['count'];
+    
+    $type_stats = $conn->query("SELECT task_type, COUNT(*) as count FROM onboarding_tasks GROUP BY task_type")->fetchAll(PDO::FETCH_ASSOC);
+    foreach ($type_stats as $type) {
+        $stats['by_type'][$type['task_type']] = $type['count'];
+    }
+    
+    $stmt = $conn->query("SELECT MAX(usage_count) as max_usage FROM (SELECT COUNT(eot.employee_task_id) as usage_count FROM onboarding_tasks ot LEFT JOIN employee_onboarding_tasks eot ON ot.task_id = eot.task_id GROUP BY ot.task_id) as usage_stats");
+    $result = $stmt->fetch(PDO::FETCH_ASSOC);
+    $stats['most_used'] = $result['max_usage'] ?? 0;
+} catch (Exception $e) {
+    // Keep default values
+}
 ?>
 
 <!DOCTYPE html>
@@ -129,349 +96,45 @@ $jobRoles = $stmt->fetchAll(PDO::FETCH_ASSOC);
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Employee Profile Management - HR System</title>
+    <title>Onboarding Tasks - HR Management System</title>
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.1/css/all.min.css">
     <link rel="stylesheet" href="styles.css?v=rose">
     <style>
-        /* Additional custom styles for employee profile page */
-        :root {
-            --azure-blue: #E91E63;
-            --azure-blue-light: #F06292;
-            --azure-blue-dark: #C2185B;
-            --azure-blue-lighter: #F8BBD0;
-            --azure-blue-pale: #FCE4EC;
-        }
-
-        .section-title {
-            color: var(--azure-blue);
-            margin-bottom: 30px;
-            font-weight: 600;
-        }
-        
-        .container-fluid {
-            padding: 0;
-        }
-        
-        .row {
-            margin-right: 0;
-            margin-left: 0;
-        }
-
-        body {
-            background: var(--azure-blue-pale);
-        }
-
-        .main-content {
-            background: var(--azure-blue-pale);
-            padding: 20px;
-        }
-
-        .controls {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 30px;
-            flex-wrap: wrap;
-            gap: 15px;
-        }
-
-        .search-box {
-            position: relative;
-            flex: 1;
-            max-width: 400px;
-        }
-
-        .search-box input {
-            width: 100%;
-            padding: 12px 15px 12px 45px;
-            border: 2px solid #e0e0e0;
-            border-radius: 25px;
-            font-size: 16px;
-            transition: all 0.3s ease;
-        }
-
-        .search-box input:focus {
-            border-color: var(--azure-blue);
-            outline: none;
-            box-shadow: 0 0 10px rgba(233, 30, 99, 0.3);
-        }
-
-        .search-icon {
-            position: absolute;
-            left: 15px;
-            top: 50%;
-            transform: translateY(-50%);
-            color: #666;
-        }
-
-        .btn {
-            padding: 12px 25px;
-            border: none;
-            border-radius: 25px;
-            font-size: 16px;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            text-decoration: none;
-            display: inline-block;
-        }
-
-        .btn-primary {
-            background: linear-gradient(135deg, var(--azure-blue) 0%, var(--azure-blue-light) 100%);
-            color: white;
-        }
-
-        .btn-primary:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 5px 15px rgba(233, 30, 99, 0.4);
-            background: linear-gradient(135deg, var(--azure-blue-light) 0%, var(--azure-blue-dark) 100%);
-        }
-
-        .btn-success {
-            background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
-            color: white;
-        }
-
-        .btn-danger {
-            background: linear-gradient(135deg, #dc3545 0%, #c82333 100%);
-            color: white;
-        }
-
-        .btn-warning {
-            background: linear-gradient(135deg, #ffc107 0%, #e0a800 100%);
-            color: white;
-        }
-
-        .btn-small {
-            padding: 8px 15px;
-            font-size: 14px;
-            margin: 0 3px;
-        }
-
-        .table-container {
+        .task-card {
             background: white;
-            border-radius: 10px;
-            overflow: hidden;
-            box-shadow: 0 5px 15px rgba(0,0,0,0.08);
-        }
-
-        .table {
-            width: 100%;
-            border-collapse: collapse;
-        }
-
-        .table th {
-            background: linear-gradient(135deg, var(--azure-blue-lighter) 0%, #e9ecef 100%);
-            padding: 15px;
-            text-align: left;
-            font-weight: 600;
-            color: var(--azure-blue-dark);
-            border-bottom: 2px solid #dee2e6;
-        }
-
-        .table td {
-            padding: 15px;
-            border-bottom: 1px solid #f1f1f1;
-            vertical-align: middle;
-        }
-
-        .table tbody tr:hover {
-            background-color: var(--azure-blue-lighter);
-            transform: scale(1.01);
-            transition: all 0.2s ease;
-        }
-
-        .status-badge {
-            padding: 5px 12px;
-            border-radius: 20px;
-            font-size: 12px;
-            font-weight: 600;
-            text-transform: uppercase;
-        }
-
-        .status-active {
-            background: #d4edda;
-            color: #155724;
-        }
-
-        .status-inactive {
-            background: #f8d7da;
-            color: #721c24;
-        }
-
-        .modal {
-            display: none;
-            position: fixed;
-            z-index: 1000;
-            left: 0;
-            top: 0;
-            width: 100%;
-            height: 100%;
-            background-color: rgba(0,0,0,0.5);
-            backdrop-filter: blur(5px);
-        }
-
-        .modal-content {
-            background: white;
-            margin: 5% auto;
-            padding: 0;
             border-radius: 15px;
-            width: 90%;
-            max-width: 600px;
-            max-height: 90vh;
-            overflow-y: auto;
-            box-shadow: 0 20px 40px rgba(0,0,0,0.3);
-            animation: slideIn 0.3s ease;
-        }
-
-        @keyframes slideIn {
-            from { transform: translateY(-50px); opacity: 0; }
-            to { transform: translateY(0); opacity: 1; }
-        }
-
-        .modal-header {
-            background: linear-gradient(135deg, var(--azure-blue) 0%, var(--azure-blue-light) 100%);
-            color: white;
-            padding: 20px 30px;
-            border-radius: 15px 15px 0 0;
-        }
-
-        .modal-header h2 {
-            margin: 0;
-        }
-
-        .close {
-            float: right;
-            font-size: 28px;
-            font-weight: bold;
-            cursor: pointer;
-            color: white;
-            opacity: 0.7;
-        }
-
-        .close:hover {
-            opacity: 1;
-        }
-
-        .modal-body {
-            padding: 30px;
-        }
-
-        .form-group {
+            box-shadow: 0 5px 20px rgba(233, 30, 99, 0.1);
             margin-bottom: 20px;
-        }
-
-        .form-group label {
-            display: block;
-            margin-bottom: 8px;
-            font-weight: 600;
-            color: var(--azure-blue-dark);
-        }
-
-        .form-control {
-            width: 100%;
-            padding: 12px 15px;
-            border: 2px solid #e0e0e0;
-            border-radius: 8px;
-            font-size: 16px;
+            overflow: hidden;
             transition: all 0.3s ease;
         }
-
-        .form-control:focus {
-            border-color: var(--azure-blue);
-            outline: none;
-            box-shadow: 0 0 10px rgba(233, 30, 99, 0.3);
+        
+        .task-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(233, 30, 99, 0.15);
         }
-
-        .form-row {
-            display: flex;
-            gap: 20px;
+        
+        .task-type-badge {
+            padding: 4px 12px;
+            border-radius: 15px;
+            font-size: 0.8rem;
+            font-weight: 600;
         }
-
-        .form-col {
-            flex: 1;
-        }
-
-        .checkbox-group {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            margin-top: 10px;
-        }
-
-        .alert {
-            padding: 15px 20px;
-            margin-bottom: 20px;
-            border-radius: 8px;
-            font-weight: 500;
-        }
-
-        .alert-success {
-            background: #d4edda;
-            color: #155724;
-            border: 1px solid #c3e6cb;
-        }
-
-        .alert-error {
-            background: #f8d7da;
-            color: #721c24;
-            border: 1px solid #f5c6cb;
-        }
-
-        .no-results {
-            text-align: center;
-            padding: 50px;
-            color: #666;
-        }
-
-        .no-results i {
-            font-size: 4rem;
-            margin-bottom: 20px;
-            color: #ddd;
-        }
-
-        .loading {
-            text-align: center;
-            padding: 40px;
-        }
-
-        .spinner {
-            border: 4px solid #f3f3f3;
-            border-top: 4px solid var(--azure-blue);
-            border-radius: 50%;
-            width: 40px;
-            height: 40px;
-            animation: spin 1s linear infinite;
-            margin: 0 auto;
-        }
-
-        @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
-        }
-
-        @media (max-width: 768px) {
-            .controls {
-                flex-direction: column;
-                align-items: stretch;
-            }
-
-            .search-box {
-                max-width: none;
-            }
-
-            .form-row {
-                flex-direction: column;
-            }
-
-            .table-container {
-                overflow-x: auto;
-            }
-
-            .content {
-                padding: 20px;
-            }
+        
+        .type-administrative { background: #007bff; color: white; }
+        .type-equipment { background: #6f42c1; color: white; }
+        .type-training { background: #28a745; color: white; }
+        .type-introduction { background: #fd7e14; color: white; }
+        .type-documentation { background: #20c997; color: white; }
+        .type-other { background: #6c757d; color: white; }
+        
+        .mandatory-badge {
+            background: #dc3545;
+            color: white;
+            padding: 2px 8px;
+            border-radius: 10px;
+            font-size: 0.7rem;
         }
     </style>
 </head>
@@ -480,168 +143,270 @@ $jobRoles = $stmt->fetchAll(PDO::FETCH_ASSOC);
         <?php include 'navigation.php'; ?>
         <div class="row">
             <?php include 'sidebar.php'; ?>
-                        <div class="main-content">
-                <h2 class="section-title">Onboarding Tasks</h2>
-                <div class="content">
-                    <?php if ($message): ?>
-                        <div class="alert alert-<?= $messageType ?>">
-                            <?= htmlspecialchars($message) ?>
+            <div class="main-content">
+                <div class="d-flex justify-content-between align-items-center mb-4">
+                    <h2><i class="fas fa-clipboard-list text-rose"></i> Onboarding Tasks Management</h2>
+                    <button class="btn btn-rose" data-toggle="modal" data-target="#createTaskModal">
+                        <i class="fas fa-plus"></i> Create Task
+                    </button>
+                </div>
+
+                <!-- Statistics -->
+                <div class="row mb-4">
+                    <div class="col-md-3">
+                        <div class="card bg-primary text-white">
+                            <div class="card-body text-center">
+                                <h3><?php echo $stats['total_tasks']; ?></h3>
+                                <p>Total Tasks</p>
+                            </div>
                         </div>
-                    <?php endif; ?>
-
-
                     </div>
+                    <div class="col-md-3">
+                        <div class="card bg-danger text-white">
+                            <div class="card-body text-center">
+                                <h3><?php echo $stats['mandatory_tasks']; ?></h3>
+                                <p>Mandatory Tasks</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="card bg-success text-white">
+                            <div class="card-body text-center">
+                                <h3><?php echo count($stats['by_type']); ?></h3>
+                                <p>Task Categories</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="card bg-info text-white">
+                            <div class="card-body text-center">
+                                <h3><?php echo $stats['most_used']; ?></h3>
+                                <p>Most Used Task</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Tasks List -->
+                <div class="row">
+                    <?php foreach ($tasks as $task): ?>
+                    <div class="col-md-6">
+                        <div class="task-card">
+                            <div class="card-header bg-light">
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <div>
+                                        <h6 class="mb-1"><?php echo htmlspecialchars($task['task_name']); ?></h6>
+                                        <div>
+                                            <span class="task-type-badge type-<?php echo strtolower($task['task_type']); ?>">
+                                                <?php echo $task['task_type']; ?>
+                                            </span>
+                                            <?php if ($task['is_mandatory']): ?>
+                                            <span class="mandatory-badge ml-1">Mandatory</span>
+                                            <?php endif; ?>
+                                        </div>
+                                    </div>
+                                    <div class="text-right">
+                                        <small class="text-muted">Used <?php echo $task['usage_count']; ?> times</small>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="card-body">
+                                <?php if ($task['description']): ?>
+                                <p class="mb-2"><?php echo htmlspecialchars($task['description']); ?></p>
+                                <?php endif; ?>
+                                
+                                <div class="row">
+                                    <div class="col-6">
+                                        <strong>Department:</strong><br>
+                                        <small><?php echo $task['department_name'] ?: 'All Departments'; ?></small>
+                                    </div>
+                                    <div class="col-6">
+                                        <strong>Default Due:</strong><br>
+                                        <small><?php echo $task['default_due_days']; ?> days</small>
+                                    </div>
+                                </div>
+                                
+                                <div class="mt-3">
+                                    <button class="btn btn-sm btn-outline-rose" data-toggle="modal" data-target="#editTaskModal<?php echo $task['task_id']; ?>">
+                                        <i class="fas fa-edit"></i> Edit
+                                    </button>
+                                    <form method="POST" class="d-inline" onsubmit="return confirm('Are you sure you want to delete this task?')">
+                                        <input type="hidden" name="action" value="delete_task">
+                                        <input type="hidden" name="task_id" value="<?php echo $task['task_id']; ?>">
+                                        <button type="submit" class="btn btn-sm btn-outline-danger">
+                                            <i class="fas fa-trash"></i> Delete
+                                        </button>
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Edit Task Modal -->
+                    <div class="modal fade" id="editTaskModal<?php echo $task['task_id']; ?>" tabindex="-1">
+                        <div class="modal-dialog modal-lg">
+                            <div class="modal-content">
+                                <div class="modal-header bg-rose text-white">
+                                    <h5 class="modal-title">Edit Onboarding Task</h5>
+                                    <button type="button" class="close text-white" data-dismiss="modal">&times;</button>
+                                </div>
+                                <form method="POST">
+                                    <div class="modal-body">
+                                        <input type="hidden" name="action" value="update_task">
+                                        <input type="hidden" name="task_id" value="<?php echo $task['task_id']; ?>">
+                                        
+                                        <div class="form-group">
+                                            <label>Task Name</label>
+                                            <input type="text" name="task_name" class="form-control" value="<?php echo htmlspecialchars($task['task_name']); ?>" required>
+                                        </div>
+                                        
+                                        <div class="form-group">
+                                            <label>Description</label>
+                                            <textarea name="description" class="form-control" rows="3"><?php echo htmlspecialchars($task['description']); ?></textarea>
+                                        </div>
+                                        
+                                        <div class="row">
+                                            <div class="col-md-6">
+                                                <div class="form-group">
+                                                    <label>Department</label>
+                                                    <select name="department_id" class="form-control">
+                                                        <option value="">All Departments</option>
+                                                        <?php foreach ($departments as $dept): ?>
+                                                        <option value="<?php echo $dept['department_id']; ?>" <?php echo $task['department_id'] == $dept['department_id'] ? 'selected' : ''; ?>>
+                                                            <?php echo htmlspecialchars($dept['department_name']); ?>
+                                                        </option>
+                                                        <?php endforeach; ?>
+                                                    </select>
+                                                </div>
+                                            </div>
+                                            <div class="col-md-6">
+                                                <div class="form-group">
+                                                    <label>Task Type</label>
+                                                    <select name="task_type" class="form-control" required>
+                                                        <option value="Administrative" <?php echo $task['task_type'] === 'Administrative' ? 'selected' : ''; ?>>Administrative</option>
+                                                        <option value="Equipment" <?php echo $task['task_type'] === 'Equipment' ? 'selected' : ''; ?>>Equipment</option>
+                                                        <option value="Training" <?php echo $task['task_type'] === 'Training' ? 'selected' : ''; ?>>Training</option>
+                                                        <option value="Introduction" <?php echo $task['task_type'] === 'Introduction' ? 'selected' : ''; ?>>Introduction</option>
+                                                        <option value="Documentation" <?php echo $task['task_type'] === 'Documentation' ? 'selected' : ''; ?>>Documentation</option>
+                                                        <option value="Other" <?php echo $task['task_type'] === 'Other' ? 'selected' : ''; ?>>Other</option>
+                                                    </select>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        
+                                        <div class="row">
+                                            <div class="col-md-6">
+                                                <div class="form-group">
+                                                    <label>Default Due Days</label>
+                                                    <input type="number" name="default_due_days" class="form-control" value="<?php echo $task['default_due_days']; ?>" min="1" required>
+                                                </div>
+                                            </div>
+                                            <div class="col-md-6">
+                                                <div class="form-group">
+                                                    <div class="form-check mt-4">
+                                                        <input class="form-check-input" type="checkbox" name="is_mandatory" id="mandatory<?php echo $task['task_id']; ?>" <?php echo $task['is_mandatory'] ? 'checked' : ''; ?>>
+                                                        <label class="form-check-label" for="mandatory<?php echo $task['task_id']; ?>">
+                                                            Mandatory Task
+                                                        </label>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="modal-footer">
+                                        <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
+                                        <button type="submit" class="btn btn-rose">Update Task</button>
+                                    </div>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                    <?php endforeach; ?>
                 </div>
             </div>
         </div>
+    </div>
 
-    <script>
-        // Global variables
-        let employeesData = <?= json_encode($employees) ?>;
+    <!-- Create Task Modal -->
+    <div class="modal fade" id="createTaskModal" tabindex="-1">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header bg-rose text-white">
+                    <h5 class="modal-title">Create Onboarding Task</h5>
+                    <button type="button" class="close text-white" data-dismiss="modal">&times;</button>
+                </div>
+                <form method="POST">
+                    <div class="modal-body">
+                        <input type="hidden" name="action" value="create_task">
+                        
+                        <div class="form-group">
+                            <label>Task Name</label>
+                            <input type="text" name="task_name" class="form-control" required>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label>Description</label>
+                            <textarea name="description" class="form-control" rows="3"></textarea>
+                        </div>
+                        
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label>Department</label>
+                                    <select name="department_id" class="form-control">
+                                        <option value="">All Departments</option>
+                                        <?php foreach ($departments as $dept): ?>
+                                        <option value="<?php echo $dept['department_id']; ?>">
+                                            <?php echo htmlspecialchars($dept['department_name']); ?>
+                                        </option>
+                                        <?php endforeach; ?>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label>Task Type</label>
+                                    <select name="task_type" class="form-control" required>
+                                        <option value="Administrative">Administrative</option>
+                                        <option value="Equipment">Equipment</option>
+                                        <option value="Training">Training</option>
+                                        <option value="Introduction">Introduction</option>
+                                        <option value="Documentation">Documentation</option>
+                                        <option value="Other">Other</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label>Default Due Days</label>
+                                    <input type="number" name="default_due_days" class="form-control" value="7" min="1" required>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <div class="form-check mt-4">
+                                        <input class="form-check-input" type="checkbox" name="is_mandatory" id="mandatoryNew">
+                                        <label class="form-check-label" for="mandatoryNew">
+                                            Mandatory Task
+                                        </label>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
+                        <button type="submit" class="btn btn-rose">Create Task</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
 
-        // Search functionality
-        document.getElementById('searchInput').addEventListener('input', function() {
-            const searchTerm = this.value.toLowerCase();
-            const tableBody = document.getElementById('employeeTableBody');
-            const rows = tableBody.getElementsByTagName('tr');
-
-            for (let i = 0; i < rows.length; i++) {
-                const row = rows[i];
-                const text = row.textContent.toLowerCase();
-                
-                if (text.includes(searchTerm)) {
-                    row.style.display = '';
-                } else {
-                    row.style.display = 'none';
-                }
-            }
-        });
-
-        // Modal functions
-        function openModal(mode, employeeId = null) {
-            const modal = document.getElementById('employeeModal');
-            const form = document.getElementById('employeeForm');
-            const title = document.getElementById('modalTitle');
-            const action = document.getElementById('action');
-
-            if (mode === 'add') {
-                title.textContent = 'Add New Employee';
-                action.value = 'add';
-                form.reset();
-                document.getElementById('employee_id').value = '';
-            } else if (mode === 'edit' && employeeId) {
-                title.textContent = 'Edit Employee';
-                action.value = 'update';
-                document.getElementById('employee_id').value = employeeId;
-                populateEditForm(employeeId);
-            }
-
-            modal.style.display = 'block';
-            document.body.style.overflow = 'hidden';
-        }
-
-        function closeModal() {
-            const modal = document.getElementById('employeeModal');
-            modal.style.display = 'none';
-            document.body.style.overflow = 'auto';
-        }
-
-        function populateEditForm(employeeId) {
-            // This would typically fetch data via AJAX
-            // For now, we'll use the existing data
-            const employee = employeesData.find(emp => emp.employee_id == employeeId);
-            if (employee) {
-                document.getElementById('personal_info_id').value = employee.personal_info_id || '';
-                document.getElementById('job_role_id').value = employee.job_role_id || '';
-                document.getElementById('employee_number').value = employee.employee_number || '';
-                document.getElementById('hire_date').value = employee.hire_date || '';
-                document.getElementById('employment_status').value = employee.employment_status || '';
-                document.getElementById('current_salary').value = employee.current_salary || '';
-                document.getElementById('work_email').value = employee.work_email || '';
-                document.getElementById('work_phone').value = employee.work_phone || '';
-                document.getElementById('location').value = employee.location || '';
-                document.getElementById('remote_work').checked = employee.remote_work == 1;
-            }
-        }
-
-        function editEmployee(employeeId) {
-            openModal('edit', employeeId);
-        }
-
-        function deleteEmployee(employeeId) {
-            if (confirm('Are you sure you want to delete this employee? This action cannot be undone.')) {
-                const form = document.createElement('form');
-                form.method = 'POST';
-                form.innerHTML = `
-                    <input type="hidden" name="action" value="delete">
-                    <input type="hidden" name="employee_id" value="${employeeId}">
-                `;
-                document.body.appendChild(form);
-                form.submit();
-            }
-        }
-
-        // Close modal when clicking outside
-        window.onclick = function(event) {
-            const modal = document.getElementById('employeeModal');
-            if (event.target === modal) {
-                closeModal();
-            }
-        }
-
-        // Form validation
-        document.getElementById('employeeForm').addEventListener('submit', function(e) {
-            const salary = document.getElementById('current_salary').value;
-            if (salary <= 0) {
-                e.preventDefault();
-                alert('Salary must be greater than 0');
-                return;
-            }
-
-            const email = document.getElementById('work_email').value;
-            if (email && !isValidEmail(email)) {
-                e.preventDefault();
-                alert('Please enter a valid email address');
-                return;
-            }
-        });
-
-        function isValidEmail(email) {
-            const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-            return emailRegex.test(email);
-        }
-
-        // Auto-hide alerts
-        setTimeout(function() {
-            const alerts = document.querySelectorAll('.alert');
-            alerts.forEach(function(alert) {
-                alert.style.transition = 'opacity 0.5s';
-                alert.style.opacity = '0';
-                setTimeout(function() {
-                    alert.remove();
-                }, 500);
-            });
-        }, 5000);
-
-        // Initialize tooltips and animations
-        document.addEventListener('DOMContentLoaded', function() {
-            // Add hover effects to table rows
-            const tableRows = document.querySelectorAll('#employeeTable tbody tr');
-            tableRows.forEach(row => {
-                row.addEventListener('mouseenter', function() {
-                    this.style.transform = 'scale(1.02)';
-                });
-                
-                row.addEventListener('mouseleave', function() {
-                    this.style.transform = 'scale(1)';
-                });
-            });
-
-
-        });
-    </script>
-    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.1/dist/umd/popper.min.js"></script>
+    <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
     <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
 </body>
 </html>
