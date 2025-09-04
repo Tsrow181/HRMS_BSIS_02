@@ -3,7 +3,7 @@ session_start();
 
 // Check if the user is logged in, if not then redirect to login page
 if (!isset($_SESSION['loggedin']) || $_SESSION['loggedin'] !== true) {
-    header('Location极: login.php');
+    header('Location: login.php');
     exit;
 }
 
@@ -42,7 +42,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         }
     } elseif (isset($_POST['deleteEmployeeShift'])) {
         // Delete employee shift assignment
-        $employeeShift极Id = $_POST['employeeShiftId'];
+        $employeeShiftId = $_POST['employeeShiftId'];
 
         if (deleteEmployeeShift($employeeShiftId)) {
             // Redirect to refresh the page
@@ -109,7 +109,7 @@ $shifts = getShifts();
                         <div class="card">
                             <div class="card-header d-flex justify-content-between align-items-center">
                                 <h5 class="mb-0"><i class="fas fa-user-clock mr-2"></i>Employee Shifts Overview</h5>
-                                <button class="btn btn-primary" data-toggle极="modal" data-target="#addEmployeeShiftModal">
+                                <button class="btn btn-primary" data-toggle="modal" data-target="#addEmployeeShiftModal">
                                     <i class="fas fa-plus mr-2"></i>Add Employee Shift
                                 </button>
                             </div>
@@ -153,10 +153,10 @@ $shifts = getShifts();
                                                 <tr class="sample-data">
                                                     <td>
                                                         <div class="d-flex align-items-center">
-                                                            <img src="https://ui-avatars.com/api/?name=Jane+Smith&background=2196F3&color=fff&极size=35" 
+                                                            <img src="https://ui-avatars.com/api/?name=Jane+Smith&background=2196F3&color=fff&size=35" 
                                                                  alt="Profile" class="profile-image mr-2">
                                                             <div>
-                                                                <h6 class极="mb-0">Jane Smith</h6>
+                                                                <h6 class="mb-0">Jane Smith</h6>
                                                                 <small class="text-muted">HR Department</small>
                                                             </div>
                                                         </div>
@@ -202,7 +202,7 @@ $shifts = getShifts();
                                                                     <i class="fas fa-edit"></i>
                                                                 </button>
                                                                 <button type="submit" name="deleteEmployeeShift" class="btn btn-sm btn-outline-danger">
-                                                                    <极i class="fas fa-trash"></i>
+                                                                    <i class="fas fa-trash"></i>
                                                                 </button>
                                                             </form>
                                                         </td>
@@ -253,7 +253,7 @@ $shifts = getShifts();
                                     </div>
                                     <div class="form-group form-check">
                                         <input type="checkbox" name="isOvertime" class="form-check-input" id="isOvertime">
-                                        <label class="form-check-label" for="is极Overtime">Overtime</label>
+                                        <label class="form-check-label" for="isOvertime">Overtime</label>
                                     </div>
                                     <button type="submit" name="addEmployeeShift" class="btn btn-primary">Add Shift Assignment</button>
                                 </form>
@@ -266,7 +266,7 @@ $shifts = getShifts();
         </div>
     </div>
 
-    <script src="https://code.jquery.com/jquery-3.5.1.slim极.min.js"></script>
+    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.1/dist/umd/popper.min.js"></script>
     <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
 </body>

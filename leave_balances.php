@@ -16,66 +16,41 @@ $leaveTypeTotals = getLeaveTypeTotals();
 $utilizationTrend = getLeaveUtilizationTrend();
 $lowBalanceAlerts = getLowBalanceAlerts();
 
-// If no data found, use dummy data for demonstration
-if (empty($leaveBalances)) {
-    $leaveBalances = [
-        [
-            'employee_id' => 1,
-            'first_name' => 'John',
-            'last_name' => 'Doe',
-            'employee_code' => 'EMP001',
-            'department_name' => 'IT Department',
-            'vacation_leave' => 12,
-            'sick_leave' => 8,
-            'maternity_leave' => 105,
-            'paternity_leave' => 7,
-            'total_balance' => 132
-        ],
-        [
-            'employee_id' => 2,
-            'first_name' => 'Jane',
-            'last_name' => 'Smith',
-            'employee_code' => 'EMP002',
-            'department_name' => 'HR Department',
-            'vacation_leave' => 10,
-            'sick_leave' => 5,
-            'maternity_leave' => 105,
-            'paternity_leave' => 7,
-            'total_balance' => 127
-        ],
-        [
-            'employee_id' => 3,
-            'first_name' => 'Mike',
-            'last_name' => 'Johnson',
-            'employee_code' => 'EMP003',
-            'department_name' => 'Finance',
-            'vacation_leave' => 15,
-            'sick_leave' => 10,
-            'maternity_leave' => 105,
-            'paternity_leave' => 7,
-            'total_balance' => 137
-        ]
-    ];
+// Calculate actual totals from database data
+$vacationTotal = 0;
+$sickTotal = 0;
+$maternityTotal = 0;
+$paternityTotal = 0;
+
+foreach ($leaveBalances as $employee) {
+    $vacationTotal += $employee['vacation_leave'];
+    $sickTotal += $employee['sick_leave'];
+    $maternityTotal += $employee['maternity_leave'];
+    $paternityTotal += $employee['paternity_leave'];
 }
 
-// Find specific leave type totals
+// Calculate utilization percentages based on actual data
+$vacationUtilization = count($leaveBalances) > 0 ? round(($vacationTotal / (count($leaveBalances) * 15)) * 100) : 0;
+$sickUtilization = count($leaveBalances) > 0 ? round(($sickTotal / (count($leaveBalances) * 10)) * 100) : 0;
+
+// Find specific leave type totals from actual data
 $vacationLeaveTotal = [
     'leave_type_name' => 'Vacation Leave',
-    'total_remaining' => 37,
-    'total_allocated' => 45,
-    'utilization_percentage' => 80
+    'total_remaining' => $vacationTotal,
+    'total_allocated' => count($leaveBalances) * 15,
+    'utilization_percentage' => $vacationUtilization
 ];
 $sickLeaveTotal = [
     'leave_type_name' => 'Sick Leave',
-    'total_remaining' => 23,
-    'total_allocated' => 30,
-    'utilization_percentage' => 50
+    'total_remaining' => $sickTotal,
+    'total_allocated' => count($leaveBalances) * 10,
+    'utilization_percentage' => $sickUtilization
 ];
 $specialLeaveTotal = [
     'leave_type_name' => 'Special Leave',
-    'total_remaining' => 2,
-    'total_allocated' => 10,
-    'utilization_percentage' => 20
+    'total_remaining' => 0,
+    'total_allocated' => 0,
+    'utilization_percentage' => 0
 ];
 ?>
 <!DOCTYPE html>
@@ -219,11 +194,11 @@ $specialLeaveTotal = [
                     <div class="col-md-4">
                         <div class="card balance-card">
                             <div class="card-body text-center">
-                                <div class="progress-circle mb-3" style="--percentage: 80%">
-                                    <span class="progress-text">80%</span>
+                                <div class="progress-circle mb-3" style="--percentage: <?= $vacationLeaveTotal['utilization_percentage'] ?>%">
+                                    <span class="progress-text"><?= $vacationLeaveTotal['utilization_percentage'] ?>%</span>
                                 </div>
                                 <h5>Vacation Leave</h5>
-                                <h3 class="text-primary">12/15 days</h3>
+                                <h3 class="text-primary"><?= $vacationLeaveTotal['total_remaining'] ?>/<?= $vacationLeaveTotal['total_allocated'] ?> days</h3>
                                 <small class="text-muted">Average utilization</small>
                             </div>
                         </div>
@@ -231,11 +206,11 @@ $specialLeaveTotal = [
                     <div class="col-md-4">
                         <div class="card balance-card">
                             <div class="card-body text-center">
-                                <div class="progress-circle mb-3" style="--percentage: 50%">
-                                    <span class="progress-text">50%</span>
+                                <div class="progress-circle mb-3" style="--percentage: <?= $sickLeaveTotal['utilization_percentage'] ?>%">
+                                    <span class="progress-text"><?= $sickLeaveTotal['utilization_percentage'] ?>%</span>
                                 </div>
                                 <h5>Sick Leave</h5>
-                                <h3 class="text-success">5/10 days</h3>
+                                <h3 class="text-success"><?= $sickLeaveTotal['total_remaining'] ?>/<?= $sickLeaveTotal['total_allocated'] ?> days</h3>
                                 <small class="text-muted">Average utilization</small>
                             </div>
                         </div>
@@ -243,11 +218,11 @@ $specialLeaveTotal = [
                     <div class="col-md-4">
                         <div class="card balance-card">
                             <div class="card-body text-center">
-                                <div class="progress-circle mb-3" style="--percentage: 20%">
-                                    <span class="progress-text">20%</span>
+                                <div class="progress-circle mb-3" style="--percentage: 0%">
+                                    <span class="progress-text">0%</span>
                                 </div>
                                 <h5>Special Leave</h5>
-                                <h3 class="text-info">2/10 days</h3>
+                                <h3 class="text-info">0/0 days</h3>
                                 <small class="text-muted">Average utilization</small>
                             </div>
                         </div>
