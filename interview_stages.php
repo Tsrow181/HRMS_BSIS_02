@@ -6,45 +6,113 @@ if (!isset($_SESSION['loggedin']) || $_SESSION['loggedin'] !== true) {
 }
 require_once 'config.php';
 
-// Handle form submissions
+$success_message = '';
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     if (isset($_POST['action'])) {
+        $candidate_id = $_POST['candidate_id'];
+        $stage_id = $_POST['stage_id'];
+        
         switch ($_POST['action']) {
-            case 'create_stage':
-                $job_opening_id = $_POST['job_opening_id'];
-                $stage_name = $_POST['stage_name'];
-                $stage_order = $_POST['stage_order'];
-                $description = $_POST['description'];
-                $is_mandatory = isset($_POST['is_mandatory']) ? 1 : 0;
+            case 'approve_stage':
+                // Get next stage
+                $current_stage = $conn->prepare("SELECT stage_order, job_opening_id FROM interview_stages WHERE stage_id = ?");
+                $current_stage->execute([$stage_id]);
+                $stage_info = $current_stage->fetch(PDO::FETCH_ASSOC);
                 
-                $stmt = $conn->prepare("INSERT INTO interview_stages (job_opening_id, stage_name, stage_order, description, is_mandatory) VALUES (?, ?, ?, ?, ?)");
-                $stmt->execute([$job_opening_id, $stage_name, $stage_order, $description, $is_mandatory]);
+                $next_stage = $conn->prepare("SELECT stage_name FROM interview_stages WHERE job_opening_id = ? AND stage_order = ?");
+                $next_stage->execute([$stage_info['job_opening_id'], $stage_info['stage_order'] + 1]);
+                $next_stage_name = $next_stage->fetch(PDO::FETCH_ASSOC);
+                
+                if ($next_stage_name) {
+                    $stmt = $conn->prepare("UPDATE candidates SET source = ? WHERE candidate_id = ?");
+                    $stmt->execute([$next_stage_name['stage_name'], $candidate_id]);
+                    $success_message = "✅ Stage approved! Moved to {$next_stage_name['stage_name']}.";
+                } else {
+                    // Final stage - complete onboarding
+                    $application_id = $_POST['application_id'];
+                    $stmt = $conn->prepare("UPDATE job_applications SET status = 'Hired' WHERE application_id = ?");
+                    $stmt->execute([$application_id]);
+                    
+                    $stmt = $conn->prepare("UPDATE candidates SET source = 'Hired' WHERE candidate_id = ?");
+                    $stmt->execute([$candidate_id]);
+                    $success_message = "✅ Final stage completed! Employee is now hired.";
+                }
+                break;
+                
+            case 'reject_candidate':
+                $application_id = $_POST['application_id'];
+                $stmt = $conn->prepare("UPDATE job_applications SET status = 'Rejected' WHERE application_id = ?");
+                $stmt->execute([$application_id]);
+                
+                $stmt = $conn->prepare("UPDATE candidates SET source = 'Rejected' WHERE candidate_id = ?");
+                $stmt->execute([$candidate_id]);
+                
+                $success_message = "❌ Candidate rejected from onboarding process!";
                 break;
         }
-        header('Location: interview_stages.php');
-        exit;
     }
 }
 
-// Get interview stages with job info
-$stages_query = "SELECT ist.*, jo.title as job_title, d.department_name
-                 FROM interview_stages ist
-                 JOIN job_openings jo ON ist.job_opening_id = jo.job_opening_id
-                 JOIN departments d ON jo.department_id = d.department_id
-                 ORDER BY jo.title, ist.stage_order";
-$stages = $conn->query($stages_query)->fetchAll(PDO::FETCH_ASSOC);
+// Get all candidates in Onboarding status with their job's interview stages
+$all_candidates = $conn->query("SELECT c.*, ja.application_id, ja.application_date, jo.job_opening_id, jo.title as job_title, d.department_name
+                               FROM candidates c 
+                               JOIN job_applications ja ON c.candidate_id = ja.candidate_id
+                               JOIN job_openings jo ON ja.job_opening_id = jo.job_opening_id
+                               JOIN departments d ON jo.department_id = d.department_id
+                               WHERE ja.status = 'Onboarding'
+                               ORDER BY jo.title, ja.application_date DESC")->fetchAll(PDO::FETCH_ASSOC);
 
-// Get active job openings for form
-$job_openings = $conn->query("SELECT jo.*, d.department_name FROM job_openings jo 
-                              JOIN departments d ON jo.department_id = d.department_id 
-                              WHERE jo.status = 'Open' ORDER BY jo.title")->fetchAll(PDO::FETCH_ASSOC);
+// Get all interview stages for jobs with onboarding candidates
+$job_stages = [];
+if (!empty($all_candidates)) {
+    $job_ids = array_unique(array_column($all_candidates, 'job_opening_id'));
+    $placeholders = str_repeat('?,', count($job_ids) - 1) . '?';
+    $stages_query = $conn->prepare("SELECT * FROM interview_stages WHERE job_opening_id IN ($placeholders) ORDER BY job_opening_id, stage_order");
+    $stages_query->execute($job_ids);
+    $stages_result = $stages_query->fetchAll(PDO::FETCH_ASSOC);
+    
+    foreach ($stages_result as $stage) {
+        $job_stages[$stage['job_opening_id']][] = $stage;
+    }
+}
+
+// Group candidates by job opening and stage
+$candidates_by_job = [];
+$total_stats = [];
+
+foreach ($all_candidates as $candidate) {
+    $job_id = $candidate['job_opening_id'];
+    if (!isset($candidates_by_job[$job_id])) {
+        $candidates_by_job[$job_id] = [
+            'job_title' => $candidate['job_title'],
+            'department_name' => $candidate['department_name'],
+            'stages' => []
+        ];
+        
+        // Initialize stages for this job
+        if (isset($job_stages[$job_id])) {
+            foreach ($job_stages[$job_id] as $stage) {
+                $candidates_by_job[$job_id]['stages'][$stage['stage_name']] = [];
+                if (!isset($total_stats[$stage['stage_name']])) {
+                    $total_stats[$stage['stage_name']] = 0;
+                }
+            }
+        }
+    }
+    
+    // Add candidate to appropriate stage
+    if (isset($candidates_by_job[$job_id]['stages'][$candidate['source']])) {
+        $candidates_by_job[$job_id]['stages'][$candidate['source']][] = $candidate;
+        $total_stats[$candidate['source']]++;
+    }
+}
 ?>
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Interview Stages - HR Management System</title>
+    <title>Onboarding Stages - HR Management System</title>
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.1/css/all.min.css">
     <link rel="stylesheet" href="styles.css?v=rose">
@@ -55,99 +123,125 @@ $job_openings = $conn->query("SELECT jo.*, d.department_name FROM job_openings j
         <div class="row">
             <?php include 'sidebar.php'; ?>
             <div class="main-content">
-                <div class="row mb-4">
-                    <div class="col-md-4">
-                        <div class="card">
-                            <div class="card-header">
-                                <h5><i class="fas fa-plus"></i> Add Interview Stage</h5>
-                            </div>
-                            <div class="card-body">
-                                <form method="POST">
-                                    <input type="hidden" name="action" value="create_stage">
-                                    <div class="form-group">
-                                        <label>Job Opening</label>
-                                        <select name="job_opening_id" class="form-control" required>
-                                            <option value="">Select Job Opening</option>
-                                            <?php foreach($job_openings as $job): ?>
-                                            <option value="<?php echo $job['job_opening_id']; ?>">
-                                                <?php echo htmlspecialchars($job['title'] . ' - ' . $job['department_name']); ?>
-                                            </option>
-                                            <?php endforeach; ?>
-                                        </select>
-                                    </div>
-                                    <div class="form-group">
-                                        <label>Stage Name</label>
-                                        <input type="text" name="stage_name" class="form-control" required placeholder="e.g., Initial Screening">
-                                    </div>
-                                    <div class="form-group">
-                                        <label>Stage Order</label>
-                                        <input type="number" name="stage_order" class="form-control" min="1" value="1" required>
-                                    </div>
-                                    <div class="form-group">
-                                        <label>Description</label>
-                                        <textarea name="description" class="form-control" rows="3"></textarea>
-                                    </div>
-                                    <div class="form-check">
-                                        <input type="checkbox" name="is_mandatory" class="form-check-input" id="mandatory" checked>
-                                        <label class="form-check-label" for="mandatory">Mandatory Stage</label>
-                                    </div>
-                                    <button type="submit" class="btn btn-primary mt-3">Add Stage</button>
-                                </form>
-                            </div>
-                        </div>
+                <h2>📋 Onboarding Stages Dashboard</h2>
+                
+                <?php if (!empty($success_message)): ?>
+                    <div class="alert alert-success alert-dismissible fade show" role="alert">
+                        <?php echo $success_message; ?>
+                        <button type="button" class="close" data-dismiss="alert">
+                            <span>&times;</span>
+                        </button>
                     </div>
-                    <div class="col-md-8">
-                        <div class="card">
-                            <div class="card-header">
-                                <h5><i class="fas fa-list"></i> Interview Stages</h5>
-                            </div>
-                            <div class="card-body">
-                                <div class="table-responsive">
-                                    <table class="table table-striped">
-                                        <thead>
-                                            <tr>
-                                                <th>Job Opening</th>
-                                                <th>Stage</th>
-                                                <th>Order</th>
-                                                <th>Mandatory</th>
-                                                <th>Description</th>
-                                            </tr>
-                                        </thead>
-                                        <tbody>
-                                            <?php if (count($stages) > 0): ?>
-                                                <?php foreach($stages as $stage): ?>
-                                                    <tr>
-                                                        <td>
-                                                            <strong><?php echo htmlspecialchars($stage['job_title']); ?></strong><br>
-                                                            <small class="text-muted"><?php echo htmlspecialchars($stage['department_name']); ?></small>
-                                                        </td>
-                                                        <td><?php echo htmlspecialchars($stage['stage_name']); ?></td>
-                                                        <td><span class="badge badge-primary"><?php echo $stage['stage_order']; ?></span></td>
-                                                        <td>
-                                                            <?php if ($stage['is_mandatory']): ?>
-                                                                <span class="badge badge-danger">Required</span>
-                                                            <?php else: ?>
-                                                                <span class="badge badge-secondary">Optional</span>
-                                                            <?php endif; ?>
-                                                        </td>
-                                                        <td><?php echo htmlspecialchars($stage['description']); ?></td>
-                                                    </tr>
-                                                <?php endforeach; ?>
-                                            <?php else: ?>
-                                                <tr>
-                                                    <td colspan="5" class="text-center">No interview stages configured</td>
-                                                </tr>
-                                            <?php endif; ?>
-                                        </tbody>
-                                    </table>
+                <?php endif; ?>
+
+                <!-- Statistics Cards -->
+                <div class="row mb-4">
+                    <?php 
+                    $colors = ['bg-primary', 'bg-info', 'bg-warning', 'bg-success', 'bg-danger'];
+                    $icons = ['fas fa-file-alt', 'fas fa-stethoscope', 'fas fa-search', 'fas fa-graduation-cap', 'fas fa-clipboard-check'];
+                    $i = 0;
+                    foreach ($total_stats as $stage_name => $count): 
+                        $color = $colors[$i % count($colors)];
+                        $icon = $icons[$i % count($icons)];
+                    ?>
+                        <div class="col-md-3">
+                            <div class="stats-card card">
+                                <div class="card-body text-center">
+                                    <div class="activity-icon <?php echo $color; ?>">
+                                        <i class="<?php echo $icon; ?>"></i>
+                                    </div>
+                                    <h3 class="stats-number"><?php echo $count; ?></h3>
+                                    <p class="stats-label"><?php echo htmlspecialchars($stage_name); ?></p>
                                 </div>
                             </div>
                         </div>
-                    </div>
+                    <?php 
+                        $i++;
+                        if ($i % 4 == 0) echo '</div><div class="row mb-4">';
+                    endforeach; 
+                    ?>
                 </div>
+
+                <!-- Job-Specific Onboarding Stages -->
+                <?php if (count($candidates_by_job) > 0): ?>
+                    <?php foreach($candidates_by_job as $job_id => $job_data): ?>
+                        <div class="card mb-4">
+                            <div class="card-header">
+                                <h5>
+                                    <i class="fas fa-briefcase"></i> 
+                                    <?php echo htmlspecialchars($job_data['job_title']); ?>
+                                    <small class="text-muted">- <?php echo htmlspecialchars($job_data['department_name']); ?></small>
+                                </h5>
+                            </div>
+                            <div class="card-body">
+                                <!-- Dynamic Interview Stages -->
+                                <?php 
+                                $stage_colors = ['border-primary', 'border-info', 'border-warning', 'border-success', 'border-danger'];
+                                $stage_icons = ['fas fa-file-alt', 'fas fa-stethoscope', 'fas fa-search', 'fas fa-graduation-cap', 'fas fa-clipboard-check'];
+                                $stage_index = 0;
+                                
+                                if (isset($job_stages[$job_id])) {
+                                    foreach ($job_stages[$job_id] as $stage):
+                                        $stage_candidates = $job_data['stages'][$stage['stage_name']] ?? [];
+                                        if (count($stage_candidates) > 0):
+                                            $color = $stage_colors[$stage_index % count($stage_colors)];
+                                            $icon = $stage_icons[$stage_index % count($stage_icons)];
+                                ?>
+                                    <h6><i class="<?php echo $icon; ?>"></i> <?php echo htmlspecialchars($stage['stage_name']); ?> (<?php echo count($stage_candidates); ?>)</h6>
+                                    <div class="row mb-3">
+                                        <?php foreach($stage_candidates as $candidate): ?>
+                                            <div class="col-md-6 col-lg-4 mb-2">
+                                                <div class="card <?php echo $color; ?>">
+                                                    <div class="card-body p-2">
+                                                        <h6 class="mb-1"><i class="fas fa-user"></i> <?php echo htmlspecialchars($candidate['first_name'] . ' ' . $candidate['last_name']); ?></h6>
+                                                        <p class="mb-1 small"><strong>Email:</strong> <?php echo htmlspecialchars($candidate['email']); ?></p>
+                                                        <div class="btn-group w-100">
+                                                            <form method="POST" style="display:inline;">
+                                                                <input type="hidden" name="action" value="approve_stage">
+                                                                <input type="hidden" name="candidate_id" value="<?php echo $candidate['candidate_id']; ?>">
+                                                                <input type="hidden" name="application_id" value="<?php echo $candidate['application_id']; ?>">
+                                                                <input type="hidden" name="stage_id" value="<?php echo $stage['stage_id']; ?>">
+                                                                <button type="submit" class="btn btn-success btn-sm">
+                                                                    <i class="fas fa-check"></i>
+                                                                </button>
+                                                            </form>
+                                                            <form method="POST" style="display:inline;">
+                                                                <input type="hidden" name="action" value="reject_candidate">
+                                                                <input type="hidden" name="application_id" value="<?php echo $candidate['application_id']; ?>">
+                                                                <input type="hidden" name="candidate_id" value="<?php echo $candidate['candidate_id']; ?>">
+                                                                <button type="submit" class="btn btn-danger btn-sm" onclick="return confirm('Reject?')">
+                                                                    <i class="fas fa-times"></i>
+                                                                </button>
+                                                            </form>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        <?php endforeach; ?>
+                                    </div>
+                                <?php 
+                                        endif;
+                                        $stage_index++;
+                                    endforeach;
+                                }
+                                ?>
+
+
+                            </div>
+                        </div>
+                    <?php endforeach; ?>
+                <?php else: ?>
+                    <div class="alert alert-info text-center">
+                        <h5><i class="fas fa-info-circle"></i> No Candidates in Onboarding Process</h5>
+                        <p>Candidates will appear here after passing Assessment & Interview stage.</p>
+                    </div>
+                <?php endif; ?>
+
             </div>
         </div>
     </div>
+
+
 
     <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
     <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>

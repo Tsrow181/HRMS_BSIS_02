@@ -30,42 +30,27 @@ if (!$job) {
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     try {
         // Handle file upload
-        $resume_url = '';
+        $resume_filename = '';
         
         if (isset($_FILES['resume']) && $_FILES['resume']['error'] === 0) {
-            $resume_url = $_FILES['resume']['name'];
+            $resume_filename = $_FILES['resume']['name'];
         }
         
-        // Check if candidate already exists
-        $existing = $conn->prepare("SELECT candidate_id FROM candidates WHERE email = ?");
-        $existing->execute([$_POST['email']]);
-        $candidate_data = $existing->fetch(PDO::FETCH_ASSOC);
-        
-        if ($candidate_data) {
-            $candidate_id = $candidate_data['candidate_id'];
-        } else {
-            // Generate verification token
-            $verification_token = generateVerificationToken();
-            
-            // Insert new candidate with verification
-            $candidate_stmt = $conn->prepare("INSERT INTO candidates (first_name, last_name, email, phone, address, resume_url, current_position, current_company, notice_period, expected_salary, source) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'Online Application')");
-            $candidate_stmt->execute([
-                $_POST['first_name'],
-                $_POST['last_name'],
-                $_POST['email'],
-                $_POST['phone'],
-                $_POST['address'],
-                $resume_url,
-                $_POST['current_position'],
-                $_POST['current_company'],
-                $_POST['notice_period'],
-                $_POST['expected_salary']
-            ]);
-            $candidate_id = $conn->lastInsertId();
-            
-            // Send verification email
-            sendVerificationEmail($_POST['email'], $_POST['first_name'], $verification_token);
-        }
+        // Create new candidate record for each application
+        $candidate_stmt = $conn->prepare("INSERT INTO candidates (first_name, last_name, email, phone, address, resume_filename, current_position, current_company, notice_period, expected_salary, source, email_verified) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'Job Application', 1)");
+        $candidate_stmt->execute([
+            $_POST['first_name'],
+            $_POST['last_name'],
+            $_POST['email'],
+            $_POST['phone'],
+            $_POST['address'],
+            $resume_filename,
+            $_POST['current_position'],
+            $_POST['current_company'],
+            $_POST['notice_period'],
+            $_POST['expected_salary']
+        ]);
+        $candidate_id = $conn->lastInsertId();
         
         // Insert job application
         $app_stmt = $conn->prepare("INSERT INTO job_applications (job_opening_id, candidate_id, application_date, status, notes) VALUES (?, ?, NOW(), 'Applied', ?)");
@@ -75,12 +60,18 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             'Application submitted online with attachments'
         ]);
         
-        $message = "Application submitted successfully! Please check your email to verify your address and receive updates.";
+        $message = "Application submitted successfully! Your application has been received and will be reviewed by our HR team.";
         $messageType = "success";
         
     } catch (Exception $e) {
-        $message = "Error: " . $e->getMessage();
-        $messageType = "error";
+        if (strpos($e->getMessage(), 'already applied') !== false) {
+            $message = $e->getMessage();
+        } elseif (strpos($e->getMessage(), 'Duplicate entry') !== false) {
+            $message = "You have already applied for this position.";
+        } else {
+            $message = "There was an error submitting your application. Please try again.";
+        }
+        $messageType = "danger";
     }
 }
 ?>
