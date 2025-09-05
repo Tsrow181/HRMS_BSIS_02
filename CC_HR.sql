@@ -668,13 +668,17 @@ CREATE TABLE candidates (
     email VARCHAR(100) NOT NULL UNIQUE,
     phone VARCHAR(20),
     address TEXT,
-    resume_url VARCHAR(255),
-    cover_letter_url VARCHAR(255),
+    resume_data LONGBLOB,
+    resume_filename VARCHAR(255),
+    photo_data LONGBLOB,
+    photo_filename VARCHAR(255),
     source VARCHAR(100),
     current_position VARCHAR(100),
     current_company VARCHAR(100),
     notice_period VARCHAR(50),
     expected_salary DECIMAL(10,2),
+    email_verified TINYINT(1) DEFAULT 0,
+    verification_token VARCHAR(64) NULL,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
 );
@@ -727,25 +731,25 @@ CREATE TABLE interviews (
     FOREIGN KEY (stage_id) REFERENCES interview_stages(stage_id) ON DELETE CASCADE
 );
 
--- Create job_offers table (no approver/creator references)
+-- Create job_offers table (supports both hiring and promotions)
 CREATE TABLE job_offers (
     offer_id INT AUTO_INCREMENT PRIMARY KEY,
-    application_id INT NOT NULL,
+    candidate_id INT NULL,
+    employee_id INT NULL,
     job_opening_id INT NOT NULL,
-    candidate_id INT NOT NULL,
-    offered_salary DECIMAL(10,2) NOT NULL,
-    offered_benefits TEXT,
+    offer_type ENUM('hire', 'promotion') NOT NULL,
+    salary_offered DECIMAL(10,2) NOT NULL,
+    benefits TEXT,
     start_date DATE,
-    expiration_date DATE NOT NULL,
-    approval_status ENUM('Pending', 'Approved', 'Rejected') DEFAULT 'Pending',
-    offer_status ENUM('Draft', 'Sent', 'Accepted', 'Negotiating', 'Declined', 'Expired') DEFAULT 'Draft',
-    offer_letter_url VARCHAR(255),
+    offer_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    response_date TIMESTAMP NULL,
+    status ENUM('Pending', 'Accepted', 'Rejected', 'Withdrawn') DEFAULT 'Pending',
     notes TEXT,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-    FOREIGN KEY (application_id) REFERENCES job_applications(application_id) ON DELETE CASCADE,
-    FOREIGN KEY (job_opening_id) REFERENCES job_openings(job_opening_id) ON DELETE CASCADE,
-    FOREIGN KEY (candidate_id) REFERENCES candidates(candidate_id) ON DELETE CASCADE
+    FOREIGN KEY (candidate_id) REFERENCES candidates(candidate_id) ON DELETE CASCADE,
+    FOREIGN KEY (employee_id) REFERENCES employee_profiles(employee_id) ON DELETE CASCADE,
+    FOREIGN KEY (job_opening_id) REFERENCES job_openings(job_opening_id) ON DELETE CASCADE
 );
 
 -- Create recruitment_analytics table
@@ -1079,6 +1083,61 @@ INSERT INTO job_roles (title, description, department, min_salary, max_salary) V
 ('Driver', 'Operates municipal vehicles and provides transportation services', 'General Services Office', 20000.00, 32000.00),
 ('Security Personnel', 'Provides security services for municipal facilities', 'General Services Office', 18000.00, 28000.00),
 ('Legislative Staff', 'Provides secretarial support to Sangguniang Bayan', 'Sangguniang Bayan', 25000.00, 38000.00);
+
+-- Create employees table for job offers system
+CREATE TABLE employees (
+    employee_id INT AUTO_INCREMENT PRIMARY KEY,
+    first_name VARCHAR(50) NOT NULL,
+    last_name VARCHAR(50) NOT NULL,
+    email VARCHAR(100) NOT NULL,
+    current_position VARCHAR(100),
+    status ENUM('Active', 'Inactive') DEFAULT 'Active',
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+);
+
+-- Insert sample employees for promotions
+INSERT INTO employees (first_name, last_name, email, current_position) VALUES
+('Maria', 'Santos', 'maria.santos@municipality.gov.ph', 'Municipal Treasurer'),
+('Roberto', 'Cruz', 'roberto.cruz@municipality.gov.ph', 'Municipal Engineer'),
+('Jennifer', 'Reyes', 'jennifer.reyes@municipality.gov.ph', 'Nurse'),
+('Antonio', 'Garcia', 'antonio.garcia@municipality.gov.ph', 'CAD Operator'),
+('Lisa', 'Mendoza', 'lisa.mendoza@municipality.gov.ph', 'Social Worker'),
+('Michael', 'Torres', 'michael.torres@municipality.gov.ph', 'Accounting Staff'),
+('Carmen', 'Dela Cruz', 'carmen.delacruz@municipality.gov.ph', 'Clerk'),
+('Ricardo', 'Villanueva', 'ricardo.villanueva@municipality.gov.ph', 'Maintenance Worker'),
+('Sandra', 'Pascual', 'sandra.pascual@municipality.gov.ph', 'Cashier'),
+('Jose', 'Ramos', 'jose.ramos@municipality.gov.ph', 'Collection Officer');
+
+-- Insert sample job openings
+INSERT INTO job_openings (job_role_id, department_id, title, description, requirements, responsibilities, location, employment_type, salary_range_min, salary_range_max, vacancy_count, posting_date, closing_date, status) VALUES
+(17, 9, 'Municipal Nurse', 'Provide nursing services and healthcare support to municipal residents', 'Bachelor of Science in Nursing, Valid PRC License, At least 2 years experience', 'Provide nursing care, assist in medical procedures, health education', 'Municipal Health Office', 'Full-time', 35000.00, 50000.00, 2, CURDATE(), DATE_ADD(CURDATE(), INTERVAL 30 DAY), 'Open'),
+(26, 13, 'Administrative Aide', 'Provide administrative support to HR department', 'College graduate, Computer literate, Good communication skills', 'File management, data entry, assist in HR processes', 'City Hall - 2nd Floor', 'Full-time', 22000.00, 35000.00, 1, CURDATE(), DATE_ADD(CURDATE(), INTERVAL 30 DAY), 'Open');
+
+-- Insert default interview stages for the sample job openings
+INSERT INTO interview_stages (job_opening_id, stage_name, stage_order, description, is_mandatory) VALUES
+-- For Municipal Nurse position
+(1, 'Initial Screening', 1, 'Review of application documents and basic qualifications', 1),
+(1, 'Technical Interview', 2, 'Assessment of nursing knowledge and clinical skills', 1),
+(1, 'Panel Interview', 3, 'Interview with department heads and HR', 1),
+(1, 'Medical Examination', 4, 'Health assessment and fitness for duty', 1),
+
+-- For Administrative Aide position
+(2, 'Document Review', 1, 'Verification of educational background and requirements', 1),
+(2, 'Skills Assessment', 2, 'Computer literacy and administrative skills test', 1),
+(2, 'HR Interview', 3, 'Final interview with HR manager', 1);
+
+-- Insert sample candidates for testing
+INSERT INTO candidates (first_name, last_name, email, phone, address, source, current_position, expected_salary, resume_filename, photo_filename, email_verified) VALUES
+('Anna', 'Rodriguez', 'anna.rodriguez@email.com', '0917-111-2222', '123 Main St, City', 'Job Portal', 'Staff Nurse', 40000.00, 'anna_rodriguez_resume.pdf', 'anna_rodriguez_photo.jpg', 1),
+('Mark', 'Gonzales', 'mark.gonzales@email.com', '0917-333-4444', '456 Oak Ave, City', 'Walk-in', 'Administrative Assistant', 25000.00, 'mark_gonzales_resume.pdf', 'mark_gonzales_photo.jpg', 1),
+('Sarah', 'Dela Rosa', 'sarah.delarosa@email.com', '0917-555-6666', '789 Pine St, City', 'Referral', 'Registered Nurse', 42000.00, 'sarah_delarosa_resume.pdf', 'sarah_delarosa_photo.jpg', 1);
+
+-- Insert sample job applications
+INSERT INTO job_applications (job_opening_id, candidate_id, application_date, status) VALUES
+(1, 1, NOW(), 'Applied'),
+(1, 3, NOW(), 'Applied'),
+(2, 2, NOW(), 'Applied');
 
 -- Insert sample data for employee_profiles
 INSERT INTO employee_profiles (personal_info_id, job_role_id, employee_number, hire_date, employment_status, current_salary, work_email, work_phone, location, remote_work) VALUES

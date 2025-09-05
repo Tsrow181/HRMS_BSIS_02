@@ -1,647 +1,434 @@
 <?php
-// Start session if not already started
-if (session_status() === PHP_SESSION_NONE) {
-    session_start();
-}
-
-// Check if user is logged in
+error_reporting(E_ALL);
+ini_set('display_errors', 1);
+session_start();
 if (!isset($_SESSION['loggedin']) || $_SESSION['loggedin'] !== true) {
-    header("Location: login.php");
+    header('Location: login.php');
     exit;
 }
+require_once 'config.php';
 
-// Include database connection and helper functions
-require_once 'dp.php';
-
-// Database connection
-$host = 'localhost';
-$dbname = 'CC_HR';
-$username = 'root';
-$password = '';
-
-try {
-    $pdo = new PDO("mysql:host=$host;dbname=$dbname", $username, $password);
-    $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
-} catch(PDOException $e) {
-    die("Connection failed: " . $e->getMessage());
-}
-
-// Handle form submissions
-$message = '';
-$messageType = '';
+$success_message = '';
+$selected_job = isset($_GET['job_id']) ? $_GET['job_id'] : null;
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     if (isset($_POST['action'])) {
         switch ($_POST['action']) {
-            case 'add':
-                // Add new employee
-                try {
-                    $stmt = $pdo->prepare("INSERT INTO employee_profiles (personal_info_id, job_role_id, employee_number, hire_date, employment_status, current_salary, work_email, work_phone, location, remote_work) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
-                    $stmt->execute([
-                        $_POST['personal_info_id'],
-                        $_POST['job_role_id'],
-                        $_POST['employee_number'],
-                        $_POST['hire_date'],
-                        $_POST['employment_status'],
-                        $_POST['current_salary'],
-                        $_POST['work_email'],
-                        $_POST['work_phone'],
-                        $_POST['location'],
-                        isset($_POST['remote_work']) ? 1 : 0
-                    ]);
-                    $message = "Employee profile added successfully!";
-                    $messageType = "success";
-                } catch (PDOException $e) {
-                    $message = "Error adding employee: " . $e->getMessage();
-                    $messageType = "error";
-                }
+            case 'add_stage':
+                $job_id = $_POST['job_opening_id'];
+                $stage_name = $_POST['stage_name'];
+                $description = $_POST['description'];
+                
+                // Get next stage order
+                $order_stmt = $conn->prepare("SELECT MAX(stage_order) as max_order FROM interview_stages WHERE job_opening_id = ?");
+                $order_stmt->execute([$job_id]);
+                $max_order = $order_stmt->fetch(PDO::FETCH_ASSOC)['max_order'] ?? 0;
+                
+                $stmt = $conn->prepare("INSERT INTO interview_stages (job_opening_id, stage_name, description, stage_order) VALUES (?, ?, ?, ?)");
+                $stmt->execute([$job_id, $stage_name, $description, $max_order + 1]);
+                
+                $success_message = "✅ Stage added successfully!";
                 break;
-            
-            case 'update':
-                // Update employee
-                try {
-                    $stmt = $pdo->prepare("UPDATE employee_profiles SET personal_info_id=?, job_role_id=?, employee_number=?, hire_date=?, employment_status=?, current_salary=?, work_email=?, work_phone=?, location=?, remote_work=? WHERE employee_id=?");
-                    $stmt->execute([
-                        $_POST['personal_info_id'],
-                        $_POST['job_role_id'],
-                        $_POST['employee_number'],
-                        $_POST['hire_date'],
-                        $_POST['employment_status'],
-                        $_POST['current_salary'],
-                        $_POST['work_email'],
-                        $_POST['work_phone'],
-                        $_POST['location'],
-                        isset($_POST['remote_work']) ? 1 : 0,
-                        $_POST['employee_id']
-                    ]);
-                    $message = "Employee profile updated successfully!";
-                    $messageType = "success";
-                } catch (PDOException $e) {
-                    $message = "Error updating employee: " . $e->getMessage();
-                    $messageType = "error";
-                }
+                
+            case 'edit_stage':
+                $stage_id = $_POST['stage_id'];
+                $stage_name = $_POST['stage_name'];
+                $description = $_POST['description'];
+                
+                $stmt = $conn->prepare("UPDATE interview_stages SET stage_name = ?, description = ? WHERE stage_id = ?");
+                $stmt->execute([$stage_name, $description, $stage_id]);
+                
+                $success_message = "✅ Stage updated successfully!";
                 break;
-            
-            case 'delete':
-                // Delete employee
-                try {
-                    $stmt = $pdo->prepare("DELETE FROM employee_profiles WHERE employee_id=?");
-                    $stmt->execute([$_POST['employee_id']]);
-                    $message = "Employee profile deleted successfully!";
-                    $messageType = "success";
-                } catch (PDOException $e) {
-                    $message = "Error deleting employee: " . $e->getMessage();
-                    $messageType = "error";
-                }
+                
+            case 'delete_stage':
+                $stage_id = $_POST['stage_id'];
+                
+                $stmt = $conn->prepare("DELETE FROM interview_stages WHERE stage_id = ?");
+                $stmt->execute([$stage_id]);
+                
+                $success_message = "✅ Stage deleted successfully!";
                 break;
         }
+        
+
     }
 }
 
-// Fetch employees with related data
-$stmt = $pdo->query("
-    SELECT 
-        ep.*,
-        CONCAT(pi.first_name, ' ', pi.last_name) as full_name,
-        pi.first_name,
-        pi.last_name,
-        pi.phone_number,
-        jr.title as job_title,
-        jr.department
-    FROM employee_profiles ep
-    LEFT JOIN personal_information pi ON ep.personal_info_id = pi.personal_info_id
-    LEFT JOIN job_roles jr ON ep.job_role_id = jr.job_role_id
-    ORDER BY ep.employee_id DESC
-");
-$employees = $stmt->fetchAll(PDO::FETCH_ASSOC);
+// Auto-start interview stages based on job application status
+$conn->exec("UPDATE candidates c 
+             JOIN job_applications ja ON c.candidate_id = ja.candidate_id 
+             JOIN interview_stages ist ON ja.job_opening_id = ist.job_opening_id 
+             SET c.source = ist.stage_name, ja.status = 'Interview' 
+             WHERE ja.status = 'Screening' AND ist.stage_order = 1");
 
-// Fetch personal information for dropdown
-$stmt = $pdo->query("SELECT personal_info_id, CONCAT(first_name, ' ', last_name) as full_name FROM personal_information ORDER BY first_name");
-$personalInfo = $stmt->fetchAll(PDO::FETCH_ASSOC);
+// Create interviews for candidates who reach each stage
+try {
+    $result = $conn->exec("INSERT INTO interviews (application_id, stage_id, schedule_date, duration, interview_type, status)
+                 SELECT ja.application_id, ist.stage_id, NOW(), 60, 'Interview', 'Rescheduled'
+                 FROM candidates c 
+                 JOIN job_applications ja ON c.candidate_id = ja.candidate_id 
+                 JOIN interview_stages ist ON ja.job_opening_id = ist.job_opening_id AND c.source = ist.stage_name
+                 WHERE ja.status = 'Interview' 
+                 AND NOT EXISTS (SELECT 1 FROM interviews i WHERE i.application_id = ja.application_id AND i.stage_id = ist.stage_id)");
+    
+    if ($result > 0) {
+        $success_message = "✅ Created $result new interviews!";
+    }
+} catch (Exception $e) {
+    $success_message = "❌ Error creating interviews: " . $e->getMessage();
+}
 
-// Fetch job roles for dropdown
-$stmt = $pdo->query("SELECT job_role_id, title, department FROM job_roles ORDER BY title");
-$jobRoles = $stmt->fetchAll(PDO::FETCH_ASSOC);
+// Get job openings with candidates ready for onboarding (based on job application status)
+$job_openings = $conn->query("SELECT DISTINCT jo.job_opening_id, jo.title, d.department_name, 
+                                     COUNT(CASE WHEN ja.status = 'Hired' THEN 1 END) as hired_count,
+                                     COUNT(CASE WHEN ja.status = 'Interview' THEN 1 END) as in_process_count
+                              FROM job_openings jo
+                              JOIN departments d ON jo.department_id = d.department_id
+                              JOIN job_applications ja ON jo.job_opening_id = ja.job_opening_id
+                              WHERE ja.status IN ('Interview', 'Screening', 'Hired')
+                              GROUP BY jo.job_opening_id, jo.title, d.department_name
+                              ORDER BY jo.title")->fetchAll(PDO::FETCH_ASSOC);
+
+if ($selected_job) {
+    // Get stages for selected job
+    $job_stages = $conn->prepare("SELECT * FROM interview_stages WHERE job_opening_id = ? ORDER BY stage_order");
+    $job_stages->execute([$selected_job]);
+    $stages = $job_stages->fetchAll(PDO::FETCH_ASSOC);
+    
+
+    
+    // Get job info
+    $job_info = $conn->prepare("SELECT jo.title, d.department_name FROM job_openings jo 
+                               JOIN departments d ON jo.department_id = d.department_id 
+                               WHERE jo.job_opening_id = ?");
+    $job_info->execute([$selected_job]);
+    $job_details = $job_info->fetch(PDO::FETCH_ASSOC);
+    
+    // Get candidates for each stage with interview status
+    $candidates_by_stage = [];
+    foreach ($stages as $stage) {
+        $candidates = $conn->prepare("SELECT c.*, ja.application_id, ja.application_date, 
+                                            i.interview_id, i.status as interview_status, i.schedule_date
+                                     FROM candidates c 
+                                     JOIN job_applications ja ON c.candidate_id = ja.candidate_id
+                                     LEFT JOIN interviews i ON ja.application_id = i.application_id AND i.stage_id = ?
+                                     WHERE ja.job_opening_id = ? AND ja.status IN ('Interview', 'Screening', 'Hired') AND c.source = ?
+                                     ORDER BY ja.application_date DESC");
+        $candidates->execute([$stage['stage_id'], $selected_job, $stage['stage_name']]);
+        $candidates_by_stage[$stage['stage_name']] = $candidates->fetchAll(PDO::FETCH_ASSOC);
+    }
+}
 ?>
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Employee Profile Management - HR System</title>
+    <title>Interview Stages - HR Management System</title>
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.1/css/all.min.css">
     <link rel="stylesheet" href="styles.css?v=rose">
-    <style>
-        /* Additional custom styles for employee profile page */
-        :root {
-            --azure-blue: #E91E63;
-            --azure-blue-light: #F06292;
-            --azure-blue-dark: #C2185B;
-            --azure-blue-lighter: #F8BBD0;
-            --azure-blue-pale: #FCE4EC;
-        }
-
-        .section-title {
-            color: var(--azure-blue);
-            margin-bottom: 30px;
-            font-weight: 600;
-        }
-        
-        .container-fluid {
-            padding: 0;
-        }
-        
-        .row {
-            margin-right: 0;
-            margin-left: 0;
-        }
-
-        body {
-            background: var(--azure-blue-pale);
-        }
-
-        .main-content {
-            background: var(--azure-blue-pale);
-            padding: 20px;
-        }
-
-        .controls {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 30px;
-            flex-wrap: wrap;
-            gap: 15px;
-        }
-
-        .search-box {
-            position: relative;
-            flex: 1;
-            max-width: 400px;
-        }
-
-        .search-box input {
-            width: 100%;
-            padding: 12px 15px 12px 45px;
-            border: 2px solid #e0e0e0;
-            border-radius: 25px;
-            font-size: 16px;
-            transition: all 0.3s ease;
-        }
-
-        .search-box input:focus {
-            border-color: var(--azure-blue);
-            outline: none;
-            box-shadow: 0 0 10px rgba(233, 30, 99, 0.3);
-        }
-
-        .search-icon {
-            position: absolute;
-            left: 15px;
-            top: 50%;
-            transform: translateY(-50%);
-            color: #666;
-        }
-
-        .btn {
-            padding: 12px 25px;
-            border: none;
-            border-radius: 25px;
-            font-size: 16px;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            text-decoration: none;
-            display: inline-block;
-        }
-
-        .btn-primary {
-            background: linear-gradient(135deg, var(--azure-blue) 0%, var(--azure-blue-light) 100%);
-            color: white;
-        }
-
-        .btn-primary:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 5px 15px rgba(233, 30, 99, 0.4);
-            background: linear-gradient(135deg, var(--azure-blue-light) 0%, var(--azure-blue-dark) 100%);
-        }
-
-        .btn-success {
-            background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
-            color: white;
-        }
-
-        .btn-danger {
-            background: linear-gradient(135deg, #dc3545 0%, #c82333 100%);
-            color: white;
-        }
-
-        .btn-warning {
-            background: linear-gradient(135deg, #ffc107 0%, #e0a800 100%);
-            color: white;
-        }
-
-        .btn-small {
-            padding: 8px 15px;
-            font-size: 14px;
-            margin: 0 3px;
-        }
-
-        .table-container {
-            background: white;
-            border-radius: 10px;
-            overflow: hidden;
-            box-shadow: 0 5px 15px rgba(0,0,0,0.08);
-        }
-
-        .table {
-            width: 100%;
-            border-collapse: collapse;
-        }
-
-        .table th {
-            background: linear-gradient(135deg, var(--azure-blue-lighter) 0%, #e9ecef 100%);
-            padding: 15px;
-            text-align: left;
-            font-weight: 600;
-            color: var(--azure-blue-dark);
-            border-bottom: 2px solid #dee2e6;
-        }
-
-        .table td {
-            padding: 15px;
-            border-bottom: 1px solid #f1f1f1;
-            vertical-align: middle;
-        }
-
-        .table tbody tr:hover {
-            background-color: var(--azure-blue-lighter);
-            transform: scale(1.01);
-            transition: all 0.2s ease;
-        }
-
-        .status-badge {
-            padding: 5px 12px;
-            border-radius: 20px;
-            font-size: 12px;
-            font-weight: 600;
-            text-transform: uppercase;
-        }
-
-        .status-active {
-            background: #d4edda;
-            color: #155724;
-        }
-
-        .status-inactive {
-            background: #f8d7da;
-            color: #721c24;
-        }
-
-        .modal {
-            display: none;
-            position: fixed;
-            z-index: 1000;
-            left: 0;
-            top: 0;
-            width: 100%;
-            height: 100%;
-            background-color: rgba(0,0,0,0.5);
-            backdrop-filter: blur(5px);
-        }
-
-        .modal-content {
-            background: white;
-            margin: 5% auto;
-            padding: 0;
-            border-radius: 15px;
-            width: 90%;
-            max-width: 600px;
-            max-height: 90vh;
-            overflow-y: auto;
-            box-shadow: 0 20px 40px rgba(0,0,0,0.3);
-            animation: slideIn 0.3s ease;
-        }
-
-        @keyframes slideIn {
-            from { transform: translateY(-50px); opacity: 0; }
-            to { transform: translateY(0); opacity: 1; }
-        }
-
-        .modal-header {
-            background: linear-gradient(135deg, var(--azure-blue) 0%, var(--azure-blue-light) 100%);
-            color: white;
-            padding: 20px 30px;
-            border-radius: 15px 15px 0 0;
-        }
-
-        .modal-header h2 {
-            margin: 0;
-        }
-
-        .close {
-            float: right;
-            font-size: 28px;
-            font-weight: bold;
-            cursor: pointer;
-            color: white;
-            opacity: 0.7;
-        }
-
-        .close:hover {
-            opacity: 1;
-        }
-
-        .modal-body {
-            padding: 30px;
-        }
-
-        .form-group {
-            margin-bottom: 20px;
-        }
-
-        .form-group label {
-            display: block;
-            margin-bottom: 8px;
-            font-weight: 600;
-            color: var(--azure-blue-dark);
-        }
-
-        .form-control {
-            width: 100%;
-            padding: 12px 15px;
-            border: 2px solid #e0e0e0;
-            border-radius: 8px;
-            font-size: 16px;
-            transition: all 0.3s ease;
-        }
-
-        .form-control:focus {
-            border-color: var(--azure-blue);
-            outline: none;
-            box-shadow: 0 0 10px rgba(233, 30, 99, 0.3);
-        }
-
-        .form-row {
-            display: flex;
-            gap: 20px;
-        }
-
-        .form-col {
-            flex: 1;
-        }
-
-        .checkbox-group {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            margin-top: 10px;
-        }
-
-        .alert {
-            padding: 15px 20px;
-            margin-bottom: 20px;
-            border-radius: 8px;
-            font-weight: 500;
-        }
-
-        .alert-success {
-            background: #d4edda;
-            color: #155724;
-            border: 1px solid #c3e6cb;
-        }
-
-        .alert-error {
-            background: #f8d7da;
-            color: #721c24;
-            border: 1px solid #f5c6cb;
-        }
-
-        .no-results {
-            text-align: center;
-            padding: 50px;
-            color: #666;
-        }
-
-        .no-results i {
-            font-size: 4rem;
-            margin-bottom: 20px;
-            color: #ddd;
-        }
-
-        .loading {
-            text-align: center;
-            padding: 40px;
-        }
-
-        .spinner {
-            border: 4px solid #f3f3f3;
-            border-top: 4px solid var(--azure-blue);
-            border-radius: 50%;
-            width: 40px;
-            height: 40px;
-            animation: spin 1s linear infinite;
-            margin: 0 auto;
-        }
-
-        @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
-        }
-
-        @media (max-width: 768px) {
-            .controls {
-                flex-direction: column;
-                align-items: stretch;
-            }
-
-            .search-box {
-                max-width: none;
-            }
-
-            .form-row {
-                flex-direction: column;
-            }
-
-            .table-container {
-                overflow-x: auto;
-            }
-
-            .content {
-                padding: 20px;
-            }
-        }
-    </style>
 </head>
 <body>
     <div class="container-fluid">
         <?php include 'navigation.php'; ?>
         <div class="row">
             <?php include 'sidebar.php'; ?>
-                        <div class="main-content">
-                <h2 class="section-title">Interview Stages</h2>
-                <div class="content">
-                    <?php if ($message): ?>
-                        <div class="alert alert-<?= $messageType ?>">
-                            <?= htmlspecialchars($message) ?>
+            <div class="main-content">
+                <h2>🎯 Interview Stages Management</h2>
+                
+                <?php if (!empty($success_message)): ?>
+                    <div class="alert alert-success alert-dismissible fade show" role="alert">
+                        <?php echo $success_message; ?>
+                        <button type="button" class="close" data-dismiss="alert">
+                            <span>&times;</span>
+                        </button>
+                    </div>
+                <?php endif; ?>
+
+                <?php if (!$selected_job): ?>
+                    <!-- Job Openings Cards -->
+                    <div class="alert alert-info">
+                        <i class="fas fa-info-circle"></i> Select a job opening below to manage its interview stages and candidates.
+                    </div>
+                    
+                    <div class="row">
+                        <?php foreach ($job_openings as $job): ?>
+                            <div class="col-md-6 col-lg-4 mb-4">
+                                <div class="card job-card h-100" style="cursor: pointer;" onclick="window.location.href='?job_id=<?php echo $job['job_opening_id']; ?>'">
+                                    <div class="card-body text-center">
+                                        <div class="activity-icon bg-primary mb-3">
+                                            <i class="fas fa-briefcase"></i>
+                                        </div>
+                                        <h5 class="card-title"><?php echo htmlspecialchars($job['title']); ?></h5>
+                                        <p class="card-text text-muted"><?php echo htmlspecialchars($job['department_name']); ?></p>
+                                        <div class="mt-3">
+                                            <?php if ($job['hired_count'] > 0): ?>
+                                                <span class="badge badge-success"><?php echo $job['hired_count']; ?> Hired</span>
+                                            <?php endif; ?>
+                                            <?php if ($job['in_process_count'] > 0): ?>
+                                                <span class="badge badge-warning"><?php echo $job['in_process_count']; ?> In Process</span>
+                                            <?php endif; ?>
+                                        </div>
+                                        <div class="mt-3">
+                                            <button class="btn btn-primary action-btn">
+                                                <i class="fas fa-arrow-right"></i> Manage Stages
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        <?php endforeach; ?>
+                    </div>
+                    
+                    <?php if (empty($job_openings)): ?>
+                        <div class="alert alert-warning text-center">
+                            <h5><i class="fas fa-exclamation-triangle"></i> No Active Assessment</h5>
+                            <p>No candidates are currently in the assessment process.</p>
                         </div>
                     <?php endif; ?>
-
-
+                    
+                <?php else: ?>
+                    <!-- Selected Job Stages -->
+                    <div class="mb-3">
+                        <a href="interview_stages.php" class="btn btn-secondary">
+                            <i class="fas fa-arrow-left"></i> Back to Job Openings
+                        </a>
+                        <button class="btn btn-success ml-2" data-toggle="modal" data-target="#addStageModal">
+                            <i class="fas fa-plus"></i> Add Stage
+                        </button>
+                        <button class="btn btn-info ml-2" data-toggle="modal" data-target="#manageStagesModal">
+                            <i class="fas fa-cogs"></i> Manage Stages
+                        </button>
                     </div>
+                    
+                    <div class="card mb-4">
+                        <div class="card-header">
+                            <h5>
+                                <i class="fas fa-briefcase"></i> 
+                                <?php echo htmlspecialchars($job_details['title']); ?>
+                                <small class="text-muted">- <?php echo htmlspecialchars($job_details['department_name']); ?></small>
+                            </h5>
+                        </div>
+                        <div class="card-body">
+                            <?php foreach ($stages as $stage): 
+                                $stage_candidates = $candidates_by_stage[$stage['stage_name']] ?? [];
+                                $stage_colors = ['border-primary', 'border-info', 'border-warning', 'border-success', 'border-danger'];
+                                $color = $stage_colors[($stage['stage_order'] - 1) % count($stage_colors)];
+                            ?>
+                                <div class="mb-4">
+                                    <h6>
+                                        <span class="badge badge-primary"><?php echo $stage['stage_order']; ?></span>
+                                        <?php echo htmlspecialchars($stage['stage_name']); ?> 
+                                        (<?php echo count($stage_candidates); ?>)
+                                    </h6>
+                                    <?php if ($stage['description']): ?>
+                                        <p class="text-muted small"><?php echo htmlspecialchars($stage['description']); ?></p>
+                                    <?php endif; ?>
+                                    
+                                    <?php if (count($stage_candidates) > 0): ?>
+                                        <div class="row">
+                                            <?php foreach ($stage_candidates as $candidate): ?>
+                                                <div class="col-md-6 col-lg-4 mb-2">
+                                                    <div class="card <?php echo $color; ?>">
+                                                        <div class="card-body p-2">
+                                                            <h6 class="mb-1">
+                                                                <i class="fas fa-user"></i> 
+                                                                <?php echo htmlspecialchars($candidate['first_name'] . ' ' . $candidate['last_name']); ?>
+                                                            </h6>
+                                                            <p class="mb-1 small">
+                                                                <strong>Email:</strong> <?php echo htmlspecialchars($candidate['email']); ?>
+                                                            </p>
+                                                            <p class="mb-2 small">
+                                                                <strong>Applied:</strong> <?php echo date('M d, Y', strtotime($candidate['application_date'])); ?>
+                                                            </p>
+                                                            
+                                                            <div class="w-100">
+                                                                <!-- Debug Info -->
+                                                                <small class="text-muted">Debug: App ID: <?php echo $candidate['application_id']; ?>, Stage ID: <?php echo $stage['stage_id']; ?>, Interview ID: <?php echo $candidate['interview_id'] ?? 'None'; ?></small>
+                                                                
+                                                                <?php if ($candidate['interview_id']): ?>
+                                                                    <div class="mb-2">
+                                                                        <span class="badge badge-<?php 
+                                                                            echo $candidate['interview_status'] == 'Rescheduled' ? 'warning' : 
+                                                                                ($candidate['interview_status'] == 'Scheduled' ? 'primary' : 
+                                                                                ($candidate['interview_status'] == 'Completed' ? 'success' : 'secondary')); 
+                                                                        ?>">
+                                                                            <?php 
+                                                                            $status_icons = [
+                                                                                'Rescheduled' => '⏰ Need Scheduling',
+                                                                                'Scheduled' => '📅 Scheduled',
+                                                                                'Completed' => '✅ Completed',
+                                                                                'Cancelled' => '❌ Cancelled'
+                                                                            ];
+                                                                            echo $status_icons[$candidate['interview_status']] ?? $candidate['interview_status'];
+                                                                            ?>
+                                                                        </span>
+                                                                    </div>
+                                                                    <?php if ($candidate['interview_status'] == 'Scheduled' && $candidate['schedule_date']): ?>
+                                                                        <p class="mb-2 small text-info">
+                                                                            <i class="fas fa-clock"></i> <?php echo date('M d, Y H:i', strtotime($candidate['schedule_date'])); ?>
+                                                                        </p>
+                                                                    <?php endif; ?>
+                                                                    <a href="interviews.php" class="btn btn-info btn-sm w-100">
+                                                                        <i class="fas fa-calendar-alt"></i> Manage Interview
+                                                                    </a>
+                                                                <?php else: ?>
+                                                                    <div class="alert alert-warning p-2">
+                                                                        <small><i class="fas fa-exclamation-triangle"></i> Interview not created yet</small>
+                                                                    </div>
+                                                                    <button class="btn btn-primary btn-sm w-100" onclick="window.location.reload()">
+                                                                        <i class="fas fa-refresh"></i> Refresh
+                                                                    </button>
+                                                                <?php endif; ?>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            <?php endforeach; ?>
+                                        </div>
+                                    <?php else: ?>
+                                        <div class="alert alert-light">
+                                            <i class="fas fa-info-circle"></i> No candidates in this stage.
+                                        </div>
+                                    <?php endif; ?>
+                                </div>
+                            <?php endforeach; ?>
+                        </div>
+                    </div>
+                    
+                <?php endif; ?>
+            </div>
+        </div>
+    </div>
+
+    <!-- Add Stage Modal -->
+    <div class="modal fade" id="addStageModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Add Interview Stage</h5>
+                    <button type="button" class="close" data-dismiss="modal">&times;</button>
+                </div>
+                <form method="POST">
+                    <div class="modal-body">
+                        <input type="hidden" name="action" value="add_stage">
+                        <input type="hidden" name="job_opening_id" value="<?php echo $selected_job; ?>">
+                        <div class="form-group">
+                            <label>Stage Name</label>
+                            <input type="text" name="stage_name" class="form-control" required>
+                        </div>
+                        <div class="form-group">
+                            <label>Description</label>
+                            <textarea name="description" class="form-control" rows="3"></textarea>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
+                        <button type="submit" class="btn btn-success">Add Stage</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Manage Stages Modal -->
+    <div class="modal fade" id="manageStagesModal" tabindex="-1">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Manage Interview Stages</h5>
+                    <button type="button" class="close" data-dismiss="modal">&times;</button>
+                </div>
+                <div class="modal-body">
+                    <?php if (!empty($stages)): ?>
+                        <div class="table-responsive">
+                            <table class="table table-striped">
+                                <thead>
+                                    <tr>
+                                        <th>Order</th>
+                                        <th>Stage Name</th>
+                                        <th>Description</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <?php foreach($stages as $stage): ?>
+                                        <tr>
+                                            <td><?php echo $stage['stage_order']; ?></td>
+                                            <td><?php echo htmlspecialchars($stage['stage_name']); ?></td>
+                                            <td><?php echo htmlspecialchars($stage['description'] ?? 'No description'); ?></td>
+                                            <td>
+                                                <button class="btn btn-primary btn-sm" onclick="editStage(<?php echo $stage['stage_id']; ?>, '<?php echo addslashes($stage['stage_name']); ?>', '<?php echo addslashes($stage['description'] ?? ''); ?>')">
+                                                    <i class="fas fa-edit"></i> Edit
+                                                </button>
+                                                <form method="POST" style="display:inline;" class="ml-1">
+                                                    <input type="hidden" name="action" value="delete_stage">
+                                                    <input type="hidden" name="stage_id" value="<?php echo $stage['stage_id']; ?>">
+                                                    <button type="submit" class="btn btn-danger btn-sm" onclick="return confirm('Delete this stage?')">
+                                                        <i class="fas fa-trash"></i> Delete
+                                                    </button>
+                                                </form>
+                                            </td>
+                                        </tr>
+                                    <?php endforeach; ?>
+                                </tbody>
+                            </table>
+                        </div>
+                    <?php else: ?>
+                        <div class="alert alert-info">
+                            <i class="fas fa-info-circle"></i> No interview stages defined for this job. Add stages to begin candidate assessment.
+                        </div>
+                    <?php endif; ?>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
                 </div>
             </div>
         </div>
+    </div>
 
-    <script>
-        // Global variables
-        let employeesData = <?= json_encode($employees) ?>;
+    <!-- Edit Stage Modal -->
+    <div class="modal fade" id="editStageModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Edit Interview Stage</h5>
+                    <button type="button" class="close" data-dismiss="modal">&times;</button>
+                </div>
+                <form method="POST">
+                    <div class="modal-body">
+                        <input type="hidden" name="action" value="edit_stage">
+                        <input type="hidden" name="stage_id" id="edit_stage_id">
+                        <div class="form-group">
+                            <label>Stage Name</label>
+                            <input type="text" name="stage_name" id="edit_stage_name" class="form-control" required>
+                        </div>
+                        <div class="form-group">
+                            <label>Description</label>
+                            <textarea name="description" id="edit_description" class="form-control" rows="3"></textarea>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
+                        <button type="submit" class="btn btn-primary">Update Stage</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
 
-        // Search functionality
-        document.getElementById('searchInput').addEventListener('input', function() {
-            const searchTerm = this.value.toLowerCase();
-            const tableBody = document.getElementById('employeeTableBody');
-            const rows = tableBody.getElementsByTagName('tr');
-
-            for (let i = 0; i < rows.length; i++) {
-                const row = rows[i];
-                const text = row.textContent.toLowerCase();
-                
-                if (text.includes(searchTerm)) {
-                    row.style.display = '';
-                } else {
-                    row.style.display = 'none';
-                }
-            }
-        });
-
-        // Modal functions
-        function openModal(mode, employeeId = null) {
-            const modal = document.getElementById('employeeModal');
-            const form = document.getElementById('employeeForm');
-            const title = document.getElementById('modalTitle');
-            const action = document.getElementById('action');
-
-            if (mode === 'add') {
-                title.textContent = 'Add New Employee';
-                action.value = 'add';
-                form.reset();
-                document.getElementById('employee_id').value = '';
-            } else if (mode === 'edit' && employeeId) {
-                title.textContent = 'Edit Employee';
-                action.value = 'update';
-                document.getElementById('employee_id').value = employeeId;
-                populateEditForm(employeeId);
-            }
-
-            modal.style.display = 'block';
-            document.body.style.overflow = 'hidden';
-        }
-
-        function closeModal() {
-            const modal = document.getElementById('employeeModal');
-            modal.style.display = 'none';
-            document.body.style.overflow = 'auto';
-        }
-
-        function populateEditForm(employeeId) {
-            // This would typically fetch data via AJAX
-            // For now, we'll use the existing data
-            const employee = employeesData.find(emp => emp.employee_id == employeeId);
-            if (employee) {
-                document.getElementById('personal_info_id').value = employee.personal_info_id || '';
-                document.getElementById('job_role_id').value = employee.job_role_id || '';
-                document.getElementById('employee_number').value = employee.employee_number || '';
-                document.getElementById('hire_date').value = employee.hire_date || '';
-                document.getElementById('employment_status').value = employee.employment_status || '';
-                document.getElementById('current_salary').value = employee.current_salary || '';
-                document.getElementById('work_email').value = employee.work_email || '';
-                document.getElementById('work_phone').value = employee.work_phone || '';
-                document.getElementById('location').value = employee.location || '';
-                document.getElementById('remote_work').checked = employee.remote_work == 1;
-            }
-        }
-
-        function editEmployee(employeeId) {
-            openModal('edit', employeeId);
-        }
-
-        function deleteEmployee(employeeId) {
-            if (confirm('Are you sure you want to delete this employee? This action cannot be undone.')) {
-                const form = document.createElement('form');
-                form.method = 'POST';
-                form.innerHTML = `
-                    <input type="hidden" name="action" value="delete">
-                    <input type="hidden" name="employee_id" value="${employeeId}">
-                `;
-                document.body.appendChild(form);
-                form.submit();
-            }
-        }
-
-        // Close modal when clicking outside
-        window.onclick = function(event) {
-            const modal = document.getElementById('employeeModal');
-            if (event.target === modal) {
-                closeModal();
-            }
-        }
-
-        // Form validation
-        document.getElementById('employeeForm').addEventListener('submit', function(e) {
-            const salary = document.getElementById('current_salary').value;
-            if (salary <= 0) {
-                e.preventDefault();
-                alert('Salary must be greater than 0');
-                return;
-            }
-
-            const email = document.getElementById('work_email').value;
-            if (email && !isValidEmail(email)) {
-                e.preventDefault();
-                alert('Please enter a valid email address');
-                return;
-            }
-        });
-
-        function isValidEmail(email) {
-            const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-            return emailRegex.test(email);
-        }
-
-        // Auto-hide alerts
-        setTimeout(function() {
-            const alerts = document.querySelectorAll('.alert');
-            alerts.forEach(function(alert) {
-                alert.style.transition = 'opacity 0.5s';
-                alert.style.opacity = '0';
-                setTimeout(function() {
-                    alert.remove();
-                }, 500);
-            });
-        }, 5000);
-
-        // Initialize tooltips and animations
-        document.addEventListener('DOMContentLoaded', function() {
-            // Add hover effects to table rows
-            const tableRows = document.querySelectorAll('#employeeTable tbody tr');
-            tableRows.forEach(row => {
-                row.addEventListener('mouseenter', function() {
-                    this.style.transform = 'scale(1.02)';
-                });
-                
-                row.addEventListener('mouseleave', function() {
-                    this.style.transform = 'scale(1)';
-                });
-            });
-
-
-        });
-    </script>
-    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.1/dist/umd/popper.min.js"></script>
+    <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
     <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+    <script>
+        function editStage(stageId, stageName, description) {
+            document.getElementById('edit_stage_id').value = stageId;
+            document.getElementById('edit_stage_name').value = stageName;
+            document.getElementById('edit_description').value = description;
+            $('#manageStagesModal').modal('hide');
+            $('#editStageModal').modal('show');
+        }
+    </script>
 </body>
 </html>

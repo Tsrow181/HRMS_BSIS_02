@@ -387,6 +387,11 @@ $sidebar_stats = getSidebarStats();
                         </a>
                     </li>
                     <li class="nav-item">
+                        <a class="nav-link" href="public_jobs.php" target="_blank">
+                            <i class="fas fa-external-link-alt"></i> Public Job Portal
+                        </a>
+                    </li>
+                    <li class="nav-item">
                         <a class="nav-link <?php echo isActiveMenu('interview_stages.php'); ?>" href="interview_stages.php">
                             <i class="fas fa-tasks"></i> Interview Stages
                         </a>
@@ -398,7 +403,7 @@ $sidebar_stats = getSidebarStats();
                     </li>
                     <li class="nav-item">
                         <a class="nav-link <?php echo isActiveMenu('job_offers.php'); ?>" href="job_offers.php">
-                            <i class="fas fa-file-contract"></i> Job Offers
+                            <i class="fas fa-handshake"></i> Job Offers
                         </a>
                     </li>
                     <li class="nav-item">
@@ -408,17 +413,17 @@ $sidebar_stats = getSidebarStats();
                     </li>
                     <li class="nav-item">
                         <a class="nav-link <?php echo isActiveMenu('onboarding_tasks.php'); ?>" href="onboarding_tasks.php">
-                            <i class="fas fa-tasks"></i> Onboarding Tasks
+                            <i class="fas fa-clipboard-list"></i> Onboarding Tasks
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link <?php echo isActiveMenu('onboarding.php'); ?>" href="onboarding.php">
+                            <i class="fas fa-user-plus"></i> Onboarding Management
                         </a>
                     </li>
                     <li class="nav-item">
                         <a class="nav-link <?php echo isActiveMenu('employee_onboarding.php'); ?>" href="employee_onboarding.php">
-                            <i class="fas fa-user-plus"></i> Employee Onboarding
-                        </a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link <?php echo isActiveMenu('employee_onboarding_tasks.php'); ?>" href="employee_onboarding_tasks.php">
-                            <i class="fas fa-tasks"></i> Employee Onboarding Tasks
+                            <i class="fas fa-tasks"></i> Employee Onboarding
                         </a>
                     </li>
                 </ul>
