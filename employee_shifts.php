@@ -197,7 +197,6 @@ $shifts = getShifts();
                                                                 <input type="hidden" name="employeeShiftId" value="<?php echo $shift['employee_shift_id']; ?>">
                                                                 <input type="hidden" name="shiftId" value="<?php echo $shift['shift_id']; ?>">
                                                                 <input type="hidden" name="assignedDate" value="<?php echo $shift['assigned_date']; ?>">
-                                                                <input type="checkbox" name="isOvertime" <?php echo $shift['is_overtime'] ? 'checked' : ''; ?>> Overtime
                                                                 <button type="submit" name="editEmployeeShift" class="btn btn-sm btn-outline-primary mr-2">
                                                                     <i class="fas fa-edit"></i>
                                                                 </button>

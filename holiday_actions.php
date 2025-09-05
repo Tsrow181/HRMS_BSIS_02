@@ -1,5 +1,7 @@
 <?php
-session_start();
+if (session_status() == PHP_SESSION_NONE) {
+    session_start();
+}
 require_once 'config.php';
 require_once 'config/api_keys.php'; // Include API keys
 
@@ -351,7 +353,7 @@ function deletePublicHoliday($holiday_id) {
 }
 
 // Handle AJAX requests
-if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+if (isset($_SERVER['REQUEST_METHOD']) && $_SERVER['REQUEST_METHOD'] === 'POST') {
     $action = $_POST['action'] ?? '';
     $response = ['success' => false, 'message' => 'Invalid action'];
 
