@@ -40,9 +40,9 @@ try {
         )
     );
 } catch (PDOException $e) {
+    echo "Connecting to database: " . $dsn;
     // Log error and show generic message
     error_log("Connection failed: " . $e->getMessage());
-    error_log($dsn);
     die("Connection failed. Please try again later.");
 }
 
