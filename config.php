@@ -1,12 +1,14 @@
 <?php
 
 $host = getenv('DB_HOST') ?? 'localhost';
+$port = getenv('DB_PORT') ?? '3306';
 $dbname = getenv('DB_NAME') ?? 'hr_system';
 $username = getenv('DB_USER') ?? 'root';
 $password = getenv('DB_PASS') ?? '';
 
 // Database configuration
 define('DB_HOST', $host);
+define('DB_PORT', $port);
 define('DB_NAME', $dbname);
 define('DB_USER', $username);
 define('DB_PASS', $password);
@@ -26,7 +28,7 @@ date_default_timezone_set('UTC');
 // Database connection
 try {
     $conn = new PDO(
-        "mysql:host=" . DB_HOST . ";dbname=" . DB_NAME,
+        "mysql:host=" . DB_HOST . ";port=" . DB_PORT . ";dbname=" . DB_NAME,
         DB_USER,
         DB_PASS,
         array(
