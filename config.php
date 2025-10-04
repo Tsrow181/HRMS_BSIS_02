@@ -42,56 +42,56 @@ try {
 }
 
 // Application settings
-define('APP_NAME', 'HR System');
-define('APP_VERSION', '1.0.0');
-define('APP_URL', 'http://localhost/HR%20System');
+define('APP_NAME', getenv('APP_NAME') ?? 'HR System');
+define('APP_VERSION', getenv('APP_VERSION') ?? '1.0.0');
+define('APP_URL', getenv('APP_URL') ?? 'http://localhost/HR%20System');
 
 // File upload settings
-define('UPLOAD_DIR', __DIR__ . '/uploads/');
-define('MAX_FILE_SIZE', 5 * 1024 * 1024); // 5MB
-define('ALLOWED_FILE_TYPES', ['pdf', 'doc', 'docx', 'jpg', 'jpeg', 'png']);
+define('UPLOAD_DIR', getenv('UPLOAD_DIR') ?? __DIR__ . '/uploads/');
+define('MAX_FILE_SIZE', getenv('MAX_FILE_SIZE') ?? 5 * 1024 * 1024); // 5MB
+define('ALLOWED_FILE_TYPES', getenv('ALLOWED_FILE_TYPES') ?? ['pdf', 'doc', 'docx', 'jpg', 'jpeg', 'png']);
 
 // Security settings
-define('PASSWORD_HASH_COST', 12);
-define('SESSION_LIFETIME', 3600); // 1 hour
-define('CSRF_TOKEN_LIFETIME', 3600); // 1 hour
+define('PASSWORD_HASH_COST', getenv('PASSWORD_HASH_COST') ?? 12);
+define('SESSION_LIFETIME', getenv('SESSION_LIFETIME') ?? 3600); // 1 hour
+define('CSRF_TOKEN_LIFETIME', getenv('CSRF_TOKEN_LIFETIME') ?? 3600); // 1 hour
 
 // Email settings
-define('SMTP_HOST', 'smtp.gmail.com');
-define('SMTP_PORT', 587);
-define('SMTP_USERNAME', 'your-email@gmail.com');
-define('SMTP_PASSWORD', 'your-app-password');
+define('SMTP_HOST', getenv('SMTP_HOST') ?? 'smtp.gmail.com');
+define('SMTP_PORT', getenv('SMTP_PORT') ??  587);
+define('SMTP_USERNAME', getenv('SMTP_USERNAME') ?? 'your-email@gmail.com');
+define('SMTP_PASSWORD', getenv('SMTP_PASSWORD') ?? 'your-app-password');
 define('SMTP_FROM_EMAIL', 'noreply@hrsystem.com');
-define('SMTP_FROM_NAME', 'HR System');
+define('SMTP_FROM_NAME', getenv('SMTP_FROM_NAME') ?? 'HR System');
 
 // Pagination settings
-define('ITEMS_PER_PAGE', 10);
-define('MAX_PAGE_LINKS', 5);
+define('ITEMS_PER_PAGE', getenv('ITEMS_PER_PAGE') ?? 10);
+define('MAX_PAGE_LINKS', getenv('MAX_PAGE_LINKS') ?? 5);
 
 // Cache settings
-define('CACHE_ENABLED', true);
-define('CACHE_LIFETIME', 3600); // 1 hour
+define('CACHE_ENABLED', getenv('CACHE_ENABLED') ?? true);
+define('CACHE_LIFETIME', getenv('CACHE_LIFETIME') ?? 3600); // 1 hour
 define('CACHE_DIR', __DIR__ . '/cache/');
 
 // Logging settings
-define('LOG_ENABLED', true);
+define('LOG_ENABLED', getenv('LOG_ENABLED') ?? true);
 define('LOG_DIR', __DIR__ . '/logs/');
-define('LOG_LEVEL', 'ERROR'); // DEBUG, INFO, WARNING, ERROR, CRITICAL
+define('LOG_LEVEL', getenv('LOG_LEVEL') ?? 'ERROR'); // DEBUG, INFO, WARNING, ERROR, CRITICAL
 
 // API settings
-define('API_KEY', 'your-api-key');
-define('API_RATE_LIMIT', 100); // requests per hour
+define('API_KEY', getenv('API_KEY') ?? 'your-api-key');
+define('API_RATE_LIMIT', getenv('API_RATE_LIMIT') ?? 100); // requests per hour
 
 // Notification settings
-define('NOTIFICATION_EMAIL_ENABLED', true);
-define('NOTIFICATION_SMS_ENABLED', false);
-define('NOTIFICATION_PUSH_ENABLED', false);
+define('NOTIFICATION_EMAIL_ENABLED', getenv('NOTIFICATION_EMAIL_ENABLED') ?? true);
+define('NOTIFICATION_SMS_ENABLED', getenv('NOTIFICATION_SMS_ENABLED') ??        false);
+define('NOTIFICATION_PUSH_ENABLED', getenv('NOTIFICATION_PUSH_ENABLED') ?? false);
 
 // Feature flags
-define('FEATURE_TWO_FACTOR_AUTH', true);
-define('FEATURE_SOCIAL_LOGIN', false);
-define('FEATURE_FILE_UPLOAD', true);
-define('FEATURE_EXPORT_DATA', true);
+define('FEATURE_TWO_FACTOR_AUTH', getenv('FEATURE_TWO_FACTOR_AUTH') ?? true);
+define('FEATURE_SOCIAL_LOGIN', getenv('FEATURE_SOCIAL_LOGIN') ?? false);
+define('FEATURE_FILE_UPLOAD', getenv('FEATURE_FILE_UPLOAD') ?? true);
+define('FEATURE_EXPORT_DATA', getenv('FEATURE_EXPORT_DATA') ?? false);
 
 // Custom functions
 function sanitizeInput($data) {
@@ -133,16 +133,16 @@ function generateUniqueFilename($originalFilename) {
     return uniqid() . '_' . time() . '.' . $extension;
 }
 
-function createDirectoryIfNotExists($path) {
-    if (!file_exists($path)) {
-        mkdir($path, 0777, true);
-    }
-}
+// function createDirectoryIfNotExists($path) {
+//     if (!file_exists($path)) {
+//         mkdir($path, 0777, true);
+//     }
+// }
 
 // Create necessary directories
-createDirectoryIfNotExists(UPLOAD_DIR);
-createDirectoryIfNotExists(CACHE_DIR);
-createDirectoryIfNotExists(LOG_DIR);
+// createDirectoryIfNotExists(UPLOAD_DIR);
+// createDirectoryIfNotExists(CACHE_DIR);
+// createDirectoryIfNotExists(LOG_DIR);
 
 // Set error handler
 function customErrorHandler($errno, $errstr, $errfile, $errline) {
