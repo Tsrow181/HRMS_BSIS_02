@@ -25,10 +25,12 @@ if (session_status() === PHP_SESSION_NONE) {
 // Set timezone
 date_default_timezone_set('UTC');
 
+$dsn =  "mysql:host=" . DB_HOST . ";port=" . DB_PORT . ";dbname=" . DB_NAME;
+
 // Database connection
 try {
     $conn = new PDO(
-        "mysql:host=" . DB_HOST . ";port=" . DB_PORT . ";dbname=" . DB_NAME,
+       $dsn,
         DB_USER,
         DB_PASS,
         array(
@@ -40,6 +42,7 @@ try {
 } catch (PDOException $e) {
     // Log error and show generic message
     error_log("Connection failed: " . $e->getMessage());
+    error_log($dsn);
     die("Connection failed. Please try again later.");
 }
 
