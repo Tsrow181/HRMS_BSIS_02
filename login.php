@@ -6,18 +6,7 @@ ini_set('display_errors', 1);
 session_start();
 require_once 'config.php';
 
-// Database connection
-$host = 'localhost';
-$dbname = 'hr_system';
-$username = 'root';
-$password = '';
-
-try {
-    $pdo = new PDO("mysql:host=$host;dbname=$dbname", $username, $password);
-    $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
-} catch(PDOException $e) {
-    die("Connection failed: " . $e->getMessage());
-}
+$pdo = connectToDatabase();
 
 // Demo credentials array (fallback for demo users)
 $demo_users = [

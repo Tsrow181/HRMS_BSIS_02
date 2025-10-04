@@ -25,26 +25,40 @@ if (session_status() === PHP_SESSION_NONE) {
 // Set timezone
 date_default_timezone_set('UTC');
 
-$dsn =  "mysql:host=" . DB_HOST . ";port=" . DB_PORT . ";dbname=" . DB_NAME;
 
-// Database connection
-try {
-    $conn = new PDO(
-       $dsn,
-        DB_USER,
-        DB_PASS,
-        array(
-            PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
-            PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,
-            PDO::ATTR_EMULATE_PREPARES => false
-        )
-    );
-} catch (PDOException $e) {
-    echo "Connecting to database: " . $dsn;
-    // Log error and show generic message
-    error_log("Connection failed: " . $e->getMessage());
-    die("Connection failed. Please try again later.");
+function connectToDatabase(
+    ?string $dbname = null,
+    ?string $dbUsername = null,
+    ?string $dbPassword = null
+): PDO {
+    $dbname = $dbname ?? DB_NAME;
+    $dbUsername = $dbUsername ?? DB_USER;
+    $dbPassword = $dbPassword ?? DB_PASS;
+    $dsn =  "mysql:host=" . DB_HOST . ";port=" . DB_PORT . ";dbname=" . $dbname;
+
+    // Database connection
+    try {
+        $conn = new PDO(
+            $dsn,
+            DB_USER,
+            DB_PASS,
+            array(
+                PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
+                PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,
+                PDO::ATTR_EMULATE_PREPARES => false
+            )
+        );
+        return $conn;
+    } catch (PDOException $e) {
+        echo "Connecting to database: " . $dsn;
+        // Log error and show generic message
+        error_log("Connection failed: " . $e->getMessage());
+        die("Connection failed. Please try again later.");
+    }
 }
+
+$conn = connectToDatabase();
+
 
 // Application settings
 define('APP_NAME', getenv('APP_NAME') ?? 'HR System');
@@ -99,41 +113,49 @@ define('FEATURE_FILE_UPLOAD', getenv('FEATURE_FILE_UPLOAD') ?? true);
 define('FEATURE_EXPORT_DATA', getenv('FEATURE_EXPORT_DATA') ?? false);
 
 // Custom functions
-function sanitizeInput($data) {
+function sanitizeInput($data)
+{
     $data = trim($data);
     $data = stripslashes($data);
     $data = htmlspecialchars($data);
     return $data;
 }
 
-function generateCSRFToken() {
+function generateCSRFToken()
+{
     if (!isset($_SESSION['csrf_token'])) {
         $_SESSION['csrf_token'] = bin2hex(random_bytes(32));
     }
     return $_SESSION['csrf_token'];
 }
 
-function validateCSRFToken($token) {
+function validateCSRFToken($token)
+{
     return isset($_SESSION['csrf_token']) && hash_equals($_SESSION['csrf_token'], $token);
 }
 
-function formatDate($date, $format = 'Y-m-d H:i:s') {
+function formatDate($date, $format = 'Y-m-d H:i:s')
+{
     return date($format, strtotime($date));
 }
 
-function formatCurrency($amount) {
+function formatCurrency($amount)
+{
     return number_format($amount, 2, '.', ',');
 }
 
-function getFileExtension($filename) {
+function getFileExtension($filename)
+{
     return strtolower(pathinfo($filename, PATHINFO_EXTENSION));
 }
 
-function isAllowedFileType($filename) {
+function isAllowedFileType($filename)
+{
     return in_array(getFileExtension($filename), ALLOWED_FILE_TYPES);
 }
 
-function generateUniqueFilename($originalFilename) {
+function generateUniqueFilename($originalFilename)
+{
     $extension = getFileExtension($originalFilename);
     return uniqid() . '_' . time() . '.' . $extension;
 }
@@ -150,7 +172,8 @@ function generateUniqueFilename($originalFilename) {
 // createDirectoryIfNotExists(LOG_DIR);
 
 // Set error handler
-function customErrorHandler($errno, $errstr, $errfile, $errline) {
+function customErrorHandler($errno, $errstr, $errfile, $errline)
+{
     if (!(error_reporting() & $errno)) {
         return false;
     }
@@ -168,9 +191,10 @@ function customErrorHandler($errno, $errstr, $errfile, $errline) {
 set_error_handler("customErrorHandler");
 
 // Set exception handler
-function customExceptionHandler($exception) {
-    $error = date('Y-m-d H:i:s') . " Exception: " . $exception->getMessage() . 
-             " in " . $exception->getFile() . " on line " . $exception->getLine() . "\n";
+function customExceptionHandler($exception)
+{
+    $error = date('Y-m-d H:i:s') . " Exception: " . $exception->getMessage() .
+        " in " . $exception->getFile() . " on line " . $exception->getLine() . "\n";
     error_log($error, 3, LOG_DIR . 'exception.log');
 
     if (LOG_LEVEL === 'DEBUG') {
@@ -179,4 +203,3 @@ function customExceptionHandler($exception) {
 }
 
 set_exception_handler("customExceptionHandler");
-?>
