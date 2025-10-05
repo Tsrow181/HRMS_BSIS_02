@@ -743,6 +743,25 @@ $employees = $stmt->fetchAll(PDO::FETCH_ASSOC);
         </div>
     </div>
 
+    <!-- Delete Confirmation Modal -->
+    <div id="deleteModal" class="modal">
+        <div class="modal-content" style="max-width: 400px;">
+            <div class="modal-header" style="background: linear-gradient(135deg, #dc3545 0%, #c82333 100%);">
+                <h2>Confirm Delete</h2>
+                <span class="close" onclick="closeDeleteModal()">&times;</span>
+            </div>
+            <div class="modal-body">
+                <p style="text-align: center; font-size: 1.1em; margin-bottom: 20px;">
+                    Are you sure you want to delete this exit record? 
+                </p>
+                <div style="text-align: center;">
+                    <button class="btn btn-danger" id="confirmDelete" style="margin-right: 10px;">Yes</button>
+                    <button class="btn btn-secondary" onclick="closeDeleteModal()">No</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.1/dist/umd/popper.min.js"></script>
     <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
@@ -793,7 +812,12 @@ $employees = $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
 
     function deleteExit(exitId) {
-        if (confirm('Are you sure you want to delete this exit record? This action cannot be undone.')) {
+        // Show delete confirmation modal
+        const deleteModal = document.getElementById('deleteModal');
+        deleteModal.style.display = 'block';
+        
+        // Handle delete confirmation
+        document.getElementById('confirmDelete').onclick = function() {
             const formData = new FormData();
             formData.append('action', 'delete');
             formData.append('exit_id', exitId);
@@ -813,6 +837,7 @@ $employees = $stmt->fetchAll(PDO::FETCH_ASSOC);
                     }
                     // Remove from exitsData array
                     exitsData = exitsData.filter(exit => exit.exit_id != exitId);
+                    closeDeleteModal();
                     showAlert('Exit record deleted successfully!', 'success');
                 } else {
                     showAlert('Error: ' + data.message, 'error');
@@ -821,7 +846,11 @@ $employees = $stmt->fetchAll(PDO::FETCH_ASSOC);
             .catch(error => {
                 showAlert('Error: ' + error.message, 'error');
             });
-        }
+        };
+    }
+
+    function closeDeleteModal() {
+        document.getElementById('deleteModal').style.display = 'none';
     }
 
     // Update form handling
@@ -906,9 +935,13 @@ $employees = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
     // Close modal when clicking outside
     window.onclick = function(event) {
-        const modal = document.getElementById('exitModal');
-        if (event.target === modal) {
+        const exitModal = document.getElementById('exitModal');
+        const deleteModal = document.getElementById('deleteModal');
+        if (event.target === exitModal) {
             closeModal();
+        }
+        if (event.target === deleteModal) {
+            closeDeleteModal();
         }
     }
 
