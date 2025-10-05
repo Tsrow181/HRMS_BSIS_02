@@ -10,6 +10,11 @@ if (!isset($_SESSION['loggedin']) || $_SESSION['loggedin'] !== true) {
     exit;
 }
 
+// Get messages from session and clear them
+$message = $_SESSION['message'] ?? '';
+$messageType = $_SESSION['message_type'] ?? '';
+unset($_SESSION['message'], $_SESSION['message_type']);
+
 // Include database connection and helper functions
 require_once 'db.php';
 
@@ -27,63 +32,125 @@ try {
 }
 
 // Handle form submissions
-$message = '';
-$messageType = '';
-
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     if (isset($_POST['action'])) {
         switch ($_POST['action']) {
             case 'add':
                 // Add new exit document
                 try {
+                    // Handle file upload
+                    $documentUrl = '';
+                    if (isset($_FILES['document_file']) && $_FILES['document_file']['error'] === UPLOAD_ERR_OK) {
+                        $uploadDir = 'uploads/exit_documents/';
+                        
+                        // Create directory if it doesn't exist
+                        if (!file_exists($uploadDir)) {
+                            mkdir($uploadDir, 0777, true);
+                        }
+                        
+                        $fileName = time() . '_' . basename($_FILES['document_file']['name']);
+                        $targetPath = $uploadDir . $fileName;
+                        
+                        if (move_uploaded_file($_FILES['document_file']['tmp_name'], $targetPath)) {
+                            $documentUrl = $targetPath;
+                        }
+                    }
+                    
                     $stmt = $pdo->prepare("INSERT INTO exit_documents (exit_id, employee_id, document_type, document_name, document_url, notes) VALUES (?, ?, ?, ?, ?, ?)");
                     $stmt->execute([
                         $_POST['exit_id'],
                         $_POST['employee_id'],
                         $_POST['document_type'],
                         $_POST['document_name'],
-                        $_POST['document_url'],
+                        $documentUrl,
                         $_POST['notes']
                     ]);
-                    $message = "Exit document added successfully!";
-                    $messageType = "success";
+                    $_SESSION['message'] = "Exit document added successfully!";
+                    $_SESSION['message_type'] = "success";
+                    header("Location: exit_documents.php");
+                    exit;
                 } catch (PDOException $e) {
-                    $message = "Error adding exit document: " . $e->getMessage();
-                    $messageType = "error";
+                    $_SESSION['message'] = "Error adding document: " . $e->getMessage();
+                    $_SESSION['message_type'] = "error";
+                    header("Location: exit_documents.php");
+                    exit;
                 }
                 break;
             
             case 'update':
                 // Update exit document
                 try {
+                    $documentUrl = $_POST['existing_document_url'];
+                    
+                    // Handle new file upload
+                    if (isset($_FILES['document_file']) && $_FILES['document_file']['error'] === UPLOAD_ERR_OK) {
+                        $uploadDir = 'uploads/exit_documents/';
+                        
+                        // Create directory if it doesn't exist
+                        if (!file_exists($uploadDir)) {
+                            mkdir($uploadDir, 0777, true);
+                        }
+                        
+                        // Delete old file if exists
+                        if (!empty($_POST['existing_document_url']) && file_exists($_POST['existing_document_url'])) {
+                            unlink($_POST['existing_document_url']);
+                        }
+                        
+                        $fileName = time() . '_' . basename($_FILES['document_file']['name']);
+                        $targetPath = $uploadDir . $fileName;
+                        
+                        if (move_uploaded_file($_FILES['document_file']['tmp_name'], $targetPath)) {
+                            $documentUrl = $targetPath;
+                        }
+                    }
+                    
                     $stmt = $pdo->prepare("UPDATE exit_documents SET exit_id=?, employee_id=?, document_type=?, document_name=?, document_url=?, notes=? WHERE document_id=?");
                     $stmt->execute([
                         $_POST['exit_id'],
                         $_POST['employee_id'],
                         $_POST['document_type'],
                         $_POST['document_name'],
-                        $_POST['document_url'],
+                        $documentUrl,
                         $_POST['notes'],
                         $_POST['document_id']
                     ]);
-                    $message = "Exit document updated successfully!";
-                    $messageType = "success";
+                    $_SESSION['message'] = "Exit document updated successfully!";
+                    $_SESSION['message_type'] = "success";
+                    header("Location: exit_documents.php");
+                    exit;
                 } catch (PDOException $e) {
-                    $message = "Error updating exit document: " . $e->getMessage();
-                    $messageType = "error";
+                    $_SESSION['message'] = "Error updating document: " . $e->getMessage();
+                    $_SESSION['message_type'] = "error";
+                    header("Location: exit_documents.php");
+                    exit;
                 }
                 break;
             
             case 'delete':
                 // Delete exit document
                 try {
+                    // Get document info to delete file
+                    $stmt = $pdo->prepare("SELECT document_url FROM exit_documents WHERE document_id=?");
+                    $stmt->execute([$_POST['document_id']]);
+                    $doc = $stmt->fetch(PDO::FETCH_ASSOC);
+                    
+                    // Delete file if exists
+                    if ($doc && !empty($doc['document_url']) && file_exists($doc['document_url'])) {
+                        unlink($doc['document_url']);
+                    }
+                    
+                    // Delete database record
                     $stmt = $pdo->prepare("DELETE FROM exit_documents WHERE document_id=?");
                     $stmt->execute([$_POST['document_id']]);
-                    $message = "Exit document deleted successfully!";
-                    $messageType = "success";
+                    $_SESSION['message'] = "Exit document deleted successfully!";
+                    $_SESSION['message_type'] = "success";
+                    header("Location: exit_documents.php");
+                    exit;
                 } catch (PDOException $e) {
-                    $message = "Error deleting exit document: " . $e->getMessage();
-                    $messageType = "error";
+                    $_SESSION['message'] = "Error deleting document: " . $e->getMessage();
+                    $_SESSION['message_type'] = "error";
+                    header("Location: exit_documents.php");
+                    exit;
                 }
                 break;
         }
@@ -96,46 +163,41 @@ $stmt = $pdo->query("
         ed.*,
         CONCAT(pi.first_name, ' ', pi.last_name) as employee_name,
         ep.employee_number,
-        ee.exit_type,
-        ee.exit_date,
-        jr.title as job_title,
-        jr.department
+        e.exit_date,
+        e.exit_type
     FROM exit_documents ed
     LEFT JOIN employee_profiles ep ON ed.employee_id = ep.employee_id
     LEFT JOIN personal_information pi ON ep.personal_info_id = pi.personal_info_id
-    LEFT JOIN employee_exits ee ON ed.exit_id = ee.exit_id
-    LEFT JOIN job_roles jr ON ep.job_role_id = jr.job_role_id
-    ORDER BY ed.document_id DESC
+    LEFT JOIN exits e ON ed.exit_id = e.exit_id
+    ORDER BY ed.uploaded_date DESC
 ");
-$exitDocuments = $stmt->fetchAll(PDO::FETCH_ASSOC);
+$documents = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
-// Fetch employee exits for dropdown
+// Fetch exits for dropdown
 $stmt = $pdo->query("
     SELECT 
-        ee.exit_id, 
-        ee.exit_type, 
-        ee.exit_date,
-        CONCAT(pi.first_name, ' ', pi.last_name) as employee_name,
-        ep.employee_number
-    FROM employee_exits ee
-    LEFT JOIN employee_profiles ep ON ee.employee_id = ep.employee_id
+        e.exit_id,
+        e.exit_type,
+        e.exit_date,
+        CONCAT(pi.first_name, ' ', pi.last_name) as employee_name
+    FROM exits e
+    LEFT JOIN employee_profiles ep ON e.employee_id = ep.employee_id
     LEFT JOIN personal_information pi ON ep.personal_info_id = pi.personal_info_id
-    ORDER BY ee.exit_date DESC
+    ORDER BY e.exit_date DESC
 ");
-$employeeExits = $stmt->fetchAll(PDO::FETCH_ASSOC);
+$exits = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
-// Fetch active employees for dropdown
+// Fetch employees for dropdown
 $stmt = $pdo->query("
     SELECT 
-        ep.employee_id, 
-        CONCAT(pi.first_name, ' ', pi.last_name) as employee_name,
-        ep.employee_number
+        ep.employee_id,
+        ep.employee_number,
+        CONCAT(pi.first_name, ' ', pi.last_name) as employee_name
     FROM employee_profiles ep
     LEFT JOIN personal_information pi ON ep.personal_info_id = pi.personal_info_id
-    WHERE ep.employment_status != 'Terminated'
     ORDER BY pi.first_name
 ");
-$activeEmployees = $stmt->fetchAll(PDO::FETCH_ASSOC);
+$employees = $stmt->fetchAll(PDO::FETCH_ASSOC);
 ?>
 
 <!DOCTYPE html>
@@ -309,67 +371,29 @@ $activeEmployees = $stmt->fetchAll(PDO::FETCH_ASSOC);
             text-transform: uppercase;
         }
 
-        .type-resignation {
-            background: #fff3cd;
-            color: #856404;
-        }
-
         .type-clearance {
             background: #d1ecf1;
             color: #0c5460;
         }
 
-        .type-certificate {
+        .type-resignation {
+            background: #f8d7da;
+            color: #721c24;
+        }
+
+        .type-final-pay {
             background: #d4edda;
             color: #155724;
         }
 
-        .type-retirement {
-            background: #e2e3e5;
-            color: #383d41;
-        }
-
-        .type-termination {
-            background: #f8d7da;
-            color: #721c24;
-        }
-
-        .type-contract {
-            background: #fce4ec;
-            color: #880e4f;
-        }
-
-        .type-default {
-            background: #f8f9fa;
-            color: #495057;
-        }
-
-        .exit-type-badge {
-            padding: 4px 8px;
-            border-radius: 15px;
-            font-size: 11px;
-            font-weight: 600;
-            text-transform: uppercase;
-        }
-
-        .exit-resignation {
+        .type-nda {
             background: #fff3cd;
             color: #856404;
         }
 
-        .exit-retirement {
+        .type-other {
             background: #e2e3e5;
             color: #383d41;
-        }
-
-        .exit-termination {
-            background: #f8d7da;
-            color: #721c24;
-        }
-
-        .exit-contract-end {
-            background: #fce4ec;
-            color: #880e4f;
         }
 
         .modal {
@@ -386,12 +410,12 @@ $activeEmployees = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
         .modal-content {
             background: white;
-            margin: 2% auto;
+            margin: 5% auto;
             padding: 0;
             border-radius: 15px;
             width: 90%;
-            max-width: 700px;
-            max-height: 95vh;
+            max-width: 600px;
+            max-height: 90vh;
             overflow-y: auto;
             box-shadow: 0 20px 40px rgba(0,0,0,0.3);
             animation: slideIn 0.3s ease;
@@ -443,7 +467,7 @@ $activeEmployees = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
         .form-control {
             width: 100%;
-            padding: 12px 15px;
+            padding: 6px 15px;
             border: 2px solid #e0e0e0;
             border-radius: 8px;
             font-size: 16px;
@@ -463,6 +487,48 @@ $activeEmployees = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
         .form-col {
             flex: 1;
+        }
+
+        .file-upload-wrapper {
+            position: relative;
+            overflow: hidden;
+            display: inline-block;
+            width: 100%;
+        }
+
+        .file-upload-label {
+            display: block;
+            padding: 12px 15px;
+            background: var(--azure-blue-lighter);
+            color: var(--azure-blue-dark);
+            border-radius: 8px;
+            cursor: pointer;
+            text-align: center;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+
+        .file-upload-label:hover {
+            background: var(--azure-blue-light);
+            color: white;
+        }
+
+        .file-upload-wrapper input[type=file] {
+            font-size: 100px;
+            position: absolute;
+            left: 0;
+            top: 0;
+            opacity: 0;
+            cursor: pointer;
+        }
+
+        .file-name-display {
+            margin-top: 10px;
+            padding: 8px 12px;
+            background: #f8f9fa;
+            border-radius: 6px;
+            font-size: 14px;
+            color: #666;
         }
 
         .alert {
@@ -494,17 +560,6 @@ $activeEmployees = $stmt->fetchAll(PDO::FETCH_ASSOC);
             font-size: 4rem;
             margin-bottom: 20px;
             color: #ddd;
-        }
-
-        .document-link {
-            color: var(--azure-blue);
-            text-decoration: none;
-            font-weight: 500;
-        }
-
-        .document-link:hover {
-            color: var(--azure-blue-dark);
-            text-decoration: underline;
         }
 
         @media (max-width: 768px) {
@@ -548,10 +603,10 @@ $activeEmployees = $stmt->fetchAll(PDO::FETCH_ASSOC);
                     <div class="controls">
                         <div class="search-box">
                             <span class="search-icon">🔍</span>
-                            <input type="text" id="searchInput" placeholder="Search by employee name, document type, or document name...">
+                            <input type="text" id="searchInput" placeholder="Search documents by employee name, type, or document name...">
                         </div>
                         <button class="btn btn-primary" onclick="openModal('add')">
-                            📄 Add Exit Document
+                            ➕ Add New Document
                         </button>
                     </div>
 
@@ -559,61 +614,43 @@ $activeEmployees = $stmt->fetchAll(PDO::FETCH_ASSOC);
                         <table class="table" id="documentsTable">
                             <thead>
                                 <tr>
+                                    <th>Document ID</th>
                                     <th>Employee</th>
-                                    <th>Exit Type</th>
                                     <th>Document Type</th>
                                     <th>Document Name</th>
-                                    <th>Exit Date</th>
-                                    <th>Notes</th>
+                                    <th>Exit Type</th>
+                                    <th>Uploaded Date</th>
                                     <th>Actions</th>
                                 </tr>
                             </thead>
                             <tbody id="documentsTableBody">
-                                <?php foreach ($exitDocuments as $document): ?>
+                                <?php foreach ($documents as $doc): ?>
                                 <tr>
+                                    <td><strong>#<?= htmlspecialchars($doc['document_id']) ?></strong></td>
                                     <td>
                                         <div>
-                                            <strong><?= htmlspecialchars($document['employee_name']) ?></strong><br>
-                                            <small style="color: #666;"><?= htmlspecialchars($document['employee_number']) ?> | <?= htmlspecialchars($document['job_title']) ?></small><br>
-                                            <small style="color: #888;"><?= htmlspecialchars($document['department']) ?></small>
+                                            <strong><?= htmlspecialchars($doc['employee_name']) ?></strong><br>
+                                            <small style="color: #666;">👤 <?= htmlspecialchars($doc['employee_number']) ?></small>
                                         </div>
                                     </td>
                                     <td>
-                                        <?php 
-                                        $exitClass = 'exit-' . strtolower(str_replace(['_', ' '], '-', $document['exit_type']));
-                                        ?>
-                                        <span class="exit-type-badge <?= $exitClass ?>">
-                                            <?= htmlspecialchars($document['exit_type']) ?>
+                                        <span class="document-type-badge type-<?= strtolower(str_replace(' ', '-', $doc['document_type'])) ?>">
+                                            <?= htmlspecialchars($doc['document_type']) ?>
                                         </span>
                                     </td>
+                                    <td><?= htmlspecialchars($doc['document_name']) ?></td>
+                                    <td><?= htmlspecialchars($doc['exit_type']) ?></td>
+                                    <td><?= date('M d, Y', strtotime($doc['uploaded_date'])) ?></td>
                                     <td>
-                                        <?php 
-                                        $typeClass = 'type-' . strtolower(str_replace([' ', '_'], '-', $document['document_type']));
-                                        if (!in_array($typeClass, ['type-resignation', 'type-clearance', 'type-certificate', 'type-retirement', 'type-termination', 'type-contract'])) {
-                                            $typeClass = 'type-default';
-                                        }
-                                        ?>
-                                        <span class="document-type-badge <?= $typeClass ?>">
-                                            <?= htmlspecialchars($document['document_type']) ?>
-                                        </span>
-                                    </td>
-                                    <td>
-                                        <a href="<?= htmlspecialchars($document['document_url']) ?>" class="document-link" target="_blank">
-                                            <?= htmlspecialchars($document['document_name']) ?>
+                                        <?php if (!empty($doc['document_url']) && file_exists($doc['document_url'])): ?>
+                                        <a href="<?= htmlspecialchars($doc['document_url']) ?>" class="btn btn-info btn-small" target="_blank">
+                                            📄 View
                                         </a>
-                                    </td>
-                                    <td><?= $document['exit_date'] ? date('M d, Y', strtotime($document['exit_date'])) : 'N/A' ?></td>
-                                    <td>
-                                        <small><?= htmlspecialchars(substr($document['notes'], 0, 50)) ?><?= strlen($document['notes']) > 50 ? '...' : '' ?></small>
-                                    </td>
-                                    <td>
-                                        <button class="btn btn-info btn-small" onclick="viewDocument('<?= htmlspecialchars($document['document_url']) ?>')">
-                                            👁️ View
-                                        </button>
-                                        <button class="btn btn-warning btn-small" onclick="editDocument(<?= $document['document_id'] ?>)">
+                                        <?php endif; ?>
+                                        <button class="btn btn-warning btn-small" onclick="editDocument(<?= $doc['document_id'] ?>)">
                                             ✏️ Edit
                                         </button>
-                                        <button class="btn btn-danger btn-small" onclick="deleteDocument(<?= $document['document_id'] ?>)">
+                                        <button class="btn btn-danger btn-small" onclick="deleteDocument(<?= $doc['document_id'] ?>)">
                                             🗑️ Delete
                                         </button>
                                     </td>
@@ -622,11 +659,11 @@ $activeEmployees = $stmt->fetchAll(PDO::FETCH_ASSOC);
                             </tbody>
                         </table>
                         
-                        <?php if (empty($exitDocuments)): ?>
+                        <?php if (empty($documents)): ?>
                         <div class="no-results">
                             <i>📄</i>
                             <h3>No exit documents found</h3>
-                            <p>Start by adding your first exit document.</p>
+                            <p>Start by uploading your first exit document.</p>
                         </div>
                         <?php endif; ?>
                     </div>
@@ -639,22 +676,23 @@ $activeEmployees = $stmt->fetchAll(PDO::FETCH_ASSOC);
     <div id="documentModal" class="modal">
         <div class="modal-content">
             <div class="modal-header">
-                <h2 id="modalTitle">Add Exit Document</h2>
+                <h2 id="modalTitle">Add New Exit Document</h2>
                 <span class="close" onclick="closeModal()">&times;</span>
             </div>
             <div class="modal-body">
-                <form id="documentForm" method="POST">
+                <form id="documentForm" method="POST" enctype="multipart/form-data">
                     <input type="hidden" id="action" name="action" value="add">
                     <input type="hidden" id="document_id" name="document_id">
+                    <input type="hidden" id="existing_document_url" name="existing_document_url">
 
                     <div class="form-row">
                         <div class="form-col">
                             <div class="form-group">
-                                <label for="exit_id">Employee Exit</label>
-                                <select id="exit_id" name="exit_id" class="form-control" required onchange="updateEmployeeFromExit()">
+                                <label for="exit_id">Exit Record</label>
+                                <select id="exit_id" name="exit_id" class="form-control" required>
                                     <option value="">Select exit record...</option>
-                                    <?php foreach ($employeeExits as $exit): ?>
-                                    <option value="<?= $exit['exit_id'] ?>" data-employee-id="<?= $exit['employee_id'] ?? '' ?>">
+                                    <?php foreach ($exits as $exit): ?>
+                                    <option value="<?= $exit['exit_id'] ?>">
                                         <?= htmlspecialchars($exit['employee_name']) ?> - <?= htmlspecialchars($exit['exit_type']) ?> (<?= date('M d, Y', strtotime($exit['exit_date'])) ?>)
                                     </option>
                                     <?php endforeach; ?>
@@ -666,8 +704,10 @@ $activeEmployees = $stmt->fetchAll(PDO::FETCH_ASSOC);
                                 <label for="employee_id">Employee</label>
                                 <select id="employee_id" name="employee_id" class="form-control" required>
                                     <option value="">Select employee...</option>
-                                    <?php foreach ($activeEmployees as $employee): ?>
-                                    <option value="<?= $employee['employee_id'] ?>"><?= htmlspecialchars($employee['employee_name']) ?> (<?= htmlspecialchars($employee['employee_number']) ?>)</option>
+                                    <?php foreach ($employees as $employee): ?>
+                                    <option value="<?= $employee['employee_id'] ?>">
+                                        <?= htmlspecialchars($employee['employee_name']) ?> (<?= htmlspecialchars($employee['employee_number']) ?>)
+                                    </option>
                                     <?php endforeach; ?>
                                 </select>
                             </div>
@@ -679,21 +719,13 @@ $activeEmployees = $stmt->fetchAll(PDO::FETCH_ASSOC);
                             <div class="form-group">
                                 <label for="document_type">Document Type</label>
                                 <select id="document_type" name="document_type" class="form-control" required>
-                                    <option value="">Select document type...</option>
-                                    <option value="Resignation Letter">Resignation Letter</option>
-                                    <option value="Clearance Form">Clearance Form</option>
-                                    <option value="Certificate of Employment">Certificate of Employment</option>
-                                    <option value="Final Pay Slip">Final Pay Slip</option>
-                                    <option value="Retirement Application">Retirement Application</option>
-                                    <option value="Service Record">Service Record</option>
-                                    <option value="Retirement Benefits">Retirement Benefits</option>
-                                    <option value="Medical Certificate">Medical Certificate</option>
-                                    <option value="Contract Completion">Contract Completion</option>
-                                    <option value="Performance Evaluation">Performance Evaluation</option>
-                                    <option value="Job Offer Copy">Job Offer Copy</option>
-                                    <option value="Termination Notice">Termination Notice</option>
-                                    <option value="Investigation Report">Investigation Report</option>
-                                    <option value="Due Process Records">Due Process Records</option>
+                                    <option value="">Select type...</option>
+                                    <option value="Clearance">Clearance</option>
+                                    <option value="Resignation">Resignation Letter</option>
+                                    <option value="Final Pay">Final Pay Slip</option>
+                                    <option value="NDA">Non-Disclosure Agreement</option>
+                                    <option value="Certificate">Certificate of Employment</option>
+                                    <option value="Exit Interview">Exit Interview Form</option>
                                     <option value="Other">Other</option>
                                 </select>
                             </div>
@@ -701,19 +733,25 @@ $activeEmployees = $stmt->fetchAll(PDO::FETCH_ASSOC);
                         <div class="form-col">
                             <div class="form-group">
                                 <label for="document_name">Document Name</label>
-                                <input type="text" id="document_name" name="document_name" class="form-control" required>
+                                <input type="text" id="document_name" name="document_name" class="form-control" required placeholder="e.g., Final Clearance Form">
                             </div>
                         </div>
                     </div>
 
                     <div class="form-group">
-                        <label for="document_url">Document URL/Path</label>
-                        <input type="text" id="document_url" name="document_url" class="form-control" placeholder="/documents/exits/filename.pdf" required>
+                        <label for="document_file">Upload Document</label>
+                        <div class="file-upload-wrapper">
+                            <label for="document_file" class="file-upload-label" id="fileLabel">
+                                📎 Choose File
+                            </label>
+                            <input type="file" id="document_file" name="document_file" accept=".pdf,.doc,.docx,.jpg,.jpeg,.png">
+                        </div>
+                        <div id="fileNameDisplay" class="file-name-display" style="display: none;"></div>
                     </div>
 
                     <div class="form-group">
                         <label for="notes">Notes</label>
-                        <textarea id="notes" name="notes" class="form-control" rows="3" placeholder="Additional notes about this document..."></textarea>
+                        <textarea id="notes" name="notes" class="form-control" rows="4" placeholder="Add any additional notes or comments about this document..."></textarea>
                     </div>
 
                     <div style="text-align: center; margin-top: 30px;">
@@ -727,8 +765,23 @@ $activeEmployees = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
     <script>
         // Global variables
-        let documentsData = <?= json_encode($exitDocuments) ?>;
-        let employeeExits = <?= json_encode($employeeExits) ?>;
+        let documentsData = <?= json_encode($documents) ?>;
+
+        // File upload handling
+        document.getElementById('document_file').addEventListener('change', function(e) {
+            const fileName = e.target.files[0] ? e.target.files[0].name : '';
+            const fileLabel = document.getElementById('fileLabel');
+            const fileDisplay = document.getElementById('fileNameDisplay');
+            
+            if (fileName) {
+                fileLabel.textContent = '✅ File Selected';
+                fileDisplay.textContent = '📎 ' + fileName;
+                fileDisplay.style.display = 'block';
+            } else {
+                fileLabel.textContent = '📎 Choose File';
+                fileDisplay.style.display = 'none';
+            }
+        });
 
         // Search functionality
         document.getElementById('searchInput').addEventListener('input', function() {
@@ -755,11 +808,16 @@ $activeEmployees = $stmt->fetchAll(PDO::FETCH_ASSOC);
             const title = document.getElementById('modalTitle');
             const action = document.getElementById('action');
 
+            // Reset form first
+            form.reset();
+            
             if (mode === 'add') {
-                title.textContent = 'Add Exit Document';
+                title.textContent = 'Add New Exit Document';
                 action.value = 'add';
-                form.reset();
                 document.getElementById('document_id').value = '';
+                document.getElementById('existing_document_url').value = '';
+                document.getElementById('fileLabel').textContent = '📎 Choose File';
+                document.getElementById('fileNameDisplay').style.display = 'none';
             } else if (mode === 'edit' && documentId) {
                 title.textContent = 'Edit Exit Document';
                 action.value = 'update';
@@ -778,24 +836,21 @@ $activeEmployees = $stmt->fetchAll(PDO::FETCH_ASSOC);
         }
 
         function populateEditForm(documentId) {
-            const document = documentsData.find(doc => doc.document_id == documentId);
-            if (document) {
-                document.getElementById('exit_id').value = document.exit_id || '';
-                document.getElementById('employee_id').value = document.employee_id || '';
-                document.getElementById('document_type').value = document.document_type || '';
-                document.getElementById('document_name').value = document.document_name || '';
-                document.getElementById('document_url').value = document.document_url || '';
-                document.getElementById('notes').value = document.notes || '';
-            }
-        }
-
-        function updateEmployeeFromExit() {
-            const exitSelect = document.getElementById('exit_id');
-            const employeeSelect = document.getElementById('employee_id');
-            const selectedOption = exitSelect.options[exitSelect.selectedIndex];
-            
-            if (selectedOption && selectedOption.dataset.employeeId) {
-                employeeSelect.value = selectedOption.dataset.employeeId;
+            const doc = documentsData.find(d => d.document_id == documentId);
+            if (doc) {
+                document.getElementById('exit_id').value = doc.exit_id || '';
+                document.getElementById('employee_id').value = doc.employee_id || '';
+                document.getElementById('document_type').value = doc.document_type || '';
+                document.getElementById('document_name').value = doc.document_name || '';
+                document.getElementById('notes').value = doc.notes || '';
+                document.getElementById('existing_document_url').value = doc.document_url || '';
+                
+                if (doc.document_url) {
+                    const fileName = doc.document_url.split('/').pop();
+                    document.getElementById('fileLabel').textContent = '✅ Current File';
+                    document.getElementById('fileNameDisplay').textContent = '📎 ' + fileName;
+                    document.getElementById('fileNameDisplay').style.display = 'block';
+                }
             }
         }
 
@@ -804,7 +859,7 @@ $activeEmployees = $stmt->fetchAll(PDO::FETCH_ASSOC);
         }
 
         function deleteDocument(documentId) {
-            if (confirm('Are you sure you want to delete this exit document? This action cannot be undone.')) {
+            if (confirm("Are you sure you want to delete this document? This action cannot be undone.")) {
                 const form = document.createElement('form');
                 form.method = 'POST';
                 form.innerHTML = `
@@ -816,14 +871,6 @@ $activeEmployees = $stmt->fetchAll(PDO::FETCH_ASSOC);
             }
         }
 
-        function viewDocument(documentUrl) {
-            if (documentUrl) {
-                window.open(documentUrl, '_blank');
-            } else {
-                alert('Document URL not available');
-            }
-        }
-
         // Close modal when clicking outside
         window.onclick = function(event) {
             const modal = document.getElementById('documentModal');
@@ -832,73 +879,19 @@ $activeEmployees = $stmt->fetchAll(PDO::FETCH_ASSOC);
             }
         }
 
-        // Form validation
-        document.getElementById('documentForm').addEventListener('submit', function(e) {
-            const documentUrl = document.getElementById('document_url').value.trim();
-            if (!documentUrl.startsWith('/documents/') && !documentUrl.startsWith('http')) {
-                e.preventDefault();
-                alert('Please enter a valid document URL or file path');
-                return;
-            }
-        });
+        // Smooth scroll to top when alert is shown
+        if (document.querySelector('.alert')) {
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
 
-        // Auto-hide alerts
-        setTimeout(function() {
-            const alerts = document.querySelectorAll('.alert');
-            alerts.forEach(function(alert) {
-                alert.style.transition = 'opacity 0.5s';
-                alert.style.opacity = '0';
-                setTimeout(function() {
-                    alert.remove();
-                }, 500);
-            });
-        }, 5000);
-
-        // Initialize tooltips and animations
-        document.addEventListener('DOMContentLoaded', function() {
-            // Add hover effects to table rows
-            const tableRows = document.querySelectorAll('#documentsTable tbody tr');
-            tableRows.forEach(row => {
-                row.addEventListener('mouseenter', function() {
-                    this.style.transform = 'scale(1.02)';
-                });
-                
-                row.addEventListener('mouseleave', function() {
-                    this.style.transform = 'scale(1)';
-                });
-            });
-
-            // Auto-generate document name based on type and employee
-            document.getElementById('document_type').addEventListener('change', function() {
-                const exitSelect = document.getElementById('exit_id');
-                const documentNameInput = document.getElementById('document_name');
-                const selectedExitOption = exitSelect.options[exitSelect.selectedIndex];
-                
-                if (this.value && selectedExitOption && selectedExitOption.text) {
-                    const employeeName = selectedExitOption.text.split(' - ')[0];
-                    const suggestedName = this.value + ' - ' + employeeName;
-                    
-                    if (!documentNameInput.value) {
-                        documentNameInput.value = suggestedName;
-                    }
-                }
-            });
-
-            // Auto-generate document URL based on name
-            document.getElementById('document_name').addEventListener('input', function() {
-                const documentUrlInput = document.getElementById('document_url');
-                
-                if (this.value && !documentUrlInput.value) {
-                    const fileName = this.value.toLowerCase()
-                        .replace(/[^a-z0-9\s-]/g, '')
-                        .replace(/\s+/g, '_') + '.pdf';
-                    documentUrlInput.value = '/documents/exits/' + fileName;
-                }
-            });
-        });
+        // Prevent form resubmission on refresh
+        if (window.history.replaceState) {
+            window.history.replaceState(null, null, window.location.href);
+        }
     </script>
+
+    <!-- Bootstrap JS (Optional) -->
     <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.1/dist/umd/popper.min.js"></script>
-    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.5.2/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>
