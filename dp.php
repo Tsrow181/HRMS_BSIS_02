@@ -60,33 +60,23 @@ function getRecentActivities() {
     }
 }
 
+// Leave Balances Functions
 function getLeaveBalances() {
     global $conn;
     try {
-        $sql = "SELECT
-                    ep.employee_id,
-                    pi.first_name,
-                    pi.last_name,
-                    ep.employee_number as employee_code,
-                    jr.department as department_name,
-                    COALESCE(SUM(CASE WHEN lt.leave_type_name = 'Vacation Leave' THEN lb.leaves_remaining END), 0) as vacation_leave,
-                    COALESCE(SUM(CASE WHEN lt.leave_type_name = 'Sick Leave' THEN lb.leaves_remaining END), 0) as sick_leave,
-                    COALESCE(SUM(CASE WHEN lt.leave_type_name = 'Maternity Leave' THEN lb.leaves_remaining END), 0) as maternity_leave,
-                    COALESCE(SUM(CASE WHEN lt.leave_type_name = 'Paternity Leave' THEN lb.leaves_remaining END), 0) as paternity_leave,
-                    COALESCE(SUM(lb.leaves_remaining), 0) as total_balance
-                FROM employee_profiles ep
-                LEFT JOIN personal_information pi ON ep.personal_info_id = pi.personal_info_id
-                LEFT JOIN job_roles jr ON ep.job_role_id = jr.job_role_id
-                LEFT JOIN leave_balances lb ON ep.employee_id = lb.employee_id
-                LEFT JOIN leave_types lt ON lb.leave_type_id = lt.leave_type_id
-                WHERE ep.employment_status IN ('Full-time', 'Part-time')
-                GROUP BY ep.employee_id
+        $sql = "SELECT lb.*, pi.first_name, pi.last_name, d.department_name,
+                       (lb.vacation_leave + lb.sick_leave + lb.maternity_leave + lb.paternity_leave) as total_balance
+                FROM leave_balances lb
+                JOIN employee_profiles ep ON lb.employee_id = ep.employee_id
+                JOIN personal_information pi ON ep.personal_info_id = pi.personal_info_id
+                LEFT JOIN departments d ON ep.job_role_id IN (
+                    SELECT job_role_id FROM job_roles WHERE department = d.department_name
+                )
+                WHERE lb.year = YEAR(CURDATE())
                 ORDER BY pi.first_name, pi.last_name";
-        
         $stmt = $conn->query($sql);
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
     } catch (PDOException $e) {
-        error_log("Error fetching leave balances: " . $e->getMessage());
         return [];
     }
 }
@@ -94,23 +84,18 @@ function getLeaveBalances() {
 function getLeaveTypeTotals() {
     global $conn;
     try {
-        $sql = "SELECT
-                    lt.leave_type_name,
-                    COALESCE(SUM(lb.leaves_remaining), 0) as total_remaining,
-                    COALESCE(SUM(lt.default_days), 0) as total_allocated,
-                    CASE
-                        WHEN COALESCE(SUM(lt.default_days), 0) > 0
-                        THEN ROUND((COALESCE(SUM(lb.leaves_remaining), 0) / COALESCE(SUM(lt.default_days), 0)) * 100, 0)
-                        ELSE 0
-                    END as utilization_percentage
+        $sql = "SELECT lt.leave_type_name,
+                       SUM(lb.total_leaves) as total_allocated,
+                       SUM(lb.leaves_taken) as total_taken,
+                       SUM(lb.leaves_remaining) as total_remaining,
+                       ROUND((SUM(lb.leaves_taken) / SUM(lb.total_leaves)) * 100, 2) as utilization_percentage
                 FROM leave_types lt
-                LEFT JOIN leave_balances lb ON lt.leave_type_id = lb.leave_type_id
-                GROUP BY lt.leave_type_name";
-
+                LEFT JOIN leave_balances lb ON lt.leave_type_id = lb.leave_type_id AND lb.year = YEAR(CURDATE())
+                GROUP BY lt.leave_type_id, lt.leave_type_name
+                ORDER BY lt.leave_type_name";
         $stmt = $conn->query($sql);
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
     } catch (PDOException $e) {
-        error_log("Error fetching leave type totals: " . $e->getMessage());
         return [];
     }
 }
@@ -118,135 +103,68 @@ function getLeaveTypeTotals() {
 function getLeaveUtilizationTrend() {
     global $conn;
     try {
-        $sql = "SELECT
-                    'Vacation Leave' as leave_type,
-                    '↑ 15% this quarter' as trend
-                UNION ALL
-                SELECT
-                    'Sick Leave' as leave_type,
-                    '↓ 5% this quarter' as trend
-                UNION ALL
-                SELECT
-                    'Overall Utilization' as leave_type,
-                    '↓ 8% improvement' as trend";
-
+        // This is a simplified trend - in a real system, you'd have historical data
+        $sql = "SELECT MONTH(CURDATE()) as current_month,
+                       YEAR(CURDATE()) as current_year,
+                       SUM(leaves_taken) as current_taken,
+                       (SELECT SUM(leaves_taken) FROM leave_balances WHERE year = YEAR(CURDATE()) - 1 AND MONTH(created_at) = MONTH(CURDATE())) as previous_year_taken
+                FROM leave_balances
+                WHERE year = YEAR(CURDATE())";
         $stmt = $conn->query($sql);
-        return $stmt->fetchAll(PDO::FETCH_ASSOC);
+        $result = $stmt->fetch(PDO::FETCH_ASSOC);
+        return $result ?: ['current_month' => date('m'), 'current_year' => date('Y'), 'current_taken' => 0, 'previous_year_taken' => 0];
     } catch (PDOException $e) {
-        error_log("Error fetching leave utilization trend: " . $e->getMessage());
-        return [];
+        return ['current_month' => date('m'), 'current_year' => date('Y'), 'current_taken' => 0, 'previous_year_taken' => 0];
     }
 }
 
 function getLowBalanceAlerts() {
     global $conn;
     try {
-        $sql = "SELECT
-                    'Low Vacation Leave' as alert_type,
-                    COUNT(*) as count,
-                    'warning' as severity
+        $sql = "SELECT pi.first_name, pi.last_name, lb.vacation_leave, lb.sick_leave,
+                       (lb.vacation_leave + lb.sick_leave + lb.maternity_leave + lb.paternity_leave) as total_balance
                 FROM leave_balances lb
-                JOIN leave_types lt ON lb.leave_type_id = lt.leave_type_id
-                WHERE lt.leave_type_name = 'Vacation Leave' AND lb.leaves_remaining < 2
-
-                UNION ALL
-
-                SELECT
-                    'Exhausted Sick Leave' as alert_type,
-                    COUNT(*) as count,
-                    'danger' as severity
-                FROM leave_balances lb
-                JOIN leave_types lt ON lb.leave_type_id = lt.leave_type_id
-                WHERE lt.leave_type_name = 'Sick Leave' AND lb.leaves_remaining = 0
-
-                UNION ALL
-
-                SELECT
-                    'Full Leave Balances' as alert_type,
-                    COUNT(DISTINCT ep.employee_id) as count,
-                    'info' as severity
-                FROM employee_profiles ep
-                WHERE NOT EXISTS (
-                    SELECT 1
-                    FROM leave_balances lb
-                    JOIN leave_types lt ON lb.leave_type_id = lt.leave_type_id
-                    WHERE lb.employee_id = ep.employee_id AND lb.leaves_remaining < lt.default_days
-                ) AND ep.employment_status IN ('Full-time', 'Part-time')";
-
+                JOIN employee_profiles ep ON lb.employee_id = ep.employee_id
+                JOIN personal_information pi ON ep.personal_info_id = pi.personal_info_id
+                WHERE lb.year = YEAR(CURDATE())
+                AND (lb.vacation_leave < 5 OR lb.sick_leave < 5 OR (lb.vacation_leave + lb.sick_leave + lb.maternity_leave + lb.paternity_leave) < 10)
+                ORDER BY total_balance ASC";
         $stmt = $conn->query($sql);
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
     } catch (PDOException $e) {
-        error_log("Error fetching low balance alerts: " . $e->getMessage());
         return [];
     }
 }
 
-// Employee Shift Management Functions
+// Shifts Functions
+function getShifts() {
+    global $conn;
+    try {
+        $sql = "SELECT * FROM shifts ORDER BY shift_name";
+        $stmt = $conn->query($sql);
+        return $stmt->fetchAll(PDO::FETCH_ASSOC);
+    } catch (PDOException $e) {
+        return [];
+    }
+}
+
+// Employee Shifts Functions
 function getEmployeeShifts() {
     global $conn;
     try {
-        $sql = "SELECT 
-                    es.employee_shift_id,
-                    es.employee_id,
-                    es.shift_id,
-                    es.assigned_date,
-                    es.is_overtime,
-                    pi.first_name,
-                    pi.last_name,
-                    ep.employee_number,
-                    jr.department,
-                    s.shift_name,
-                    s.start_time,
-                    s.end_time
+        $sql = "SELECT es.*, s.shift_name, pi.first_name, pi.last_name, d.department_name
                 FROM employee_shifts es
+                JOIN shifts s ON es.shift_id = s.shift_id
                 JOIN employee_profiles ep ON es.employee_id = ep.employee_id
                 JOIN personal_information pi ON ep.personal_info_id = pi.personal_info_id
-                LEFT JOIN job_roles jr ON ep.job_role_id = jr.job_role_id
-                JOIN shifts s ON es.shift_id = s.shift_id
+                LEFT JOIN departments d ON ep.job_role_id IN (
+                    SELECT job_role_id FROM job_roles WHERE department = d.department_name
+                )
                 ORDER BY es.assigned_date DESC, pi.first_name, pi.last_name";
-        
         $stmt = $conn->query($sql);
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
     } catch (PDOException $e) {
-        error_log("Error fetching employee shifts: " . $e->getMessage());
         return [];
-    }
-}
-
-function getEmployees() {
-    global $conn;
-    try {
-        $sql = "SELECT 
-                    ep.employee_id,
-                    pi.first_name,
-                    pi.last_name,
-                    ep.employee_number,
-                    jr.department
-                FROM employee_profiles ep
-                JOIN personal_information pi ON ep.personal_info_id = pi.personal_info_id
-                LEFT JOIN job_roles jr ON ep.job_role_id = jr.job_role_id
-                WHERE ep.employment_status IN ('Full-time', 'Part-time', 'Contract', 'Intern')
-                ORDER BY pi.first_name, pi.last_name";
-        
-        $stmt = $conn->query($sql);
-        return $stmt->fetchAll(PDO::FETCH_ASSOC);
-    } catch (PDOException $e) {
-        error_log("Error fetching employees: " . $e->getMessage());
-        return [];
-    }
-}
-
-if (!function_exists('getShifts')) {
-    function getShifts() {
-        global $conn;
-        try {
-            $sql = "SELECT * FROM shifts ORDER BY shift_name";
-            $stmt = $conn->query($sql);
-            return $stmt->fetchAll(PDO::FETCH_ASSOC);
-        } catch (PDOException $e) {
-            error_log("Error fetching shifts: " . $e->getMessage());
-            return [];
-        }
     }
 }
 
@@ -255,10 +173,8 @@ function addEmployeeShift($employeeId, $shiftId, $assignedDate, $isOvertime) {
     try {
         $sql = "INSERT INTO employee_shifts (employee_id, shift_id, assigned_date, is_overtime) VALUES (?, ?, ?, ?)";
         $stmt = $conn->prepare($sql);
-        $stmt->execute([$employeeId, $shiftId, $assignedDate, $isOvertime]);
-        return true;
+        return $stmt->execute([$employeeId, $shiftId, $assignedDate, $isOvertime]);
     } catch (PDOException $e) {
-        error_log("Error adding employee shift: " . $e->getMessage());
         return false;
     }
 }
@@ -268,10 +184,8 @@ function updateEmployeeShift($employeeShiftId, $shiftId, $assignedDate, $isOvert
     try {
         $sql = "UPDATE employee_shifts SET shift_id = ?, assigned_date = ?, is_overtime = ? WHERE employee_shift_id = ?";
         $stmt = $conn->prepare($sql);
-        $stmt->execute([$shiftId, $assignedDate, $isOvertime, $employeeShiftId]);
-        return true;
+        return $stmt->execute([$shiftId, $assignedDate, $isOvertime, $employeeShiftId]);
     } catch (PDOException $e) {
-        error_log("Error updating employee shift: " . $e->getMessage());
         return false;
     }
 }
@@ -281,11 +195,35 @@ function deleteEmployeeShift($employeeShiftId) {
     try {
         $sql = "DELETE FROM employee_shifts WHERE employee_shift_id = ?";
         $stmt = $conn->prepare($sql);
-        $stmt->execute([$employeeShiftId]);
-        return true;
+        return $stmt->execute([$employeeShiftId]);
     } catch (PDOException $e) {
-        error_log("Error deleting employee shift: " . $e->getMessage());
         return false;
+    }
+}
+
+// Additional helper functions
+function getEmployees() {
+    global $conn;
+    try {
+        $sql = "SELECT ep.employee_id, pi.first_name, pi.last_name, ep.employee_number
+                FROM employee_profiles ep
+                JOIN personal_information pi ON ep.personal_info_id = pi.personal_info_id
+                ORDER BY pi.first_name, pi.last_name";
+        $stmt = $conn->query($sql);
+        return $stmt->fetchAll(PDO::FETCH_ASSOC);
+    } catch (PDOException $e) {
+        return [];
+    }
+}
+
+function getLeaveTypes() {
+    global $conn;
+    try {
+        $sql = "SELECT * FROM leave_types ORDER BY leave_type_name";
+        $stmt = $conn->query($sql);
+        return $stmt->fetchAll(PDO::FETCH_ASSOC);
+    } catch (PDOException $e) {
+        return [];
     }
 }
 ?>

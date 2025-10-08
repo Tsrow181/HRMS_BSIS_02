@@ -7,165 +7,111 @@ if (session_status() == PHP_SESSION_NONE) {
 // Include database connection
 require_once 'dp.php';
 
-// Helper functions for navigation
-function getNotificationCount($role) {
+// Employee-specific helper functions
+function getEmployeeNotificationCount($employee_id) {
     global $conn;
     try {
-        $count = 0;
+        // Count employee-specific notifications
+        $sql = "SELECT 
+                    (SELECT COUNT(*) FROM user_notifications WHERE user_id = ? AND is_read = 0) +
+                    (SELECT COUNT(*) FROM leave_requests WHERE employee_id = ? AND status = 'approved') +
+                    (SELECT COUNT(*) FROM training_assignments WHERE employee_id = ? AND status = 'pending') +
+                    (SELECT COUNT(*) FROM performance_reviews WHERE employee_id = ? AND status = 'pending') as total_notifications";
+        $stmt = $conn->prepare($sql);
+        $stmt->execute([$employee_id, $employee_id, $employee_id, $employee_id]);
+        $result = $stmt->fetch(PDO::FETCH_ASSOC);
+        $count = $result['total_notifications'] ?? 0;
         
-        if ($role == 'admin' || $role == 'hr') {
-            // Count pending approvals, new registrations, etc.
-            $sql = "SELECT 
-                        (SELECT COUNT(*) FROM employee_profiles WHERE status = 'pending') +
-                        (SELECT COUNT(*) FROM leave_requests WHERE status = 'pending') +
-                        (SELECT COUNT(*) FROM training_requests WHERE status = 'pending') as total_notifications";
-            $stmt = $conn->query($sql);
-            $result = $stmt->fetch(PDO::FETCH_ASSOC);
-            $count = $result['total_notifications'] ?? 0;
-        } elseif ($role == 'manager') {
-            // Count team-related notifications
-            $sql = "SELECT COUNT(*) as total_notifications FROM team_notifications WHERE manager_id = ? AND is_read = 0";
-            $stmt = $conn->prepare($sql);
-            $stmt->execute([$_SESSION['user_id']]);
-            $result = $stmt->fetch(PDO::FETCH_ASSOC);
-            $count = $result['total_notifications'] ?? 0;
-        } else {
-            // Count personal notifications
-            $sql = "SELECT COUNT(*) as total_notifications FROM user_notifications WHERE user_id = ? AND is_read = 0";
-            $stmt = $conn->prepare($sql);
-            $stmt->execute([$_SESSION['user_id']]);
-            $result = $stmt->fetch(PDO::FETCH_ASSOC);
-            $count = $result['total_notifications'] ?? 0;
-        }
-        
-        return $count > 0 ? $count : rand(1, 5); // Fallback to random if no data
+        return $count > 0 ? $count : rand(1, 3); // Fallback to random if no data
     } catch (PDOException $e) {
-        return rand(1, 8);
+        return rand(1, 4);
     }
 }
 
-function getQuickStats($role) {
+function getEmployeeQuickStats($employee_id) {
     global $conn;
     try {
-        if ($role == 'admin' || $role == 'hr') {
-            $sql = "SELECT 
-                        (SELECT COUNT(*) FROM employee_profiles WHERE status = 'active') as active_employees,
-                        (SELECT COUNT(*) FROM leave_requests WHERE status = 'pending') as pending_leaves,
-                        (SELECT COUNT(*) FROM training_requests WHERE status = 'urgent') as urgent_tasks";
-            $stmt = $conn->query($sql);
-            $result = $stmt->fetch(PDO::FETCH_ASSOC);
-            
-            return [
-                'active_employees' => $result['active_employees'] ?? rand(50, 150),
-                'pending_leaves' => $result['pending_leaves'] ?? rand(3, 12),
-                'urgent_tasks' => $result['urgent_tasks'] ?? rand(1, 5)
-            ];
-        }
+        $sql = "SELECT 
+                    (SELECT COUNT(*) FROM leave_requests WHERE employee_id = ? AND YEAR(start_date) = YEAR(CURDATE())) as total_leaves,
+                    (SELECT COUNT(*) FROM training_completions WHERE employee_id = ? AND YEAR(completion_date) = YEAR(CURDATE())) as completed_trainings,
+                    (SELECT COUNT(*) FROM documents WHERE employee_id = ?) as total_documents";
+        $stmt = $conn->prepare($sql);
+        $stmt->execute([$employee_id, $employee_id, $employee_id]);
+        $result = $stmt->fetch(PDO::FETCH_ASSOC);
+        
         return [
-            'active_employees' => rand(50, 150),
-            'pending_leaves' => rand(3, 12),
-            'urgent_tasks' => rand(1, 5)
+            'total_leaves' => $result['total_leaves'] ?? rand(2, 8),
+            'completed_trainings' => $result['completed_trainings'] ?? rand(1, 5),
+            'total_documents' => $result['total_documents'] ?? rand(5, 15)
         ];
     } catch (PDOException $e) {
         return [
-            'active_employees' => rand(50, 150),
-            'pending_leaves' => rand(3, 12),
-            'urgent_tasks' => rand(1, 5)
+            'total_leaves' => rand(2, 8),
+            'completed_trainings' => rand(1, 5),
+            'total_documents' => rand(5, 15)
         ];
     }
 }
 
-function getNotifications($role) {
+function getEmployeeNotifications($employee_id) {
     global $conn;
     try {
         $notifications = [];
         
-        if ($role == 'admin' || $role == 'hr') {
-            // Get admin/HR notifications from database
-            $sql = "SELECT 
-                        'New employee registration pending' as message,
-                        'Just now' as time,
-                        'info' as type
-                    FROM employee_profiles 
-                    WHERE status = 'pending' 
-                    LIMIT 1
-                    UNION ALL
-                    SELECT 
-                        'Leave request requires approval' as message,
-                        '15 min ago' as time,
-                        'warning' as type
-                    FROM leave_requests 
-                    WHERE status = 'pending' 
-                    LIMIT 1
-                    UNION ALL
-                    SELECT 
-                        'Performance review completed' as message,
-                        '1 hour ago' as time,
-                        'success' as type
-                    FROM performance_reviews 
-                    WHERE status = 'completed' 
-                    LIMIT 1";
-            
-            $stmt = $conn->query($sql);
-            $notifications = $stmt->fetchAll(PDO::FETCH_ASSOC);
-        } elseif ($role == 'manager') {
-            $notifications = [
-                ['time' => '30 min ago', 'message' => 'Team meeting scheduled for tomorrow', 'type' => 'info'],
-                ['time' => '2 hours ago', 'message' => 'Budget report submitted', 'type' => 'success']
-            ];
-        } else {
+        // Get employee-specific notifications from database
+        $sql = "SELECT 
+                    'Leave request approved' as message,
+                    'Just now' as time,
+                    'success' as type
+                FROM leave_requests 
+                WHERE employee_id = ? AND status = 'approved' 
+                ORDER BY updated_at DESC
+                LIMIT 1
+                UNION ALL
+                SELECT 
+                    'New training assignment' as message,
+                    '30 min ago' as time,
+                    'info' as type
+                FROM training_assignments 
+                WHERE employee_id = ? AND status = 'pending'
+                ORDER BY created_at DESC
+                LIMIT 1
+                UNION ALL
+                SELECT 
+                    'Performance review due' as message,
+                    '2 hours ago' as time,
+                    'warning' as type
+                FROM performance_reviews 
+                WHERE employee_id = ? AND status = 'pending'
+                ORDER BY due_date ASC
+                LIMIT 1";
+        
+        $stmt = $conn->prepare($sql);
+        $stmt->execute([$employee_id, $employee_id, $employee_id]);
+        $notifications = $stmt->fetchAll(PDO::FETCH_ASSOC);
+        
+        // If no database notifications, use default employee notifications
+        if (empty($notifications)) {
             $notifications = [
                 ['time' => '1 hour ago', 'message' => 'Payslip available for download', 'type' => 'info'],
-                ['time' => '3 hours ago', 'message' => 'Training session reminder', 'type' => 'warning']
+                ['time' => '3 hours ago', 'message' => 'Training session reminder', 'type' => 'warning'],
+                ['time' => '1 day ago', 'message' => 'Profile updated successfully', 'type' => 'success']
             ];
-        }
-        
-        // If no database notifications, use default ones
-        if (empty($notifications)) {
-            if ($role == 'admin' || $role == 'hr') {
-                $notifications = [
-                    ['time' => 'Just now', 'message' => 'New employee registration pending', 'type' => 'info'],
-                    ['time' => '15 min ago', 'message' => 'Leave request requires approval', 'type' => 'warning'],
-                    ['time' => '1 hour ago', 'message' => 'Performance review completed', 'type' => 'success']
-                ];
-            } elseif ($role == 'manager') {
-                $notifications = [
-                    ['time' => '30 min ago', 'message' => 'Team meeting scheduled for tomorrow', 'type' => 'info'],
-                    ['time' => '2 hours ago', 'message' => 'Budget report submitted', 'type' => 'success']
-                ];
-            } else {
-                $notifications = [
-                    ['time' => '1 hour ago', 'message' => 'Payslip available for download', 'type' => 'info'],
-                    ['time' => '3 hours ago', 'message' => 'Training session reminder', 'type' => 'warning']
-                ];
-            }
         }
         
         return $notifications;
     } catch (PDOException $e) {
-        // Return default notifications if database error
-        if ($role == 'admin' || $role == 'hr') {
-            return [
-                ['time' => 'Just now', 'message' => 'New employee registration pending', 'type' => 'info'],
-                ['time' => '15 min ago', 'message' => 'Leave request requires approval', 'type' => 'warning'],
-                ['time' => '1 hour ago', 'message' => 'Performance review completed', 'type' => 'success']
-            ];
-        } elseif ($role == 'manager') {
-            return [
-                ['time' => '30 min ago', 'message' => 'Team meeting scheduled for tomorrow', 'type' => 'info'],
-                ['time' => '2 hours ago', 'message' => 'Budget report submitted', 'type' => 'success']
-            ];
-        } else {
-            return [
-                ['time' => '1 hour ago', 'message' => 'Payslip available for download', 'type' => 'info'],
-                ['time' => '3 hours ago', 'message' => 'Training session reminder', 'type' => 'warning']
-            ];
-        }
+        // Return default employee notifications if database error
+        return [
+            ['time' => '1 hour ago', 'message' => 'Payslip available for download', 'type' => 'info'],
+            ['time' => '3 hours ago', 'message' => 'Training session reminder', 'type' => 'warning'],
+            ['time' => '1 day ago', 'message' => 'Profile updated successfully', 'type' => 'success']
+        ];
     }
 }
 
-function getUserProfileImage($username) {
-    // Check if user has uploaded profile image
+function getEmployeeProfileImage($username) {
+    // Check if employee has uploaded profile image
     $upload_path = "uploads/profile_images/";
     $image_file = $upload_path . strtolower(str_replace(' ', '_', $username)) . ".jpg";
     
@@ -177,7 +123,7 @@ function getUserProfileImage($username) {
     return "https://ui-avatars.com/api/?name=" . urlencode($username) . "&background=E91E63&color=fff&size=35";
 }
 
-function getLastLoginTime($user_id) {
+function getEmployeeLastLoginTime($user_id) {
     global $conn;
     try {
         $sql = "SELECT last_login FROM users WHERE user_id = ?";
@@ -195,12 +141,14 @@ function getLastLoginTime($user_id) {
     }
 }
 
-// Get current data for navigation
-$notification_count = getNotificationCount($_SESSION['role'] ?? 'employee');
-$quick_stats = getQuickStats($_SESSION['role'] ?? 'employee');
-$notifications = getNotifications($_SESSION['role'] ?? 'employee');
-$profile_image = getUserProfileImage($_SESSION['username'] ?? 'User');
-$last_login = getLastLoginTime($_SESSION['user_id'] ?? 1);
+// Get current employee data for navigation
+$employee_id = $_SESSION['user_id'] ?? 1;
+$username = $_SESSION['username'] ?? 'Employee';
+$notification_count = getEmployeeNotificationCount($employee_id);
+$quick_stats = getEmployeeQuickStats($employee_id);
+$notifications = getEmployeeNotifications($employee_id);
+$profile_image = getEmployeeProfileImage($username);
+$last_login = getEmployeeLastLoginTime($employee_id);
 ?>
 
 <!-- Global Theme Loader -->
@@ -232,31 +180,30 @@ $last_login = getLastLoginTime($_SESSION['user_id'] ?? 1);
 })();
 </script>
 
-<!-- Top Navigation Bar -->
-<nav class="top-navbar">
+<!-- Employee Top Navigation Bar -->
+<nav class="top-navbar employee-navbar">
     <div class="navbar-brand-section">
         <img src="image/GARAY.jpg" alt="HR System Logo" class="navbar-logo">
         <div class="navbar-title">
             <h4 class="mb-0">HR Management System</h4>
             <small class="text-muted">
                 <?php 
-                // Display current user role and welcome message
-                $role_display = ucfirst($_SESSION['role']); 
+                // Display employee greeting message
                 $current_time = date('H');
                 $greeting = ($current_time < 12) ? 'Good Morning' : 
                            (($current_time < 17) ? 'Good Afternoon' : 'Good Evening');
-                echo $greeting . ', ' . $role_display;
+                echo $greeting . ', ' . ucfirst(explode('.', $username)[0]);
                 ?>
             </small>
         </div>
     </div>
     
     <ul class="nav align-items-center">
-        <!-- System Status Indicator -->
+        <!-- Employee Status Indicator -->
         <li class="nav-item mr-3">
             <div class="system-status">
-                <span class="status-indicator <?php echo (time() % 2 == 0) ? 'status-online' : 'status-online'; ?>"></span>
-                <small class="text-muted">System Online</small>
+                <span class="status-indicator status-online"></span>
+                <small class="text-muted">Online</small>
             </div>
         </li>
         
@@ -280,7 +227,7 @@ $last_login = getLastLoginTime($_SESSION['user_id'] ?? 1);
             </a>
             <div class="dropdown-menu dropdown-menu-right notification-dropdown" aria-labelledby="notificationsDropdown">
                 <h6 class="dropdown-header">
-                    Notifications 
+                    My Notifications 
                     <span class="badge badge-primary ml-2"><?php echo $notification_count; ?></span>
                 </h6>
                 
@@ -297,20 +244,20 @@ $last_login = getLastLoginTime($_SESSION['user_id'] ?? 1);
                 <?php endforeach; ?>
                 
                 <div class="dropdown-divider"></div>
-                <a class="dropdown-item text-center font-weight-bold" href="notifications.php">
+                <a class="dropdown-item text-center font-weight-bold" href="my_notifications.php">
                     View All Notifications
                 </a>
             </div>
         </li>
         
-        <!-- User Profile -->
+        <!-- Employee Profile -->
         <li class="nav-item dropdown">
             <a class="nav-link-custom user-profile-link" href="#" id="profileDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
                 <img src="<?php echo $profile_image; ?>" 
                      alt="Profile" class="profile-image">
                 <div class="user-info">
-                    <span class="username"><?php echo htmlspecialchars($_SESSION['username']); ?></span>
-                    <small class="user-role"><?php echo ucfirst($_SESSION['role']); ?></small>
+                    <span class="username"><?php echo htmlspecialchars(ucfirst(explode('.', $username)[0])); ?></span>
+                    <small class="user-role">Employee</small>
                 </div>
                 <i class="fas fa-chevron-down ml-2"></i>
             </a>
@@ -319,45 +266,41 @@ $last_login = getLastLoginTime($_SESSION['user_id'] ?? 1);
                     <img src="<?php echo str_replace('size=35', 'size=50', $profile_image); ?>" 
                          alt="Profile" class="profile-image-large">
                     <div>
-                        <strong><?php echo htmlspecialchars($_SESSION['username']); ?></strong>
-                        <br><small class="text-muted"><?php echo ucfirst($_SESSION['role']); ?></small>
-                        <br><small class="text-muted">ID: <?php echo $_SESSION['user_id']; ?></small>
+                        <strong><?php echo htmlspecialchars(ucfirst(explode('.', $username)[0])); ?></strong>
+                        <br><small class="text-muted">Employee</small>
+                        <br><small class="text-muted">ID: <?php echo $employee_id; ?></small>
                     </div>
                 </div>
                 <div class="dropdown-divider"></div>
                 
-                <a class="dropdown-item" href="settings.php#system">
+                <a class="dropdown-item" href="#" onclick="openEmployeeSettings()">
                     <i class="fas fa-moon mr-2"></i> Theme Settings
                 </a>
-                <a class="dropdown-item" href="settings.php#profile">
+                <a class="dropdown-item" href="my_profile.php">
                     <i class="fas fa-user mr-2"></i> My Profile
                 </a>
-                <a class="dropdown-item" href="#" onclick="openSettings()">
-                    <i class="fas fa-cog mr-2"></i> Settings
+                <a class="dropdown-item" href="my_document.php">
+                    <i class="fas fa-folder mr-2"></i> My Documents
                 </a>
-                
-                <?php if ($_SESSION['role'] == 'admin' || $_SESSION['role'] == 'hr'): ?>
-                <a class="dropdown-item" href="employee_profile.php">
-                    <i class="fas fa-users mr-2"></i> Manage Employees
+                <a class="dropdown-item" href="my_payroll.php">
+                    <i class="fas fa-money-bill mr-2"></i> Payroll Info
                 </a>
-                <?php endif; ?>
-                
-                <?php if ($_SESSION['role'] == 'admin'): ?>
-                <a class="dropdown-item" href="training_courses.php">
-                    <i class="fas fa-graduation-cap mr-2"></i> Training Management
+                <a class="dropdown-item" href="my_leave.php">
+                    <i class="fas fa-calendar-alt mr-2"></i> Leave Management
                 </a>
-                <?php endif; ?>
-                
-                <a class="dropdown-item" href="#" onclick="openHelp()">
+                <a class="dropdown-item" href="my_training.php">
+                    <i class="fas fa-graduation-cap mr-2"></i> Training Courses
+                </a>
+                <a class="dropdown-item" href="#" onclick="openEmployeeHelp()">
                     <i class="fas fa-question-circle mr-2"></i> Help & Support
                 </a>
                 
                 <div class="dropdown-divider"></div>
                 
-                <!-- Session Info -->
+                <!-- Employee Session Info -->
                 <div class="dropdown-item-text">
                     <small class="text-muted">
-                        Session: <?php echo date('H:i', $_SERVER['REQUEST_TIME']); ?>
+                        Leave Balance: 15 days
                         <br>Last Login: <?php echo $last_login; ?>
                     </small>
                 </div>
@@ -371,9 +314,9 @@ $last_login = getLastLoginTime($_SESSION['user_id'] ?? 1);
     </ul>
 </nav>
 
-<!-- Additional CSS for enhanced navigation -->
+<!-- Additional CSS for employee navigation -->
 <style>
-.top-navbar {
+.employee-navbar {
     display: flex;
     justify-content: space-between;
     align-items: center;
@@ -586,24 +529,23 @@ $last_login = getLastLoginTime($_SESSION['user_id'] ?? 1);
 }
 </style>
 
-<!-- JavaScript for enhanced functionality -->
+<!-- JavaScript for employee navigation functionality -->
 <script>
-// Auto-refresh notifications every 30 seconds
+// Auto-refresh employee notifications every 30 seconds
 setInterval(function() {
-    // You can add AJAX call here to refresh notifications
-    console.log('Refreshing notifications...');
+    console.log('Refreshing employee notifications...');
+    // Add AJAX call here to refresh employee-specific notifications
 }, 30000);
 
-// Settings modal function
-function openSettings() {
-    // Create a simple modal for settings
+// Employee settings modal function
+function openEmployeeSettings() {
     const modal = document.createElement('div');
     modal.className = 'modal fade';
     modal.innerHTML = `
         <div class="modal-dialog">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h5 class="modal-title">Settings</h5>
+                    <h5 class="modal-title">Employee Settings</h5>
                     <button type="button" class="close" data-dismiss="modal">
                         <span>&times;</span>
                     </button>
@@ -623,6 +565,13 @@ function openSettings() {
                             <label class="custom-control-label" for="notifications">Enable notifications</label>
                         </div>
                     </div>
+                    <div class="form-group">
+                        <label>Language</label>
+                        <select class="form-control">
+                            <option>English</option>
+                            <option>Filipino</option>
+                        </select>
+                    </div>
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
@@ -634,37 +583,65 @@ function openSettings() {
     document.body.appendChild(modal);
     $(modal).modal('show');
     
-    // Remove modal from DOM after it's hidden
     $(modal).on('hidden.bs.modal', function() {
         document.body.removeChild(modal);
     });
 }
 
-// Help modal function
-function openHelp() {
+// Employee help modal function
+function openEmployeeHelp() {
     const modal = document.createElement('div');
     modal.className = 'modal fade';
     modal.innerHTML = `
         <div class="modal-dialog modal-lg">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h5 class="modal-title">Help & Support</h5>
+                    <h5 class="modal-title">Employee Help & Support</h5>
                     <button type="button" class="close" data-dismiss="modal">
                         <span>&times;</span>
                     </button>
                 </div>
                 <div class="modal-body">
-                    <h6>Quick Guide</h6>
+                    <h6>Employee Quick Guide</h6>
                     <ul>
-                        <li><strong>Dashboard:</strong> View system overview and statistics</li>
-                        <li><strong>Employees:</strong> Manage employee profiles and information</li>
-                        <li><strong>Training:</strong> Access training courses and materials</li>
-                        <li><strong>Reports:</strong> Generate and view various reports</li>
+                        <li><strong>My Profile:</strong> Update your personal information and contact details</li>
+                        <li><strong>Leave Management:</strong> Request leave and view your leave balance</li>
+                        <li><strong>Documents:</strong> Access your employment documents and certificates</li>
+                        <li><strong>Training:</strong> View assigned training courses and track progress</li>
+                        <li><strong>Payroll:</strong> Check your salary information and payslips</li>
                     </ul>
                     <hr>
+                    <h6>Frequently Asked Questions</h6>
+                    <div class="accordion" id="helpAccordion">
+                        <div class="card">
+                            <div class="card-header">
+                                <button class="btn btn-link" type="button" data-toggle="collapse" data-target="#faq1">
+                                    How do I request leave?
+                                </button>
+                            </div>
+                            <div id="faq1" class="collapse" data-parent="#helpAccordion">
+                                <div class="card-body">
+                                    Click on "Request Leave" button or go to Leave Management section to submit your leave request.
+                                </div>
+                            </div>
+                        </div>
+                        <div class="card">
+                            <div class="card-header">
+                                <button class="btn btn-link" type="button" data-toggle="collapse" data-target="#faq2">
+                                    How do I update my profile?
+                                </button>
+                            </div>
+                            <div id="faq2" class="collapse" data-parent="#helpAccordion">
+                                <div class="card-body">
+                                    Go to "My Profile" section where you can update your personal information and contact details.
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <hr>
                     <h6>Contact Support</h6>
-                    <p>For technical support, please contact:</p>
-                    <p><i class="fas fa-envelope"></i> support@hrsystem.com</p>
+                    <p>For technical support or HR inquiries:</p>
+                    <p><i class="fas fa-envelope"></i> hr@company.com</p>
                     <p><i class="fas fa-phone"></i> +1 (555) 123-4567</p>
                 </div>
                 <div class="modal-footer">
@@ -681,17 +658,14 @@ function openHelp() {
     });
 }
 
-// Mark notifications as read
+// Mark employee notifications as read
 document.addEventListener('DOMContentLoaded', function() {
     const notificationItems = document.querySelectorAll('.notification-item');
     notificationItems.forEach(item => {
         item.addEventListener('click', function() {
-            // Add visual feedback
             this.style.backgroundColor = '#f8f9fa';
             this.style.opacity = '0.7';
-            
-            // You can add AJAX call here to mark notification as read
-            console.log('Notification clicked:', this.querySelector('p').textContent);
+            console.log('Employee notification clicked:', this.querySelector('p').textContent);
         });
     });
 });
@@ -718,4 +692,30 @@ setInterval(updateClock, 60000);
 
 // Initialize clock on page load
 document.addEventListener('DOMContentLoaded', updateClock);
+
+// Employee-specific functionality
+function checkLeaveBalance() {
+    // Add functionality to check leave balance
+    console.log('Checking leave balance...');
+}
+
+// Quick access to common employee functions
+document.addEventListener('DOMContentLoaded', function() {
+    // Add keyboard shortcuts for employee functions
+    document.addEventListener('keydown', function(e) {
+        if (e.ctrlKey && e.altKey) {
+            switch(e.key) {
+                case 'p':
+                    window.location.href = 'my_profile.php';
+                    break;
+                case 'l':
+                    $('#leaveRequestModal').modal('show');
+                    break;
+                case 'd':
+                    window.location.href = 'my_document.php';
+                    break;
+            }
+        }
+    });
+});
 </script>
