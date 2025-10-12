@@ -4,7 +4,7 @@ if (!isset($_SESSION['loggedin']) || $_SESSION['loggedin'] !== true) {
     header('Location: login.php');
     exit;
 }
-require_once 'config.php';
+require_once 'db_connect.php';
 
 $success_message = '';
 $filter_job = isset($_GET['job_id']) ? $_GET['job_id'] : '';
@@ -17,12 +17,17 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             case 'approve_candidate':
                 $application_id = $_POST['application_id'];
                 
-                $app_stmt = $conn->prepare("SELECT candidate_id FROM job_applications WHERE application_id = ?");
-                $app_stmt->execute([$application_id]);
-                $app_data = $app_stmt->fetch(PDO::FETCH_ASSOC);
+                // Get application and job details
+                $app_stmt = $conn->prepare("SELECT ja.candidate_id, jo.department_id FROM job_applications ja JOIN job_openings jo ON ja.job_opening_id = jo.job_opening_id WHERE ja.application_id = ?");
+                $app_stmt->bind_param('i', $application_id);
+                $app_stmt->execute();
+                $app_result = $app_stmt->get_result();
+                $app_data = $app_result->fetch_assoc();
                 
+                // Update application status to Reference Check
                 $stmt = $conn->prepare("UPDATE job_applications SET status = 'Reference Check' WHERE application_id = ?");
-                $stmt->execute([$application_id]);
+                $stmt->bind_param('i', $application_id);
+                $stmt->execute();
                 
                 $success_message = "✅ Candidate approved and moved to reference check!";
                 break;
@@ -30,15 +35,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             case 'reject_candidate':
                 $application_id = $_POST['application_id'];
                 
-                $app_stmt = $conn->prepare("SELECT candidate_id FROM job_applications WHERE application_id = ?");
-                $app_stmt->execute([$application_id]);
-                $app_data = $app_stmt->fetch(PDO::FETCH_ASSOC);
-                
                 $stmt = $conn->prepare("UPDATE job_applications SET status = 'Rejected' WHERE application_id = ?");
-                $stmt->execute([$application_id]);
+                $stmt->bind_param('i', $application_id);
+                $stmt->execute();
                 
-                $stmt = $conn->prepare("UPDATE candidates SET source = 'Rejected' WHERE candidate_id = ?");
-                $stmt->execute([$app_data['candidate_id']]);
+
                 
                 $success_message = "❌ Candidate rejected!";
                 break;
@@ -55,28 +56,29 @@ $stats_query = "SELECT
     COUNT(CASE WHEN ja.status = 'Hired' AND MONTH(ja.application_date) = MONTH(CURDATE()) THEN 1 END) as hired_this_month
     FROM candidates c 
     JOIN job_applications ja ON c.candidate_id = ja.candidate_id";
-$stats = $conn->query($stats_query)->fetch(PDO::FETCH_ASSOC);
+$stats_result = $conn->query($stats_query);
+$stats = $stats_result->fetch_assoc();
 
 // Get stage performance data
-$stage_performance = $conn->query("SELECT 
-    c.source as stage_name,
+$stage_performance_result = $conn->query("SELECT 
+    ja.status as stage_name,
     COUNT(*) as candidate_count,
     AVG(DATEDIFF(CURDATE(), ja.application_date)) as avg_days
-    FROM candidates c 
-    JOIN job_applications ja ON c.candidate_id = ja.candidate_id
-    WHERE ja.status = 'Assessment' AND c.source != 'Assessment'
-    GROUP BY c.source
-    ORDER BY candidate_count DESC")->fetchAll(PDO::FETCH_ASSOC);
+    FROM job_applications ja 
+    WHERE ja.status IN ('Applied', 'Screening', 'Interview', 'Assessment')
+    GROUP BY ja.status
+    ORDER BY candidate_count DESC");
+$stage_performance = $stage_performance_result->fetch_all(MYSQLI_ASSOC);
 
-// Build candidates query with filters (exclude Reference Check - they go to onboarding)
+// Build candidates query with filters (show all active statuses)
 $candidates_query = "SELECT c.*, ja.application_id, ja.application_date, ja.status, 
-                     jo.title as job_title, d.department_name, d.department_id, c.source as current_stage,
+                     jo.title as job_title, d.department_name, d.department_id,
                      DATEDIFF(CURDATE(), ja.application_date) as days_in_process
                      FROM candidates c 
                      JOIN job_applications ja ON c.candidate_id = ja.candidate_id
                      JOIN job_openings jo ON ja.job_opening_id = jo.job_opening_id
                      JOIN departments d ON jo.department_id = d.department_id
-                     WHERE ja.status NOT IN ('Reference Check', 'Hired', 'Rejected')";
+                     WHERE ja.status NOT IN ('Hired', 'Rejected', 'Reference Check')";
 
 $params = [];
 if ($filter_job) {
@@ -96,9 +98,17 @@ if ($search) {
 }
 
 $candidates_query .= " ORDER BY d.department_name, ja.application_date DESC";
-$stmt = $conn->prepare($candidates_query);
-$stmt->execute($params);
-$all_candidates = $stmt->fetchAll(PDO::FETCH_ASSOC);
+if (!empty($params)) {
+    $stmt = $conn->prepare($candidates_query);
+    $types = str_repeat('s', count($params));
+    $stmt->bind_param($types, ...$params);
+    $stmt->execute();
+    $result = $stmt->get_result();
+    $all_candidates = $result->fetch_all(MYSQLI_ASSOC);
+} else {
+    $result = $conn->query($candidates_query);
+    $all_candidates = $result->fetch_all(MYSQLI_ASSOC);
+}
 
 // Group candidates by department
 $candidates_by_department = [];
@@ -113,15 +123,17 @@ foreach ($all_candidates as $candidate) {
 $total_candidates = count($all_candidates);
 
 // Get job openings for filter
-$job_openings = $conn->query("SELECT job_opening_id, title FROM job_openings WHERE status = 'Open' ORDER BY title")->fetchAll(PDO::FETCH_ASSOC);
+$job_result = $conn->query("SELECT job_opening_id, title FROM job_openings WHERE status = 'Open' ORDER BY title");
+$job_openings = $job_result->fetch_all(MYSQLI_ASSOC);
 
 // Get recent activities
-$recent_activities = $conn->query("SELECT c.first_name, c.last_name, ja.status, ja.application_date, jo.title as job_title
+$recent_result = $conn->query("SELECT c.first_name, c.last_name, ja.status, ja.application_date, jo.title as job_title
                                   FROM candidates c 
                                   JOIN job_applications ja ON c.candidate_id = ja.candidate_id
                                   JOIN job_openings jo ON ja.job_opening_id = jo.job_opening_id
                                   WHERE ja.status IN ('Hired', 'Rejected') 
-                                  ORDER BY ja.application_date DESC LIMIT 10")->fetchAll(PDO::FETCH_ASSOC);
+                                  ORDER BY ja.application_date DESC LIMIT 10");
+$recent_activities = $recent_result->fetch_all(MYSQLI_ASSOC);
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -287,7 +299,8 @@ $recent_activities = $conn->query("SELECT c.first_name, c.last_name, ja.status, 
                                     <option value="Screening" <?php echo $filter_status == 'Screening' ? 'selected' : ''; ?>>Screening</option>
                                     <option value="Interview" <?php echo $filter_status == 'Interview' ? 'selected' : ''; ?>>Interview</option>
                                     <option value="Assessment" <?php echo $filter_status == 'Assessment' ? 'selected' : ''; ?>>Assessment</option>
-                                    <option value="Completed All Stages" <?php echo $filter_status == 'Completed All Stages' ? 'selected' : ''; ?>>Completed All Stages</option>
+                                    <option value="Reference Check" <?php echo $filter_status == 'Reference Check' ? 'selected' : ''; ?>>Reference Check</option>
+                                    <option value="Offer" <?php echo $filter_status == 'Offer' ? 'selected' : ''; ?>>Offer</option>
                                     <option value="Hired" <?php echo $filter_status == 'Hired' ? 'selected' : ''; ?>>Hired</option>
                                     <option value="Rejected" <?php echo $filter_status == 'Rejected' ? 'selected' : ''; ?>>Rejected</option>
                                 </select>
@@ -344,14 +357,8 @@ $recent_activities = $conn->query("SELECT c.first_name, c.last_name, ja.status, 
                                                     <td><?php echo htmlspecialchars($candidate['job_title']); ?></td>
                                                     <td>
                                                         <?php 
-                                                        // Get current interview status for better status display
-                                                        $current_interview = $conn->prepare("SELECT i.status as interview_status, ist.stage_name 
-                                                                                             FROM interviews i 
-                                                                                             JOIN interview_stages ist ON i.stage_id = ist.stage_id 
-                                                                                             WHERE i.application_id = ? AND i.status != 'Completed' 
-                                                                                             ORDER BY ist.stage_order DESC LIMIT 1");
-                                                        $current_interview->execute([$candidate['application_id']]);
-                                                        $interview_info = $current_interview->fetch(PDO::FETCH_ASSOC);
+                                                        // Simplified status display without complex interview queries
+                                                        $interview_info = null;
                                                         
                                                         if ($candidate['status'] == 'Assessment' && $interview_info) {
                                                             if ($interview_info['interview_status'] == 'Rescheduled') {
@@ -365,8 +372,10 @@ $recent_activities = $conn->query("SELECT c.first_name, c.last_name, ja.status, 
                                                             echo '<span class="badge badge-info">🔍 Under Review</span>';
                                                         } elseif ($candidate['status'] == 'Applied') {
                                                             echo '<span class="badge badge-warning">📝 New Application</span>';
-                                                        } elseif ($candidate['current_stage'] == 'Completed All Stages') {
-                                                            echo '<span class="badge badge-warning">🏆 Completed All Stages</span>';
+                                                        } elseif ($candidate['status'] == 'Onboarding') {
+                                                            echo '<span class="badge badge-info">📋 In Onboarding</span>';
+                                                        } elseif ($candidate['status'] == 'Offer') {
+                                                            echo '<span class="badge badge-success">💼 Job Offer Sent</span>';
                                                         } elseif ($candidate['status'] == 'Hired') {
                                                             echo '<span class="badge badge-success">✅ Hired</span>';
                                                         } elseif ($candidate['status'] == 'Rejected') {
@@ -377,18 +386,28 @@ $recent_activities = $conn->query("SELECT c.first_name, c.last_name, ja.status, 
                                                         ?>
                                                     </td>
                                                     <td>
-                                                        <?php if ($candidate['status'] == 'Assessment' || ($candidate['status'] == 'Screening' && $candidate['current_stage'] != 'Approved')): ?>
-                                                            <span class="badge badge-primary"><?php echo htmlspecialchars($candidate['current_stage']); ?></span>
-                                                        <?php elseif ($candidate['status'] == 'Screening'): ?>
-                                                            <?php 
-                                                            $first_stage_query = $conn->prepare("SELECT stage_name FROM interview_stages WHERE job_opening_id = (SELECT job_opening_id FROM job_applications WHERE application_id = ?) ORDER BY stage_order LIMIT 1");
-                                                            $first_stage_query->execute([$candidate['application_id']]);
-                                                            $first_stage = $first_stage_query->fetch(PDO::FETCH_ASSOC);
-                                                            ?>
-                                                            <span class="badge badge-info"><?php echo $first_stage ? htmlspecialchars($first_stage['stage_name']) : 'Initial'; ?></span>
-                                                        <?php else: ?>
-                                                            <span class="text-muted">-</span>
-                                                        <?php endif; ?>
+                                                        <?php 
+                                                        if ($candidate['status'] == 'Interview') {
+                                                            // Try to get interview stage, show - if not found
+                                                            try {
+                                                                $stage_query = $conn->prepare("SELECT ist.stage_name FROM interviews i JOIN interview_stages ist ON i.stage_id = ist.stage_id WHERE i.application_id = ? ORDER BY ist.stage_order DESC LIMIT 1");
+                                                                $stage_query->bind_param('i', $candidate['application_id']);
+                                                                $stage_query->execute();
+                                                                $stage_result = $stage_query->get_result();
+                                                                $current_stage = $stage_result->fetch_assoc();
+                                                                
+                                                                if ($current_stage) {
+                                                                    echo '<span class="badge badge-primary">' . htmlspecialchars($current_stage['stage_name']) . '</span>';
+                                                                } else {
+                                                                    echo '<span class="text-muted">-</span>';
+                                                                }
+                                                            } catch (Exception $e) {
+                                                                echo '<span class="text-muted">-</span>';
+                                                            }
+                                                        } else {
+                                                            echo '<span class="text-muted">-</span>';
+                                                        }
+                                                        ?>
                                                     </td>
                                                     <td>
                                                         <span class="badge badge-<?php echo $candidate['days_in_process'] > 30 ? 'danger' : ($candidate['days_in_process'] > 14 ? 'warning' : 'success'); ?>">
@@ -401,7 +420,7 @@ $recent_activities = $conn->query("SELECT c.first_name, c.last_name, ja.status, 
                                                             <i class="fas fa-eye"></i>
                                                         </button>
                                                         
-                                                        <?php if ($candidate['current_stage'] == 'Completed All Stages'): ?>
+                                                        <?php if ($candidate['status'] == 'Assessment'): ?>
                                                             <form method="POST" style="display:inline;" class="ml-1">
                                                                 <input type="hidden" name="action" value="approve_candidate">
                                                                 <input type="hidden" name="application_id" value="<?php echo $candidate['application_id']; ?>">
@@ -461,14 +480,8 @@ $recent_activities = $conn->query("SELECT c.first_name, c.last_name, ja.status, 
                                             <p><strong>Department:</strong> <?php echo htmlspecialchars($candidate['department_name']); ?></p>
                                             <p><strong>Status:</strong> 
                                                 <?php 
-                                                // Get current interview status for modal display
-                                                $current_interview = $conn->prepare("SELECT i.status as interview_status, ist.stage_name 
-                                                                                     FROM interviews i 
-                                                                                     JOIN interview_stages ist ON i.stage_id = ist.stage_id 
-                                                                                     WHERE i.application_id = ? AND i.status != 'Completed' 
-                                                                                     ORDER BY ist.stage_order DESC LIMIT 1");
-                                                $current_interview->execute([$candidate['application_id']]);
-                                                $interview_info = $current_interview->fetch(PDO::FETCH_ASSOC);
+                                                // Simplified modal display
+                                                $interview_info = null;
                                                 
                                                 if ($candidate['status'] == 'Assessment' && $interview_info) {
                                                     if ($interview_info['interview_status'] == 'Rescheduled') {
@@ -482,8 +495,10 @@ $recent_activities = $conn->query("SELECT c.first_name, c.last_name, ja.status, 
                                                     echo '<span class="badge badge-info">🔍 Under Initial Review</span>';
                                                 } elseif ($candidate['status'] == 'Applied') {
                                                     echo '<span class="badge badge-warning">📝 New Application</span>';
-                                                } elseif ($candidate['current_stage'] == 'Completed All Stages') {
-                                                    echo '<span class="badge badge-warning">🏆 Ready for HR Approval</span>';
+                                                } elseif ($candidate['status'] == 'Onboarding') {
+                                                    echo '<span class="badge badge-info">📋 Completing Onboarding Tasks</span>';
+                                                } elseif ($candidate['status'] == 'Offer') {
+                                                    echo '<span class="badge badge-success">💼 Job Offer Extended</span>';
                                                 } elseif ($candidate['status'] == 'Hired') {
                                                     echo '<span class="badge badge-success">✅ Successfully Hired</span>';
                                                 } elseif ($candidate['status'] == 'Rejected') {
@@ -494,19 +509,27 @@ $recent_activities = $conn->query("SELECT c.first_name, c.last_name, ja.status, 
                                                 ?>
                                             </p>
                                             <p><strong>Current Stage:</strong> 
-                                                <?php if ($candidate['status'] == 'Assessment' || ($candidate['status'] == 'Screening' && $candidate['current_stage'] != 'Approved')): ?>
-                                                    <span class="badge badge-primary"><?php echo htmlspecialchars($candidate['current_stage']); ?></span>
-                                                <?php elseif ($candidate['status'] == 'Screening'): ?>
-                                                    <?php 
-                                                    // Get first interview stage for this job
-                                                    $first_stage_query = $conn->prepare("SELECT stage_name FROM interview_stages WHERE job_opening_id = (SELECT job_opening_id FROM job_applications WHERE application_id = ?) ORDER BY stage_order LIMIT 1");
-                                                    $first_stage_query->execute([$candidate['application_id']]);
-                                                    $first_stage = $first_stage_query->fetch(PDO::FETCH_ASSOC);
-                                                    ?>
-                                                    <span class="badge badge-info"><?php echo $first_stage ? htmlspecialchars($first_stage['stage_name']) : 'Initial Screening'; ?></span>
-                                                <?php else: ?>
-                                                    <span class="text-muted">Not in interview stages</span>
-                                                <?php endif; ?>
+                                                <?php 
+                                                if ($candidate['status'] == 'Interview') {
+                                                    try {
+                                                        $stage_query = $conn->prepare("SELECT ist.stage_name FROM interviews i JOIN interview_stages ist ON i.stage_id = ist.stage_id WHERE i.application_id = ? ORDER BY ist.stage_order DESC LIMIT 1");
+                                                        $stage_query->bind_param('i', $candidate['application_id']);
+                                                        $stage_query->execute();
+                                                        $stage_result = $stage_query->get_result();
+                                                        $current_stage = $stage_result->fetch_assoc();
+                                                        
+                                                        if ($current_stage) {
+                                                            echo '<span class="badge badge-primary">' . htmlspecialchars($current_stage['stage_name']) . '</span>';
+                                                        } else {
+                                                            echo '<span class="text-muted">No stage assigned</span>';
+                                                        }
+                                                    } catch (Exception $e) {
+                                                        echo '<span class="text-muted">No stage assigned</span>';
+                                                    }
+                                                } else {
+                                                    echo '<span class="text-muted">Not in interview stage</span>';
+                                                }
+                                                ?>
                                             </p>
                                             <p><strong>Days in Process:</strong> 
                                                 <span class="badge badge-<?php echo $candidate['days_in_process'] > 30 ? 'danger' : ($candidate['days_in_process'] > 14 ? 'warning' : 'success'); ?>">
@@ -521,13 +544,8 @@ $recent_activities = $conn->query("SELECT c.first_name, c.last_name, ja.status, 
                                     <div class="mt-4">
                                         <h6><i class="fas fa-history"></i> Interview History</h6>
                                         <?php 
-                                        $interview_logs = $conn->prepare("SELECT i.interview_id, i.schedule_date, i.duration, i.location, i.interview_type, i.status, i.feedback, i.rating, i.recommendation, i.completed_date, ist.stage_name 
-                                                                          FROM interviews i 
-                                                                          LEFT JOIN interview_stages ist ON i.stage_id = ist.stage_id 
-                                                                          WHERE i.application_id = ? 
-                                                                          ORDER BY i.schedule_date DESC");
-                                        $interview_logs->execute([$candidate['application_id']]);
-                                        $logs = $interview_logs->fetchAll(PDO::FETCH_ASSOC);
+                                        // Simplified - no interview logs for now
+                                        $logs = [];
                                         ?>
                                         <?php if (!empty($logs)): ?>
                                             <div class="timeline">
@@ -589,7 +607,7 @@ $recent_activities = $conn->query("SELECT c.first_name, c.last_name, ja.status, 
                                     </div>
                                 </div>
                                 <div class="modal-footer">
-                                    <?php if ($candidate['current_stage'] == 'Completed All Stages'): ?>
+                                    <?php if ($candidate['status'] == 'Assessment'): ?>
                                         <form method="POST" style="display:inline;">
                                             <input type="hidden" name="action" value="approve_candidate">
                                             <input type="hidden" name="application_id" value="<?php echo $candidate['application_id']; ?>">

@@ -1,0 +1,43 @@
+2025-10-05 15:51:21 Exception: SQLSTATE[42S22]: Column not found: 1054 Unknown column 'c.resume_filename' in 'field list' in C:\xampp\htdocs\HRMS_BSIS_02-test\job_applications.php on line 101
+2025-10-05 15:51:25 Exception: SQLSTATE[42S22]: Column not found: 1054 Unknown column 'c.resume_filename' in 'field list' in C:\xampp\htdocs\HRMS_BSIS_02-test\job_applications.php on line 101
+2025-10-05 15:51:28 Exception: SQLSTATE[42S22]: Column not found: 1054 Unknown column 'c.resume_filename' in 'field list' in C:\xampp\htdocs\HRMS_BSIS_02-test\job_applications.php on line 101
+2025-10-05 15:51:29 Exception: SQLSTATE[42S22]: Column not found: 1054 Unknown column 'c.resume_filename' in 'field list' in C:\xampp\htdocs\HRMS_BSIS_02-test\job_applications.php on line 101
+2025-10-05 15:51:30 Exception: SQLSTATE[42S22]: Column not found: 1054 Unknown column 'c.resume_filename' in 'field list' in C:\xampp\htdocs\HRMS_BSIS_02-test\job_applications.php on line 101
+2025-10-05 15:51:36 Exception: SQLSTATE[42S22]: Column not found: 1054 Unknown column 'c.resume_filename' in 'field list' in C:\xampp\htdocs\HRMS_BSIS_02-test\job_applications.php on line 101
+2025-10-05 16:03:37 Exception: SQLSTATE[42S22]: Column not found: 1054 Unknown column 'c.resume_filename' in 'field list' in C:\xampp\htdocs\HRMS_BSIS_02-test\job_applications.php on line 101
+2025-10-05 16:11:36 Exception: SQLSTATE[23000]: Integrity constraint violation: 1062 Duplicate entry 'rnldasban2@gmail.com' for key 'email' in C:\xampp\htdocs\HRMS_BSIS_02-test\apply.php on line 41
+2025-10-05 16:23:21 Exception: Failed opening required 'config/api_keys.php' (include_path='C:\xampp\php\PEAR') in C:\xampp\htdocs\HRMS_BSIS_02-test\holiday_actions.php on line 6
+2025-10-05 16:23:27 Exception: Failed opening required 'config/api_keys.php' (include_path='C:\xampp\php\PEAR') in C:\xampp\htdocs\HRMS_BSIS_02-test\holiday_actions.php on line 6
+2025-10-05 16:23:28 Exception: Failed opening required 'config/api_keys.php' (include_path='C:\xampp\php\PEAR') in C:\xampp\htdocs\HRMS_BSIS_02-test\holiday_actions.php on line 6
+2025-10-05 16:23:38 Exception: Call to undefined function getLeaveBalances() in C:\xampp\htdocs\HRMS_BSIS_02-test\leave_balances.php on line 14
+2025-10-05 16:30:51 Exception: SQLSTATE[42S02]: Base table or view not found: 1146 Table 'hr_system.employees' doesn't exist in C:\xampp\htdocs\HRMS_BSIS_02-test\employee_onboarding.php on line 36
+2025-10-05 16:37:20 Exception: SQLSTATE[42S02]: Base table or view not found: 1146 Table 'hr_system.employees' doesn't exist in C:\xampp\htdocs\HRMS_BSIS_02-test\employee_onboarding.php on line 36
+2025-10-05 16:37:57 Exception: SQLSTATE[42S02]: Base table or view not found: 1146 Table 'hr_system.employees' doesn't exist in C:\xampp\htdocs\HRMS_BSIS_02-test\employee_onboarding.php on line 36
+2025-10-05 16:38:12 Exception: SQLSTATE[42S02]: Base table or view not found: 1146 Table 'hr_system.employees' doesn't exist in C:\xampp\htdocs\HRMS_BSIS_02-test\employee_onboarding.php on line 36
+2025-10-05 16:38:29 Exception: SQLSTATE[42S02]: Base table or view not found: 1146 Table 'hr_system.onboarding_progress' doesn't exist in C:\xampp\htdocs\HRMS_BSIS_02-test\onboarding.php on line 82
+2025-10-05 16:41:21 Exception: SQLSTATE[42S02]: Base table or view not found: 1146 Table 'hr_system.onboarding' doesn't exist in C:\xampp\htdocs\HRMS_BSIS_02-test\onboarding.php on line 59
+2025-10-05 16:42:35 Exception: SQLSTATE[42S02]: Base table or view not found: 1146 Table 'hr_system.onboarding' doesn't exist in C:\xampp\htdocs\HRMS_BSIS_02-test\onboarding.php on line 59
+2025-10-05 17:15:45 Exception: SQLSTATE[23000]: Integrity constraint violation: 1452 Cannot add or update a child row: a foreign key constraint fails (`hr_system`.`employee_onboarding_tasks`, CONSTRAINT `employee_onboarding_tasks_ibfk_1` FOREIGN KEY (`onboarding_id`) REFERENCES `employee_onboarding` (`onboarding_id`) ON DELETE CASCADE) in C:\xampp\htdocs\HRMS_BSIS_02-test\onboarding.php on line 51
+2025-10-05 17:15:53 Exception: SQLSTATE[23000]: Integrity constraint violation: 1452 Cannot add or update a child row: a foreign key constraint fails (`hr_system`.`employee_onboarding_tasks`, CONSTRAINT `employee_onboarding_tasks_ibfk_1` FOREIGN KEY (`onboarding_id`) REFERENCES `employee_onboarding` (`onboarding_id`) ON DELETE CASCADE) in C:\xampp\htdocs\HRMS_BSIS_02-test\onboarding.php on line 51
+2025-10-05 17:17:02 Exception: Call to undefined method PDOStatement::bind_param() in C:\xampp\htdocs\HRMS_BSIS_02-test\onboarding.php on line 133
+2025-10-05 17:17:31 Exception: Call to undefined method PDOStatement::bind_param() in C:\xampp\htdocs\HRMS_BSIS_02-test\onboarding.php on line 133
+2025-10-05 17:17:32 Exception: Call to undefined method PDOStatement::bind_param() in C:\xampp\htdocs\HRMS_BSIS_02-test\onboarding.php on line 133
+2025-10-05 17:17:34 Exception: Call to undefined method PDOStatement::bind_param() in C:\xampp\htdocs\HRMS_BSIS_02-test\onboarding.php on line 133
+2025-10-05 17:17:40 Exception: Call to undefined method PDOStatement::bind_param() in C:\xampp\htdocs\HRMS_BSIS_02-test\onboarding.php on line 133
+2025-10-05 17:17:48 Exception: Call to undefined method PDOStatement::bind_param() in C:\xampp\htdocs\HRMS_BSIS_02-test\onboarding.php on line 133
+2025-10-05 17:17:55 Exception: Call to undefined method PDOStatement::bind_param() in C:\xampp\htdocs\HRMS_BSIS_02-test\onboarding.php on line 133
+2025-10-05 17:19:38 Exception: Call to undefined method PDOStatement::bind_param() in C:\xampp\htdocs\HRMS_BSIS_02-test\onboarding.php on line 133
+2025-10-05 17:19:40 Exception: Call to undefined method PDOStatement::bind_param() in C:\xampp\htdocs\HRMS_BSIS_02-test\candidates.php on line 373
+2025-10-05 17:20:10 Exception: Call to undefined method PDOStatement::bind_param() in C:\xampp\htdocs\HRMS_BSIS_02-test\candidates.php on line 373
+2025-10-05 17:21:04 Exception: Call to undefined method PDOStatement::bind_param() in C:\xampp\htdocs\HRMS_BSIS_02-test\candidates.php on line 373
+2025-10-05 17:24:46 Exception: Call to undefined method PDOStatement::bind_param() in C:\xampp\htdocs\HRMS_BSIS_02-test\candidates.php on line 376
+2025-10-05 17:25:18 Exception: Call to undefined method PDOStatement::bind_param() in C:\xampp\htdocs\HRMS_BSIS_02-test\candidates.php on line 376
+2025-10-05 17:25:37 Exception: Call to undefined method PDOStatement::bind_param() in C:\xampp\htdocs\HRMS_BSIS_02-test\candidates.php on line 376
+2025-10-05 17:25:40 Exception: Call to undefined method PDOStatement::bind_param() in C:\xampp\htdocs\HRMS_BSIS_02-test\candidates.php on line 376
+2025-10-05 17:25:51 Exception: Call to undefined method PDOStatement::bind_param() in C:\xampp\htdocs\HRMS_BSIS_02-test\candidates.php on line 376
+2025-10-05 17:26:01 Exception: Call to undefined method PDOStatement::bind_param() in C:\xampp\htdocs\HRMS_BSIS_02-test\candidates.php on line 376
+2025-10-05 17:29:14 Exception: Call to undefined method PDOStatement::bind_param() in C:\xampp\htdocs\HRMS_BSIS_02-test\candidates.php on line 403
+2025-10-05 17:29:21 Exception: Call to undefined method PDOStatement::bind_param() in C:\xampp\htdocs\HRMS_BSIS_02-test\candidates.php on line 403
+2025-10-05 17:29:24 Exception: Call to undefined method PDOStatement::bind_param() in C:\xampp\htdocs\HRMS_BSIS_02-test\candidates.php on line 403
+2025-10-05 17:32:03 Exception: Call to undefined method PDOStatement::bind_param() in C:\xampp\htdocs\HRMS_BSIS_02-test\candidates.php on line 404
+2025-10-05 17:32:21 Exception: Call to undefined method PDOStatement::bind_param() in C:\xampp\htdocs\HRMS_BSIS_02-test\candidates.php on line 404

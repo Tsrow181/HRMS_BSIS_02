@@ -11,8 +11,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     if (isset($_POST['action'])) {
         switch ($_POST['action']) {
             case 'create_opening':
+                // Set default closing date if not provided
+                $closing_date = $_POST['closing_date'] ?: date('Y-m-d', strtotime('+30 days'));
+                
                 $stmt = $conn->prepare("INSERT INTO job_openings (job_role_id, department_id, title, description, requirements, responsibilities, location, employment_type, salary_range_min, salary_range_max, vacancy_count, posting_date, closing_date, status) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, CURDATE(), ?, ?)");
-                $stmt->execute([$_POST['job_role_id'], $_POST['department_id'], $_POST['title'], $_POST['description'], $_POST['requirements'], $_POST['responsibilities'], $_POST['location'], $_POST['employment_type'], $_POST['salary_min'], $_POST['salary_max'], $_POST['vacancy_count'], $_POST['closing_date'], $_POST['status']]);
+                $stmt->execute([$_POST['job_role_id'], $_POST['department_id'], $_POST['title'], $_POST['description'], $_POST['requirements'], $_POST['responsibilities'], $_POST['location'], $_POST['employment_type'], $_POST['salary_min'], $_POST['salary_max'], $_POST['vacancy_count'], $closing_date, $_POST['status']]);
                 $success_message = "✨ Job opening '" . htmlspecialchars($_POST['title']) . "' created successfully!";
                 break;
             case 'update_status':
@@ -36,6 +39,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         }
     }
 }
+
+// Check and auto-close filled positions
+$conn->exec("UPDATE job_openings jo SET status = 'Closed', closing_date = CURDATE() WHERE jo.status = 'Open' AND (SELECT COUNT(*) FROM job_applications ja WHERE ja.job_opening_id = jo.job_opening_id AND ja.status = 'Hired') >= jo.vacancy_count");
 
 $stats = [];
 $stmt = $conn->query("SELECT COUNT(*) as count FROM job_openings WHERE status = 'Draft'");
@@ -97,30 +103,36 @@ try {
                 <?php endif; ?>
                 
                 <div class="row mb-4">
-                    <div class="col-md-3">
-                        <div class="card stats-card">
+                    <div class="col-md-4">
+                        <div class="stats-card card">
                             <div class="card-body text-center">
-                                <i class="fas fa-edit activity-icon"></i>
-                                <h3 class="card-title"><?php echo $stats['draft']; ?></h3>
-                                <p class="text-muted">📝 Draft Openings</p>
+                                <div class="activity-icon bg-warning">
+                                    <i class="fas fa-edit"></i>
+                                </div>
+                                <h3 class="stats-number"><?php echo $stats['draft']; ?></h3>
+                                <p class="stats-label">Draft Openings</p>
                             </div>
                         </div>
                     </div>
-                    <div class="col-md-3">
-                        <div class="card stats-card">
+                    <div class="col-md-4">
+                        <div class="stats-card card">
                             <div class="card-body text-center">
-                                <i class="fas fa-rocket activity-icon"></i>
-                                <h3 class="card-title"><?php echo $stats['open']; ?></h3>
-                                <p class="text-muted">🚀 Active Openings</p>
+                                <div class="activity-icon bg-success">
+                                    <i class="fas fa-rocket"></i>
+                                </div>
+                                <h3 class="stats-number"><?php echo $stats['open']; ?></h3>
+                                <p class="stats-label">Active Openings</p>
                             </div>
                         </div>
                     </div>
-                    <div class="col-md-3">
-                        <div class="card stats-card">
+                    <div class="col-md-4">
+                        <div class="stats-card card">
                             <div class="card-body text-center">
-                                <i class="fas fa-users activity-icon"></i>
-                                <h3 class="card-title"><?php echo $stats['applications']; ?></h3>
-                                <p class="text-muted">👥 Applications</p>
+                                <div class="activity-icon bg-info">
+                                    <i class="fas fa-users"></i>
+                                </div>
+                                <h3 class="stats-number"><?php echo $stats['applications']; ?></h3>
+                                <p class="stats-label">Total Applications</p>
                             </div>
                         </div>
                     </div>
@@ -326,7 +338,8 @@ try {
                             <div class="col-md-4">
                                 <div class="form-group">
                                     <label class="form-label">Closing Date</label>
-                                    <input type="date" name="closing_date" class="form-control" min="<?php echo date('Y-m-d'); ?>">
+                                    <input type="date" name="closing_date" class="form-control" min="<?php echo date('Y-m-d'); ?>" value="<?php echo date('Y-m-d', strtotime('+30 days')); ?>">
+                                    <small class="text-muted">Default: 30 days from today</small>
                                 </div>
                             </div>
                         </div>

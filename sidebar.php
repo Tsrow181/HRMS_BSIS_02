@@ -387,6 +387,11 @@ $sidebar_stats = getSidebarStats();
                         </a>
                     </li>
                     <li class="nav-item">
+                        <a class="nav-link" href="public_jobs.php" target="_blank">
+                            <i class="fas fa-external-link-alt"></i> Public Job Portal
+                        </a>
+                    </li>
+                    <li class="nav-item">
                         <a class="nav-link <?php echo isActiveMenu('interview_stages.php'); ?>" href="interview_stages.php">
                             <i class="fas fa-tasks"></i> Interview Stages
                         </a>
@@ -412,13 +417,13 @@ $sidebar_stats = getSidebarStats();
                         </a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link <?php echo isActiveMenu('employee_onboarding.php'); ?>" href="employee_onboarding.php">
-                            <i class="fas fa-user-plus"></i> Employee Onboarding
+                        <a class="nav-link <?php echo isActiveMenu('onboarding.php'); ?>" href="onboarding.php">
+                            <i class="fas fa-user-plus"></i> Onboarding Management
                         </a>
                     </li>
                     <li class="nav-item">
                         <a class="nav-link <?php echo isActiveMenu('employee_onboarding_tasks.php'); ?>" href="employee_onboarding_tasks.php">
-                            <i class="fas fa-tasks"></i> Employee Onboarding Tasks
+                            <i class="fas fa-tasks"></i> Employee Onboarding
                         </a>
                     </li>
                 </ul>
