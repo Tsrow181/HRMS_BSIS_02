@@ -26,7 +26,19 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 $stmt = $conn->prepare("UPDATE candidates SET source = 'Screening' WHERE candidate_id = ?");
                 $stmt->bind_param('i', $app_data['candidate_id']);
                 $stmt->execute();
-
+                
+                $success_message = "✅ Application approved and moved to Screening (awaiting Mayor approval)!";
+                break;
+                
+            case 'mayor_approve':
+                $application_id = $_POST['application_id'];
+                
+                $app_stmt = $conn->prepare("SELECT candidate_id FROM job_applications WHERE application_id = ?");
+                $app_stmt->bind_param('i', $application_id);
+                $app_stmt->execute();
+                $app_result = $app_stmt->get_result();
+                $app_data = $app_result->fetch_assoc();
+                
                 $job_stmt = $conn->prepare("SELECT job_opening_id FROM job_applications WHERE application_id = ?");
                 $job_stmt->bind_param('i', $application_id);
                 $job_stmt->execute();
@@ -52,9 +64,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     $stmt->bind_param('ii', $application_id, $first_stage['stage_id']);
                     $stmt->execute();
                     
-                    $success_message = "✅ Application approved and moved to Interview stage!";
+                    $success_message = "🏛️ Mayor approved! Candidate moved to Interview stage!";
                 } else {
-                    $success_message = "✅ Application approved and moved to Screening!";
+                    $success_message = "🏛️ Mayor approved but no interview stages found!";
                 }
                 break;
                 
@@ -527,7 +539,7 @@ $stats = [
                             <input type="hidden" name="action" value="approve_application">
                             <input type="hidden" name="application_id" value="${app.application_id}">
                             <button type="submit" class="btn btn-success">
-                                <i class="fas fa-check mr-1"></i>Approve Application
+                                <i class="fas fa-check mr-1"></i>Approve to Screening
                             </button>
                         </form>
                         <form method="POST" style="display: inline;">
@@ -537,6 +549,18 @@ $stats = [
                                 <i class="fas fa-times mr-1"></i>Reject Application
                             </button>
                         </form>
+                    ` : app.status === 'Screening' ? `
+                        <?php if ($_SESSION['role'] == 'Mayor'): ?>
+                        <form method="POST" style="display: inline;" class="mr-2">
+                            <input type="hidden" name="action" value="mayor_approve">
+                            <input type="hidden" name="application_id" value="${app.application_id}">
+                            <button type="submit" class="btn btn-primary" onclick="return confirm('Approve this candidate for interview?')">
+                                <i class="fas fa-user-check mr-1"></i>Mayor Approve
+                            </button>
+                        </form>
+                        <?php else: ?>
+                        <span class="text-warning"><i class="fas fa-clock mr-1"></i>Awaiting Mayor Approval</span>
+                        <?php endif; ?>
                     ` : `<span class="text-muted">Application is in ${app.status} stage</span>`}
                 </div>
             `;

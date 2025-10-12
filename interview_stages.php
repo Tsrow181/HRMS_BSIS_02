@@ -55,28 +55,34 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     }
 }
 
-// Auto-start interview stages based on job application status
-$conn->exec("UPDATE candidates c 
-             JOIN job_applications ja ON c.candidate_id = ja.candidate_id 
-             JOIN interview_stages ist ON ja.job_opening_id = ist.job_opening_id 
-             SET c.source = ist.stage_name, ja.status = 'Interview' 
-             WHERE ja.status = 'Screening' AND ist.stage_order = 1");
-
-// Create interviews for candidates who reach each stage
-try {
-    $result = $conn->exec("INSERT INTO interviews (application_id, stage_id, schedule_date, duration, interview_type, status)
-                 SELECT ja.application_id, ist.stage_id, NOW(), 60, 'Interview', 'Rescheduled'
-                 FROM candidates c 
-                 JOIN job_applications ja ON c.candidate_id = ja.candidate_id 
-                 JOIN interview_stages ist ON ja.job_opening_id = ist.job_opening_id AND c.source = ist.stage_name
-                 WHERE ja.status = 'Interview' 
-                 AND NOT EXISTS (SELECT 1 FROM interviews i WHERE i.application_id = ja.application_id AND i.stage_id = ist.stage_id)");
+// Handle mayor approval for screening candidates
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['action'] === 'mayor_approve') {
+    $application_id = $_POST['application_id'];
     
-    if ($result > 0) {
-        $success_message = "✅ Created $result new interviews!";
+    // Update application status and move to first interview stage
+    $stmt = $conn->prepare("UPDATE job_applications ja 
+                           JOIN interview_stages ist ON ja.job_opening_id = ist.job_opening_id 
+                           JOIN candidates c ON ja.candidate_id = c.candidate_id
+                           SET ja.status = 'Interview', c.source = ist.stage_name
+                           WHERE ja.application_id = ? AND ist.stage_order = 1");
+    $stmt->execute([$application_id]);
+    
+    $success_message = "✅ Candidate approved by Mayor and moved to interview stage!";
+}
+
+// Create interviews only for mayor-approved candidates
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['action'] === 'mayor_approve') {
+    try {
+        $result = $conn->exec("INSERT INTO interviews (application_id, stage_id, schedule_date, duration, interview_type, status)
+                     SELECT ja.application_id, ist.stage_id, NOW(), 60, 'Interview', 'Rescheduled'
+                     FROM candidates c 
+                     JOIN job_applications ja ON c.candidate_id = ja.candidate_id 
+                     JOIN interview_stages ist ON ja.job_opening_id = ist.job_opening_id AND c.source = ist.stage_name
+                     WHERE ja.status = 'Interview' AND ja.application_id = $application_id
+                     AND NOT EXISTS (SELECT 1 FROM interviews i WHERE i.application_id = ja.application_id AND i.stage_id = ist.stage_id)");
+    } catch (Exception $e) {
+        // Silent fail
     }
-} catch (Exception $e) {
-    $success_message = "❌ Error creating interviews: " . $e->getMessage();
 }
 
 // Get job openings with candidates ready for onboarding (based on job application status)
@@ -96,7 +102,14 @@ if ($selected_job) {
     $job_stages->execute([$selected_job]);
     $stages = $job_stages->fetchAll(PDO::FETCH_ASSOC);
     
-
+    // Get screening candidates (awaiting mayor approval)
+    $screening_candidates = $conn->prepare("SELECT c.*, ja.application_id, ja.application_date
+                                           FROM candidates c 
+                                           JOIN job_applications ja ON c.candidate_id = ja.candidate_id
+                                           WHERE ja.job_opening_id = ? AND ja.status = 'Screening'
+                                           ORDER BY ja.application_date DESC");
+    $screening_candidates->execute([$selected_job]);
+    $screening_list = $screening_candidates->fetchAll(PDO::FETCH_ASSOC);
     
     // Get job info
     $job_info = $conn->prepare("SELECT jo.title, d.department_name FROM job_openings jo 
@@ -212,6 +225,54 @@ if ($selected_job) {
                             </h5>
                         </div>
                         <div class="card-body">
+                            <!-- Screening Section (Mayor Approval Required) -->
+                            <?php if (!empty($screening_list)): ?>
+                                <div class="mb-4">
+                                    <h6>
+                                        <span class="badge badge-warning">📋</span>
+                                        Screening - Awaiting Mayor Approval 
+                                        (<?php echo count($screening_list); ?>)
+                                    </h6>
+                                    <p class="text-muted small">Candidates in screening status require mayor approval to proceed to interview stages.</p>
+                                    
+                                    <div class="row">
+                                        <?php foreach ($screening_list as $candidate): ?>
+                                            <div class="col-md-6 col-lg-4 mb-2">
+                                                <div class="card border-warning">
+                                                    <div class="card-body p-2">
+                                                        <h6 class="mb-1">
+                                                            <i class="fas fa-user"></i> 
+                                                            <?php echo htmlspecialchars($candidate['first_name'] . ' ' . $candidate['last_name']); ?>
+                                                        </h6>
+                                                        <p class="mb-1 small">
+                                                            <strong>Email:</strong> <?php echo htmlspecialchars($candidate['email']); ?>
+                                                        </p>
+                                                        <p class="mb-2 small">
+                                                            <strong>Applied:</strong> <?php echo date('M d, Y', strtotime($candidate['application_date'])); ?>
+                                                        </p>
+                                                        
+                                                        <?php if ($_SESSION['role'] == 'Mayor'): ?>
+                                                            <form method="POST" class="w-100">
+                                                                <input type="hidden" name="action" value="mayor_approve">
+                                                                <input type="hidden" name="application_id" value="<?php echo $candidate['application_id']; ?>">
+                                                                <button type="submit" class="btn btn-success btn-sm w-100" onclick="return confirm('Approve this candidate for interview?')">
+                                                                    <i class="fas fa-check"></i> Mayor Approve
+                                                                </button>
+                                                            </form>
+                                                        <?php else: ?>
+                                                            <div class="alert alert-warning p-2">
+                                                                <small><i class="fas fa-clock"></i> Awaiting Mayor Approval</small>
+                                                            </div>
+                                                        <?php endif; ?>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        <?php endforeach; ?>
+                                    </div>
+                                </div>
+                            <?php endif; ?>
+                            
+                            <!-- Interview Stages -->
                             <?php foreach ($stages as $stage): 
                                 $stage_candidates = $candidates_by_stage[$stage['stage_name']] ?? [];
                                 $stage_colors = ['border-primary', 'border-info', 'border-warning', 'border-success', 'border-danger'];
