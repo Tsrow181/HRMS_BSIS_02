@@ -10,6 +10,9 @@ if (!isset($_SESSION['loggedin']) || $_SESSION['loggedin'] !== true) {
 // Include database connection
 require_once 'dp.php';
 
+// Get current user ID
+$user_id = $_SESSION['user_id'];
+
 // Fetch leave requests from the database
 function getLeaveRequests() {
     global $conn;
@@ -23,39 +26,64 @@ function getLeaveRequests() {
     return $stmt->fetchAll(PDO::FETCH_ASSOC);
 }
 
-if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    if (isset($_POST['approveRequest'])) {
-        $requestId = $_POST['requestId'];
-        $sql = "UPDATE leave_requests SET status = 'Approved' WHERE leave_id = ?";
-        $stmt = $conn->prepare($sql);
-        $stmt->execute([$requestId]);
-        // Redirect to prevent form resubmission
-        header("Location: leave_requests.php");
-        exit;
-    } elseif (isset($_POST['rejectRequest'])) {
-        $requestId = $_POST['requestId'];
-        $sql = "UPDATE leave_requests SET status = 'Rejected' WHERE leave_id = ?";
-        $stmt = $conn->prepare($sql);
-        $stmt->execute([$requestId]);
-        // Redirect to prevent form resubmission
-        header("Location: leave_requests.php");
-        exit;
-    } elseif (isset($_POST['submitLeaveRequest'])) {
-        // Handle new leave request submission
-        $employeeId = $_POST['employeeId'];
-        $leaveTypeId = $_POST['leaveTypeId'];
-        $startDate = $_POST['startDate'];
-        $endDate = $_POST['endDate'];
-        $reason = $_POST['reason'];
+    if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+        if (isset($_POST['approveRequest'])) {
+            $requestId = $_POST['requestId'];
+            $sql = "UPDATE leave_requests SET status = 'Approved' WHERE leave_id = ?";
+            $stmt = $conn->prepare($sql);
+            $stmt->execute([$requestId]);
+            error_log("Leave requests: About to log approve for request $requestId");
+            error_log("Logging activity: Leave request #$requestId approved by user ID $user_id");
+            logActivity("Leave request #$requestId approved by user ID $user_id", "leave_requests", $requestId);
+            // Redirect to prevent form resubmission
+            header("Location: leave_requests.php");
+            exit;
+        } elseif (isset($_POST['rejectRequest'])) {
+            $requestId = $_POST['requestId'];
+            $sql = "UPDATE leave_requests SET status = 'Rejected' WHERE leave_id = ?";
+            $stmt = $conn->prepare($sql);
+            $stmt->execute([$requestId]);
+            error_log("Leave requests: About to log reject for request $requestId");
+            error_log("Logging activity: Leave request #$requestId rejected by user ID $user_id");
+            logActivity("Leave request #$requestId rejected by user ID $user_id", "leave_requests", $requestId);
+            // Redirect to prevent form resubmission
+            header("Location: leave_requests.php");
+            exit;
+        } elseif (isset($_POST['submitLeaveRequest'])) {
+            // Handle new leave request submission
+            $employeeId = $_POST['employeeId'];
+            $leaveTypeId = $_POST['leaveTypeId'];
+            $startDate = $_POST['startDate'];
+            $endDate = $_POST['endDate'];
+            $reason = $_POST['reason'];
 
         // Calculate duration in days
         $duration = (strtotime($endDate) - strtotime($startDate)) / (60 * 60 * 24) + 1;
 
+        $documentPath = null;
+        if (isset($_FILES['document']) && $_FILES['document']['error'] == 0) {
+            $fileName = $_FILES['document']['name'];
+            $fileTmpName = $_FILES['document']['tmp_name'];
+            $fileSize = $_FILES['document']['size'];
+            $fileType = $_FILES['document']['type'];
+
+            $allowedTypes = ['application/pdf', 'image/jpeg', 'image/png'];
+            if (in_array($fileType, $allowedTypes) && $fileSize < 5000000) {
+                $newFileName = uniqid() . '_' . $fileName;
+                $uploadPath = 'uploads/leave_documents/' . $newFileName;
+                if (move_uploaded_file($fileTmpName, $uploadPath)) {
+                    $documentPath = $uploadPath;
+                }
+            }
+        }
+
         try {
-            $sql = "INSERT INTO leave_requests (employee_id, leave_type_id, start_date, end_date, total_days, reason, status, applied_on)
-                    VALUES (?, ?, ?, ?, ?, ?, 'Pending', NOW())";
+            $sql = "INSERT INTO leave_requests (employee_id, leave_type_id, start_date, end_date, total_days, reason, status, applied_on, document_path)
+                    VALUES (?, ?, ?, ?, ?, ?, 'Pending', NOW(), ?)";
             $stmt = $conn->prepare($sql);
-            $stmt->execute([$employeeId, $leaveTypeId, $startDate, $endDate, $duration, $reason]);
+            $stmt->execute([$employeeId, $leaveTypeId, $startDate, $endDate, $duration, $reason, $documentPath]);
+            error_log("Logging activity: New leave request submitted by employee ID $employeeId");
+            logActivity("New leave request submitted by employee ID $employeeId", "leave_requests");
             // Redirect to refresh the page
             header("Location: leave_requests.php");
             exit;
@@ -184,6 +212,7 @@ $rejectedPercentage = $totalRequests > 0 ? ($rejectedRequests / $totalRequests) 
                                                 <th>Duration</th>
                                                 <th>Reason</th>
                                                 <th>Status</th>
+                                                <th>Document</th>
                                                 <th>Actions</th>
                                             </tr>
                                         </thead>
@@ -196,7 +225,9 @@ $rejectedPercentage = $totalRequests > 0 ? ($rejectedRequests / $totalRequests) 
                                                 <td><?php echo htmlspecialchars($request['total_days']); ?></td>
                                                 <td><?php echo htmlspecialchars($request['reason']); ?></td>
                                                 <td><span class="status-badge badge-<?php echo strtolower($request['status']); ?>"><?php echo htmlspecialchars($request['status']); ?></span></td>
+                                                <td><?php if ($request['document_path']): ?><a href="<?php echo htmlspecialchars($request['document_path']); ?>" target="_blank">View</a><?php endif; ?></td>
                                                 <td>
+                                                    <?php if ($request['status'] == 'Pending'): ?>
                                                     <form method="POST" style="display:inline;">
                                                         <input type="hidden" name="requestId" value="<?php echo $request['leave_id']; ?>">
                                                         <button type="submit" name="approveRequest" class="btn btn-sm btn-outline-success mr-2">
@@ -209,6 +240,7 @@ $rejectedPercentage = $totalRequests > 0 ? ($rejectedRequests / $totalRequests) 
                                                             <i class="fas fa-times"></i>
                                                         </button>
                                                     </form>
+                                                    <?php endif; ?>
                                                 </td>
                                             </tr>
                                             <?php endforeach; ?>
@@ -271,19 +303,39 @@ $rejectedPercentage = $totalRequests > 0 ? ($rejectedRequests / $totalRequests) 
                                 <h5 class="mb-0"><i class="fas fa-history mr-2"></i>Recent Activity</h5>
                             </div>
                             <div class="card-body">
-                                <div class="timeline">
-                                    <div class="timeline-item">
-                                        <small class="text-muted">2 hours ago</small>
-                                        <p class="mb-0">John Doe submitted vacation request</p>
-                                    </div>
-                                    <div class="timeline-item">
-                                        <small class="text-muted">4 hours ago</small>
-                                        <p class="mb-0">Jane Smith's sick leave was approved</p>
-                                    </div>
-                                    <div class="timeline-item">
-                                        <small class="text-muted">6 hours ago</small>
-                                        <p class="mb-0">Mike Johnson's emergency leave was rejected</p>
-                                    </div>
+                                <div class="timeline" id="recent-activity-timeline">
+                                    <?php
+                                    $recentActivities = getRecentAuditLogs(5);
+                                    foreach ($recentActivities as $activity) {
+                                        $timeAgo = humanTiming(strtotime($activity['created_at']));
+                                        $username = htmlspecialchars($activity['username'] ?? 'Unknown User');
+                                        $action = htmlspecialchars($activity['action']);
+                                        echo '<div class="timeline-item">';
+                                        echo "<small class=\"text-muted\">$timeAgo ago</small>";
+                                        echo "<p class=\"mb-0\">$username: $action</p>";
+                                        echo '</div>';
+                                    }
+
+                                    function humanTiming($time)
+                                    {
+                                        $time = time() - $time; // to get the time since that moment
+                                        $time = ($time < 1) ? 1 : $time;
+                                        $tokens = array(
+                                            31536000 => 'year',
+                                            2592000 => 'month',
+                                            604800 => 'week',
+                                            86400 => 'day',
+                                            3600 => 'hour',
+                                            60 => 'minute',
+                                            1 => 'second'
+                                        );
+                                        foreach ($tokens as $unit => $text) {
+                                            if ($time < $unit) continue;
+                                            $numberOfUnits = floor($time / $unit);
+                                            return $numberOfUnits . ' ' . $text . (($numberOfUnits > 1) ? 's' : '');
+                                        }
+                                    }
+                                    ?>
                                 </div>
                             </div>
                         </div>
@@ -304,7 +356,7 @@ $rejectedPercentage = $totalRequests > 0 ? ($rejectedRequests / $totalRequests) 
                     </button>
                 </div>
                 <div class="modal-body">
-                    <form method="POST" action="leave_requests.php">
+                    <form method="POST" action="leave_requests.php" enctype="multipart/form-data">
                         <div class="form-group">
                             <label for="employeeId">Employee</label>
                             <select class="form-control" id="employeeId" name="employeeId" required>
@@ -341,6 +393,10 @@ $rejectedPercentage = $totalRequests > 0 ? ($rejectedRequests / $totalRequests) 
                             <label for="reason">Reason</label>
                             <textarea class="form-control" id="reason" name="reason" rows="3" placeholder="Enter reason for leave" required></textarea>
                         </div>
+                        <div class="form-group">
+                            <label for="document">Document (optional)</label>
+                            <input type="file" class="form-control" id="document" name="document" accept=".pdf,.jpg,.png">
+                        </div>
                         <div class="modal-footer">
                             <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
                             <button type="submit" name="submitLeaveRequest" class="btn btn-primary">Submit Request</button>
@@ -351,8 +407,44 @@ $rejectedPercentage = $totalRequests > 0 ? ($rejectedRequests / $totalRequests) 
         </div>
     </div>
 
-    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+    <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.1/dist/umd/popper.min.js"></script>
     <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+
+    <script>
+        function fetchRecentActivity() {
+            $.ajax({
+                url: 'fetch_recent_activity.php',
+                method: 'GET',
+                dataType: 'json',
+                success: function(data) {
+                    var timeline = $('#recent-activity-timeline');
+                    timeline.empty();
+                    data.forEach(function(activity) {
+                        var timeAgo = activity.time_ago;
+                        var username = $('<div>').text(activity.username).html() || 'Unknown User';
+                        var action = $('<div>').text(activity.action).html();
+                        var item = $('<div>').addClass('timeline-item');
+                        item.append('<small class="text-muted">' + timeAgo + ' ago</small>');
+                        item.append('<p class="mb-0">' + username + ': ' + action + '</p>');
+                        timeline.append(item);
+                    });
+                },
+                error: function() {
+                    console.error('Failed to fetch recent activity');
+                }
+            });
+        }
+
+        $(document).ready(function() {
+            fetchRecentActivity();
+            setInterval(fetchRecentActivity, 30000); // Refresh every 30 seconds
+
+            // Hide action buttons immediately after clicking to prevent multiple submissions
+            $('button[name="approveRequest"], button[name="rejectRequest"]').on('click', function() {
+                $(this).closest('td').find('button').hide();
+            });
+        });
+    </script>
 </body>
 </html>
