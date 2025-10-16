@@ -1,8 +1,13 @@
-# TODO: Create Employee Leave and Attendance Pages
+# TODO: Add Clock-Out Button and Real-Time Attendance
 
 ## Tasks
-- [x] Create employee_leave.php with leave balances display, request history, and new request form
-- [x] Create employee_attendance.php with clock in/out functionality and attendance history
-- [x] Update employee_sidebar.php links to point to new employee pages instead of admin pages
-- [x] Test both pages for functionality and styling consistency
-- [x] Ensure proper session validation and role checking
+- [ ] Modify employee_attendance.php to use AJAX (fetch) for clock-in/out submissions instead of form POST.
+- [ ] Use JavaScript Date() to get real-time client time for clock-in/out timestamps.
+- [ ] On AJAX success, update the clock card UI dynamically (show clock-in/out times, hide/show buttons).
+- [ ] Add loadAttendanceHistory() function to fetch and update the attendance history table via AJAX.
+- [ ] Call loadAttendanceHistory() after successful clock-in/out to reflect changes immediately in overview.
+
+## Followup Steps
+- [ ] Test clock-in/out functionality with real-time time.
+- [ ] Verify UI updates without page reload.
+- [ ] Ensure attendance history reflects changes immediately.

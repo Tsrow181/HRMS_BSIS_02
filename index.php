@@ -262,6 +262,7 @@ require_once 'dp.php';
                                     <tbody>
                                         <?php
                                         $recentActivities = getRecentActivities();
+                                        error_log("Index: recent activities count: " . count($recentActivities));
                                         if (count($recentActivities) > 0) {
                                             foreach ($recentActivities as $activity) {
                                                 echo "<tr>";

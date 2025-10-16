@@ -123,3 +123,74 @@
 2025-08-27 04:23:33 Error: [2] Undefined variable $jobRoles - C:\xampp\htdocs\Human-Resources-Management-System-BSIS-02\competencies.php:162
 2025-08-27 04:23:33 Error: [2] foreach() argument must be of type array|object, null given - C:\xampp\htdocs\Human-Resources-Management-System-BSIS-02\competencies.php:162
 >>>>>>> upstream/main
+2025-10-08 14:40:46 Error: [2] Undefined array key "email" - C:\Program Files\xampp\htdocs\HRMS_BSIS_02\my_profile.php:498
+2025-10-08 14:40:46 Error: [2] Undefined array key "address" - C:\Program Files\xampp\htdocs\HRMS_BSIS_02\my_profile.php:518
+2025-10-08 14:40:46 Error: [2] Undefined array key "address" - C:\Program Files\xampp\htdocs\HRMS_BSIS_02\my_profile.php:583
+2025-10-08 14:40:46 Error: [8192] htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated - C:\Program Files\xampp\htdocs\HRMS_BSIS_02\my_profile.php:583
+2025-10-08 14:40:46 Error: [2] Undefined array key "email" - C:\Program Files\xampp\htdocs\HRMS_BSIS_02\my_profile.php:594
+2025-10-08 14:40:46 Error: [8192] htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated - C:\Program Files\xampp\htdocs\HRMS_BSIS_02\my_profile.php:594
+2025-10-16 07:36:24 Error: [2] Undefined variable $employee_id - C:\Program Files\xampp\htdocs\HRMS_BSIS_02\employee_attendance.php:42
+2025-10-16 07:36:24 Error: [2] Undefined variable $employee_id - C:\Program Files\xampp\htdocs\HRMS_BSIS_02\employee_attendance.php:139
+2025-10-16 07:36:24 Error: [2] Undefined variable $employee_id - C:\Program Files\xampp\htdocs\HRMS_BSIS_02\employee_attendance.php:140
+2025-10-16 07:39:30 Error: [2] Undefined variable $employee_id - C:\Program Files\xampp\htdocs\HRMS_BSIS_02\employee_attendance.php:139
+2025-10-16 07:39:30 Error: [2] Undefined variable $employee_id - C:\Program Files\xampp\htdocs\HRMS_BSIS_02\employee_attendance.php:140
+2025-10-16 07:39:32 Error: [2] Undefined variable $employee_id - C:\Program Files\xampp\htdocs\HRMS_BSIS_02\employee_attendance.php:42
+2025-10-16 07:39:32 Error: [2] Undefined variable $employee_id - C:\Program Files\xampp\htdocs\HRMS_BSIS_02\employee_attendance.php:139
+2025-10-16 07:39:32 Error: [2] Undefined variable $employee_id - C:\Program Files\xampp\htdocs\HRMS_BSIS_02\employee_attendance.php:140
+2025-10-16 07:55:57 Error: [2] Undefined variable $employee_id - C:\Program Files\xampp\htdocs\HRMS_BSIS_02\employee_attendance.php:139
+2025-10-16 07:55:57 Error: [2] Undefined variable $employee_id - C:\Program Files\xampp\htdocs\HRMS_BSIS_02\employee_attendance.php:140
+2025-10-16 07:55:59 Error: [2] Undefined variable $employee_id - C:\Program Files\xampp\htdocs\HRMS_BSIS_02\employee_attendance.php:42
+2025-10-16 07:55:59 Error: [2] Undefined variable $employee_id - C:\Program Files\xampp\htdocs\HRMS_BSIS_02\employee_attendance.php:139
+2025-10-16 07:55:59 Error: [2] Undefined variable $employee_id - C:\Program Files\xampp\htdocs\HRMS_BSIS_02\employee_attendance.php:140
+2025-10-16 07:56:01 Error: [2] Undefined variable $employee_id - C:\Program Files\xampp\htdocs\HRMS_BSIS_02\employee_attendance.php:139
+2025-10-16 07:56:01 Error: [2] Undefined variable $employee_id - C:\Program Files\xampp\htdocs\HRMS_BSIS_02\employee_attendance.php:140
+2025-10-16 07:56:02 Error: [2] Undefined variable $employee_id - C:\Program Files\xampp\htdocs\HRMS_BSIS_02\employee_attendance.php:42
+2025-10-16 07:56:02 Error: [2] Undefined variable $employee_id - C:\Program Files\xampp\htdocs\HRMS_BSIS_02\employee_attendance.php:139
+2025-10-16 07:56:02 Error: [2] Undefined variable $employee_id - C:\Program Files\xampp\htdocs\HRMS_BSIS_02\employee_attendance.php:140
+2025-10-16 07:57:43 Error: [2] Undefined variable $employee_id - C:\Program Files\xampp\htdocs\HRMS_BSIS_02\employee_attendance.php:139
+2025-10-16 07:57:43 Error: [2] Undefined variable $employee_id - C:\Program Files\xampp\htdocs\HRMS_BSIS_02\employee_attendance.php:140
+2025-10-16 07:57:44 Error: [2] Undefined variable $employee_id - C:\Program Files\xampp\htdocs\HRMS_BSIS_02\employee_attendance.php:42
+2025-10-16 07:57:44 Error: [2] Undefined variable $employee_id - C:\Program Files\xampp\htdocs\HRMS_BSIS_02\employee_attendance.php:139
+2025-10-16 07:57:44 Error: [2] Undefined variable $employee_id - C:\Program Files\xampp\htdocs\HRMS_BSIS_02\employee_attendance.php:140
+2025-10-16 08:14:00 Error: [2] Undefined array key "REQUEST_METHOD" - C:\Program Files\xampp\htdocs\HRMS_BSIS_02\employee_attendance.php:42
+2025-10-16 08:44:45 Error: [8192] htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated - C:\Program Files\xampp\htdocs\HRMS_BSIS_02\employee_profile.php:523
+2025-10-16 08:44:45 Error: [8192] htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated - C:\Program Files\xampp\htdocs\HRMS_BSIS_02\employee_profile.php:524
+2025-10-16 08:44:45 Error: [8192] htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated - C:\Program Files\xampp\htdocs\HRMS_BSIS_02\employee_profile.php:527
+2025-10-16 08:44:45 Error: [8192] htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated - C:\Program Files\xampp\htdocs\HRMS_BSIS_02\employee_profile.php:528
+2025-10-16 08:45:04 Error: [2] Undefined array key "email" - C:\Program Files\xampp\htdocs\HRMS_BSIS_02\my_profile.php:498
+2025-10-16 08:45:04 Error: [2] Undefined array key "address" - C:\Program Files\xampp\htdocs\HRMS_BSIS_02\my_profile.php:518
+2025-10-16 08:45:04 Error: [2] Undefined array key "address" - C:\Program Files\xampp\htdocs\HRMS_BSIS_02\my_profile.php:583
+2025-10-16 08:45:04 Error: [8192] htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated - C:\Program Files\xampp\htdocs\HRMS_BSIS_02\my_profile.php:583
+2025-10-16 08:45:04 Error: [2] Undefined array key "email" - C:\Program Files\xampp\htdocs\HRMS_BSIS_02\my_profile.php:594
+2025-10-16 08:45:04 Error: [8192] htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated - C:\Program Files\xampp\htdocs\HRMS_BSIS_02\my_profile.php:594
+2025-10-16 08:45:43 Error: [8192] htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated - C:\Program Files\xampp\htdocs\HRMS_BSIS_02\users.php:770
+2025-10-16 09:28:10 Error: [8192] htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated - C:\Program Files\xampp\htdocs\HRMS_BSIS_02\employee_profile.php:523
+2025-10-16 09:28:10 Error: [8192] htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated - C:\Program Files\xampp\htdocs\HRMS_BSIS_02\employee_profile.php:524
+2025-10-16 09:28:10 Error: [8192] htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated - C:\Program Files\xampp\htdocs\HRMS_BSIS_02\employee_profile.php:527
+2025-10-16 09:28:10 Error: [8192] htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated - C:\Program Files\xampp\htdocs\HRMS_BSIS_02\employee_profile.php:528
+2025-10-16 09:30:01 Error: [2] Undefined array key "email" - C:\Program Files\xampp\htdocs\HRMS_BSIS_02\my_profile.php:498
+2025-10-16 09:30:01 Error: [2] Undefined array key "address" - C:\Program Files\xampp\htdocs\HRMS_BSIS_02\my_profile.php:518
+2025-10-16 09:30:01 Error: [2] Undefined array key "address" - C:\Program Files\xampp\htdocs\HRMS_BSIS_02\my_profile.php:583
+2025-10-16 09:30:01 Error: [8192] htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated - C:\Program Files\xampp\htdocs\HRMS_BSIS_02\my_profile.php:583
+2025-10-16 09:30:01 Error: [2] Undefined array key "email" - C:\Program Files\xampp\htdocs\HRMS_BSIS_02\my_profile.php:594
+2025-10-16 09:30:01 Error: [8192] htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated - C:\Program Files\xampp\htdocs\HRMS_BSIS_02\my_profile.php:594
+2025-10-16 09:30:05 Error: [2] Undefined array key "email" - C:\Program Files\xampp\htdocs\HRMS_BSIS_02\my_profile.php:498
+2025-10-16 09:30:05 Error: [2] Undefined array key "address" - C:\Program Files\xampp\htdocs\HRMS_BSIS_02\my_profile.php:518
+2025-10-16 09:30:05 Error: [2] Undefined array key "address" - C:\Program Files\xampp\htdocs\HRMS_BSIS_02\my_profile.php:583
+2025-10-16 09:30:05 Error: [8192] htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated - C:\Program Files\xampp\htdocs\HRMS_BSIS_02\my_profile.php:583
+2025-10-16 09:30:05 Error: [2] Undefined array key "email" - C:\Program Files\xampp\htdocs\HRMS_BSIS_02\my_profile.php:594
+2025-10-16 09:30:05 Error: [8192] htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated - C:\Program Files\xampp\htdocs\HRMS_BSIS_02\my_profile.php:594
+2025-10-16 09:30:14 Error: [8192] htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated - C:\Program Files\xampp\htdocs\HRMS_BSIS_02\employee_profile.php:523
+2025-10-16 09:30:14 Error: [8192] htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated - C:\Program Files\xampp\htdocs\HRMS_BSIS_02\employee_profile.php:524
+2025-10-16 09:30:14 Error: [8192] htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated - C:\Program Files\xampp\htdocs\HRMS_BSIS_02\employee_profile.php:527
+2025-10-16 09:30:14 Error: [8192] htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated - C:\Program Files\xampp\htdocs\HRMS_BSIS_02\employee_profile.php:528
+2025-10-16 09:30:17 Error: [8192] htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated - C:\Program Files\xampp\htdocs\HRMS_BSIS_02\employee_profile.php:523
+2025-10-16 09:30:17 Error: [8192] htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated - C:\Program Files\xampp\htdocs\HRMS_BSIS_02\employee_profile.php:524
+2025-10-16 09:30:17 Error: [8192] htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated - C:\Program Files\xampp\htdocs\HRMS_BSIS_02\employee_profile.php:527
+2025-10-16 09:30:17 Error: [8192] htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated - C:\Program Files\xampp\htdocs\HRMS_BSIS_02\employee_profile.php:528
+2025-10-16 09:30:28 Error: [2] Undefined array key "email" - C:\Program Files\xampp\htdocs\HRMS_BSIS_02\my_profile.php:498
+2025-10-16 09:30:28 Error: [2] Undefined array key "address" - C:\Program Files\xampp\htdocs\HRMS_BSIS_02\my_profile.php:518
+2025-10-16 09:30:28 Error: [2] Undefined array key "address" - C:\Program Files\xampp\htdocs\HRMS_BSIS_02\my_profile.php:583
+2025-10-16 09:30:28 Error: [8192] htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated - C:\Program Files\xampp\htdocs\HRMS_BSIS_02\my_profile.php:583
+2025-10-16 09:30:28 Error: [2] Undefined array key "email" - C:\Program Files\xampp\htdocs\HRMS_BSIS_02\my_profile.php:594
+2025-10-16 09:30:28 Error: [8192] htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated - C:\Program Files\xampp\htdocs\HRMS_BSIS_02\my_profile.php:594

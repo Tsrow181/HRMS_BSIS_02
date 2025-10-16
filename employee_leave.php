@@ -11,27 +11,72 @@ if (!isset($_SESSION['loggedin']) || $_SESSION['loggedin'] !== true || $_SESSION
 require_once 'dp.php';
 
 // Get employee information
-$employee_id = $_SESSION['user_id'];
+$user_id = $_SESSION['user_id'];
 $username = $_SESSION['username'];
 
+// Fetch employee_id from users table
+try {
+    $sql = "SELECT employee_id FROM users WHERE user_id = ?";
+    $stmt = $conn->prepare($sql);
+    $stmt->execute([$user_id]);
+    $employee_id = $stmt->fetchColumn();
+    if (!$employee_id) {
+        $error = "Employee profile not found. Please contact administrator.";
+        $employee_id = null;
+    }
+} catch (PDOException $e) {
+    $error = "Database error: " . $e->getMessage();
+    $employee_id = null;
+}
+
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['submitLeaveRequest'])) {
-    // Handle new leave request submission
-    $leaveTypeId = $_POST['leaveTypeId'];
-    $startDate = $_POST['startDate'];
-    $endDate = $_POST['endDate'];
-    $reason = $_POST['reason'];
+    if (!$employee_id) {
+        $error = "Cannot submit leave request without a valid employee profile.";
+    } else {
+        // Handle new leave request submission
+        $leaveTypeId = $_POST['leaveTypeId'];
+        $startDate = $_POST['startDate'];
+        $endDate = $_POST['endDate'];
+        $reason = $_POST['reason'];
 
-    // Calculate duration in days
-    $duration = (strtotime($endDate) - strtotime($startDate)) / (60 * 60 * 24) + 1;
+        // Calculate duration in days
+        $duration = (strtotime($endDate) - strtotime($startDate)) / (60 * 60 * 24) + 1;
 
-    try {
-        $sql = "INSERT INTO leave_requests (employee_id, leave_type_id, start_date, end_date, total_days, reason, status, applied_on)
-                VALUES (?, ?, ?, ?, ?, ?, 'Pending', NOW())";
-        $stmt = $conn->prepare($sql);
-        $stmt->execute([$employee_id, $leaveTypeId, $startDate, $endDate, $duration, $reason]);
-        $success = "Leave request submitted successfully!";
-    } catch (PDOException $e) {
-        $error = "Error submitting leave request: " . $e->getMessage();
+        $documentPath = null;
+        if (isset($_FILES['document']) && $_FILES['document']['error'] == 0) {
+            $fileName = $_FILES['document']['name'];
+            $fileTmpName = $_FILES['document']['tmp_name'];
+            $fileSize = $_FILES['document']['size'];
+            $fileType = $_FILES['document']['type'];
+
+            $allowedTypes = ['application/pdf', 'image/jpeg', 'image/png'];
+            if (in_array($fileType, $allowedTypes) && $fileSize < 5000000) {
+                $newFileName = uniqid() . '_' . $fileName;
+                $uploadPath = 'uploads/leave_documents/' . $newFileName;
+                if (move_uploaded_file($fileTmpName, $uploadPath)) {
+                    $documentPath = $uploadPath;
+                }
+            }
+        }
+
+        try {
+            $sql = "INSERT INTO leave_requests (employee_id, leave_type_id, start_date, end_date, total_days, reason, status, applied_on, document_path)
+                    VALUES (?, ?, ?, ?, ?, ?, 'Pending', NOW(), ?)";
+            $stmt = $conn->prepare($sql);
+            $stmt->execute([$employee_id, $leaveTypeId, $startDate, $endDate, $duration, $reason, $documentPath]);
+            $leave_id = $conn->lastInsertId();
+            error_log("Employee leave: About to log activity for leave_id $leave_id");
+            logActivity("Leave Request Submitted", "leave_requests", $leave_id, [
+                'leave_type_id' => $leaveTypeId,
+                'start_date' => $startDate,
+                'end_date' => $endDate,
+                'total_days' => $duration,
+                'reason' => $reason
+            ]);
+            $success = "Leave request submitted successfully!";
+        } catch (PDOException $e) {
+            $error = "Error submitting leave request: " . $e->getMessage();
+        }
     }
 }
 
@@ -68,9 +113,18 @@ function getEmployeeLeaveRequests($employee_id) {
     }
 }
 
-$leaveBalances = getEmployeeLeaveBalances($employee_id);
-$leaveRequests = getEmployeeLeaveRequests($employee_id);
-$leaveTypes = getLeaveTypes();
+if ($employee_id) {
+    $leaveBalances = getEmployeeLeaveBalances($employee_id);
+    $leaveRequests = getEmployeeLeaveRequests($employee_id);
+} else {
+    $leaveBalances = [];
+    $leaveRequests = [];
+}
+if (function_exists('getLeaveTypes')) {
+    $leaveTypes = getLeaveTypes();
+} else {
+    $leaveTypes = [];
+}
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -260,7 +314,7 @@ $leaveTypes = getLeaveTypes();
                     </button>
                 </div>
                 <div class="modal-body">
-                    <form method="POST" action="employee_leave.php">
+                    <form method="POST" action="employee_leave.php" enctype="multipart/form-data">
                         <div class="form-group">
                             <label for="leaveTypeId">Leave Type</label>
                             <select class="form-control" id="leaveTypeId" name="leaveTypeId" required>
@@ -287,6 +341,10 @@ $leaveTypes = getLeaveTypes();
                         <div class="form-group">
                             <label for="reason">Reason</label>
                             <textarea class="form-control" id="reason" name="reason" rows="3" placeholder="Enter reason for leave" required></textarea>
+                        </div>
+                        <div class="form-group">
+                            <label for="document">Document (optional)</label>
+                            <input type="file" class="form-control" id="document" name="document" accept=".pdf,.jpg,.png">
                         </div>
                         <div class="modal-footer">
                             <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
