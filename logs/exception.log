@@ -45,3 +45,4 @@
 2025-10-08 15:43:12 Exception: Call to undefined function getRecentAuditLogs() in C:\Program Files\xampp\htdocs\HRMS_BSIS_02\leave_requests.php on line 305
 2025-10-08 15:43:27 Exception: Call to undefined function getRecentAuditLogs() in C:\Program Files\xampp\htdocs\HRMS_BSIS_02\leave_requests.php on line 305
 2025-10-08 15:43:43 Exception: Call to undefined function getRecentAuditLogs() in C:\Program Files\xampp\htdocs\HRMS_BSIS_02\leave_requests.php on line 305
+2025-10-21 06:44:57 Exception: SQLSTATE[42S02]: Base table or view not found: 1146 Table 'hr_system.employees' doesn't exist in C:\Program Files\xampp\htdocs\HRMS_BSIS_02\performance_reviews.php on line 28
