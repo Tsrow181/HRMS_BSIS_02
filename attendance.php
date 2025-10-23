@@ -142,17 +142,31 @@ require_once 'dp.php';
                                 $totalAbsent = 0;
 
                                 try {
-                                    // Get total employees
-                                    $stmt = $conn->query("SELECT COUNT(*) as count FROM employee_profiles WHERE employment_status IN ('Full-time', 'Part-time')");
+                                    // Get total employees matching the attendance overview filter
+                                    $stmt = $conn->query("SELECT COUNT(*) as count FROM employee_profiles WHERE employment_status IN ('Full-time', 'Part-time')
+                                        AND employee_id IN (
+                                            SELECT employee_id FROM employment_history
+                                            WHERE history_id IN (
+                                                SELECT MAX(history_id) FROM employment_history GROUP BY employee_id
+                                            ) AND employment_status = 'Active'
+                                        )");
                                     $result = $stmt->fetch(PDO::FETCH_ASSOC);
                                     $totalEmployees = $result['count'];
 
-                                    // Get today's attendance statistics (handle NULL status: clock_in IS NOT NULL as Present)
+                                    // Get today's attendance statistics for the same filtered employees
                                     $today = date('Y-m-d');
                                     $stmt = $conn->query("SELECT
-                                        SUM(CASE WHEN (status = 'Present' OR (status IS NULL AND clock_in IS NOT NULL)) THEN 1 ELSE 0 END) as present_count,
-                                        SUM(CASE WHEN status = 'Absent' THEN 1 ELSE 0 END) as absent_count
-                                        FROM attendance WHERE attendance_date = '$today'");
+                                        SUM(CASE WHEN (a.status = 'Present' OR (a.status IS NULL AND a.clock_in IS NOT NULL)) THEN 1 ELSE 0 END) as present_count,
+                                        SUM(CASE WHEN a.status = 'Absent' THEN 1 ELSE 0 END) as absent_count
+                                        FROM employee_profiles ep
+                                        LEFT JOIN attendance a ON ep.employee_id = a.employee_id AND a.attendance_date = '$today'
+                                        WHERE ep.employment_status IN ('Full-time', 'Part-time')
+                                        AND ep.employee_id IN (
+                                            SELECT employee_id FROM employment_history
+                                            WHERE history_id IN (
+                                                SELECT MAX(history_id) FROM employment_history GROUP BY employee_id
+                                            ) AND employment_status = 'Active'
+                                        )");
                                     $result = $stmt->fetch(PDO::FETCH_ASSOC);
                                     $totalPresent = $result['present_count'] ?? 0;
                                     $totalAbsent = $result['absent_count'] ?? 0;

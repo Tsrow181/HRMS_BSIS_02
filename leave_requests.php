@@ -104,10 +104,10 @@ function getLeaveRequests() {
         }
 
         try {
-            $sql = "INSERT INTO leave_requests (employee_id, leave_type_id, start_date, end_date, total_days, reason, status, applied_on)
-                    VALUES (?, ?, ?, ?, ?, ?, 'Pending', NOW())";
+            $sql = "INSERT INTO leave_requests (employee_id, leave_type_id, start_date, end_date, total_days, reason, document_path, status, applied_on)
+                    VALUES (?, ?, ?, ?, ?, ?, ?, 'Pending', NOW())";
             $stmt = $conn->prepare($sql);
-            $stmt->execute([$employeeId, $leaveTypeId, $startDate, $endDate, $duration, $reason]);
+            $stmt->execute([$employeeId, $leaveTypeId, $startDate, $endDate, $duration, $reason, $documentPath]);
             error_log("Logging activity: New leave request submitted by employee ID $employeeId");
             logActivity("New leave request submitted by employee ID $employeeId", "leave_requests");
             // Redirect to refresh the page
@@ -251,7 +251,7 @@ $rejectedPercentage = $totalRequests > 0 ? ($rejectedRequests / $totalRequests) 
                                                 <td><?php echo htmlspecialchars($request['total_days']); ?></td>
                                                 <td><?php echo htmlspecialchars($request['reason']); ?></td>
                                                 <td><span class="status-badge badge-<?php echo strtolower($request['status']); ?>"><?php echo htmlspecialchars($request['status']); ?></span></td>
-                                                <td><?php if ($request['document_path']): ?><a href="<?php echo htmlspecialchars($request['document_path']); ?>" target="_blank">View</a><?php endif; ?></td>
+                                                <td><?php if ($request['document_path']): ?><a href="#" class="btn btn-sm btn-info view-document" data-path="<?php echo htmlspecialchars($request['document_path']); ?>" data-type="<?php echo strtolower(pathinfo($request['document_path'], PATHINFO_EXTENSION)) === 'pdf' ? 'pdf' : 'image'; ?>"><i class="fas fa-eye mr-1"></i>View</a><?php endif; ?></td>
                                                 <td>
                                                     <?php if ($request['status'] == 'Pending'): ?>
                                                     <form method="POST" style="display:inline;">
@@ -433,6 +433,28 @@ $rejectedPercentage = $totalRequests > 0 ? ($rejectedRequests / $totalRequests) 
         </div>
     </div>
 
+    <!-- Document Viewer Modal -->
+    <div class="modal fade" id="documentViewerModal" tabindex="-1" role="dialog" aria-labelledby="documentViewerModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="documentViewerModalLabel">Document Viewer</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <div id="documentViewerContent">
+                        <!-- Document content will be loaded here -->
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.1/dist/umd/popper.min.js"></script>
     <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
@@ -469,6 +491,23 @@ $rejectedPercentage = $totalRequests > 0 ? ($rejectedRequests / $totalRequests) 
             // Hide action buttons immediately after clicking to prevent multiple submissions
             $('button[name="approveRequest"], button[name="rejectRequest"]').on('click', function() {
                 $(this).closest('td').find('button').hide();
+            });
+
+            // Document viewer functionality
+            $('.view-document').on('click', function(e) {
+                e.preventDefault();
+                var documentPath = $(this).data('path');
+                var documentType = $(this).data('type');
+
+                $('#documentViewerContent').empty();
+
+                if (documentType === 'pdf') {
+                    $('#documentViewerContent').html('<iframe src="' + documentPath + '" width="100%" height="600px" style="border: none;"></iframe>');
+                } else if (documentType === 'image') {
+                    $('#documentViewerContent').html('<img src="' + documentPath + '" class="img-fluid" alt="Document">');
+                }
+
+                $('#documentViewerModal').modal('show');
             });
         });
     </script>

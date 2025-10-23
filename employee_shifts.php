@@ -55,6 +55,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     }
 }
 
+// Update employee statuses based on current leave status
+updateAllEmployeesStatusBasedOnLeave();
+
 // Fetch actual data from database
 $employeeShifts = getEmployeeShifts();
 $employees = getEmployees();
@@ -190,23 +193,27 @@ $shifts = getShifts();
                                                         <td><?php echo isset($shift['is_overtime']) ? ($shift['is_overtime'] ? 'Yes' : 'No') : 'N/A'; ?></td>
                                                         <td>
                                                             <?php
-                                                            $isOnLeave = isEmployeeOnLeave($shift['employee_id']);
-                                                            $status = $isOnLeave ? 'Inactive' : 'Active';
-                                                            $badgeClass = $isOnLeave ? 'badge-danger' : 'badge-success';
+                                                            $status = $shift['status'] ?? 'Active';
+                                                            $badgeClass = ($status === 'On Leave') ? 'badge-danger' : 'badge-success';
                                                             ?>
                                                             <span class="badge <?php echo $badgeClass; ?>">
-                                                                <?php echo $status; ?>
+                                                                <?php echo htmlspecialchars($status); ?>
                                                             </span>
                                                         </td>
                                                         <td>
                                                             <?php if (isset($shift['employee_shift_id'])): ?>
+                                                                <button type="button" class="btn btn-sm btn-outline-primary mr-2"
+                                                                        data-toggle="modal"
+                                                                        data-target="#editEmployeeShiftModal"
+                                                                        data-employee-shift-id="<?php echo $shift['employee_shift_id']; ?>"
+                                                                        data-employee-id="<?php echo $shift['employee_id']; ?>"
+                                                                        data-shift-id="<?php echo $shift['shift_id']; ?>"
+                                                                        data-assigned-date="<?php echo $shift['assigned_date']; ?>"
+                                                                        data-is-overtime="<?php echo $shift['is_overtime']; ?>">
+                                                                    <i class="fas fa-edit"></i>
+                                                                </button>
                                                                 <form method="POST" action="employee_shifts.php" class="d-inline">
                                                                     <input type="hidden" name="employeeShiftId" value="<?php echo $shift['employee_shift_id']; ?>">
-                                                                    <input type="hidden" name="shiftId" value="<?php echo $shift['shift_id']; ?>">
-                                                                    <input type="hidden" name="assignedDate" value="<?php echo $shift['assigned_date']; ?>">
-                                                                    <button type="submit" name="editEmployeeShift" class="btn btn-sm btn-outline-primary mr-2">
-                                                                        <i class="fas fa-edit"></i>
-                                                                    </button>
                                                                     <button type="submit" name="deleteEmployeeShift" class="btn btn-sm btn-outline-danger">
                                                                         <i class="fas fa-trash"></i>
                                                                     </button>
@@ -271,6 +278,52 @@ $shifts = getShifts();
                     </div>
                 </div>
 
+                <!-- Edit Employee Shift Modal -->
+                <div class="modal fade" id="editEmployeeShiftModal" tabindex="-1" role="dialog" aria-labelledby="editEmployeeShiftModalLabel" aria-hidden="true">
+                    <div class="modal-dialog" role="document">
+                        <div class="modal-content">
+                            <div class="modal-header">
+                                <h5 class="modal-title" id="editEmployeeShiftModalLabel">Edit Employee Shift</h5>
+                                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                                    <span aria-hidden="true">&times;</span>
+                                </button>
+                            </div>
+                            <div class="modal-body">
+                                <form method="POST" action="employee_shifts.php">
+                                    <input type="hidden" name="employeeShiftId" id="editEmployeeShiftId">
+                                    <div class="form-group">
+                                        <label for="editEmployeeId">Employee</label>
+                                        <select name="employeeId" id="editEmployeeId" class="form-control" required>
+                                            <option value="">Select Employee</option>
+                                            <?php foreach ($employees as $employee): ?>
+                                                <option value="<?php echo $employee['employee_id']; ?>"><?php echo htmlspecialchars($employee['first_name'] . ' ' . $employee['last_name']); ?></option>
+                                            <?php endforeach; ?>
+                                        </select>
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="editShiftId">Shift</label>
+                                        <select name="shiftId" id="editShiftId" class="form-control" required>
+                                            <option value="">Select Shift</option>
+                                            <?php foreach ($shifts as $shift): ?>
+                                                <option value="<?php echo $shift['shift_id']; ?>"><?php echo htmlspecialchars($shift['shift_name']); ?></option>
+                                            <?php endforeach; ?>
+                                        </select>
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="editAssignedDate">Assigned Date</label>
+                                        <input type="date" name="assignedDate" id="editAssignedDate" class="form-control" required>
+                                    </div>
+                                    <div class="form-group form-check">
+                                        <input type="checkbox" name="isOvertime" class="form-check-input" id="editIsOvertime">
+                                        <label class="form-check-label" for="editIsOvertime">Overtime</label>
+                                    </div>
+                                    <button type="submit" name="editEmployeeShift" class="btn btn-primary">Update Shift Assignment</button>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
             </div>
         </div>
     </div>
@@ -302,6 +355,28 @@ $shifts = getShifts();
             }
         }
 
+        // Function to update edit assigned date
+        function updateEditAssignedDate() {
+            const employeeId = document.getElementById('editEmployeeId').value;
+            const assignedDateField = document.getElementById('editAssignedDate');
+
+            if (employeeId) {
+                fetch(`get_employee_hire_date.php?employee_id=${employeeId}`)
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.hire_date) {
+                            assignedDateField.value = data.hire_date;
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Error fetching hire date:', error);
+                    });
+            } else {
+                // Clear the date if no employee is selected
+                assignedDateField.value = '';
+            }
+        }
+
         // Add event listener to employee select dropdown
         document.getElementById('employeeId').addEventListener('change', updateAssignedDate);
 
@@ -309,6 +384,26 @@ $shifts = getShifts();
         $('#addEmployeeShiftModal').on('shown.bs.modal', function () {
             updateAssignedDate();
         });
+
+        // Handle edit modal population
+        $('#editEmployeeShiftModal').on('show.bs.modal', function (event) {
+            const button = $(event.relatedTarget);
+            const employeeShiftId = button.data('employee-shift-id');
+            const employeeId = button.data('employee-id');
+            const shiftId = button.data('shift-id');
+            const assignedDate = button.data('assigned-date');
+            const isOvertime = button.data('is-overtime');
+
+            const modal = $(this);
+            modal.find('#editEmployeeShiftId').val(employeeShiftId);
+            modal.find('#editEmployeeId').val(employeeId);
+            modal.find('#editShiftId').val(shiftId);
+            modal.find('#editAssignedDate').val(assignedDate);
+            modal.find('#editIsOvertime').prop('checked', isOvertime == 1);
+        });
+
+        // Add event listener to edit employee select dropdown
+        document.getElementById('editEmployeeId').addEventListener('change', updateEditAssignedDate);
     </script>
 </body>
 </html>

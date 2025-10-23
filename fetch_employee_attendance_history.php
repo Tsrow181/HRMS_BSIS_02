@@ -13,6 +13,7 @@ require_once 'dp.php';
 // Get employee information
 $user_id = $_SESSION['user_id'];
 $username = $_SESSION['username'];
+$employee_id = null; // Initialize to prevent undefined variable errors
 
 // Get employee_id from users table
 try {

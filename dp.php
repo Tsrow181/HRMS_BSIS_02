@@ -175,7 +175,17 @@ function getShifts() {
 function getEmployeeShifts() {
     global $conn;
     try {
-        $sql = "SELECT ep.employee_id, pi.first_name, pi.last_name, d.department_name,
+        $sql = "SELECT ep.employee_id,
+                       CASE
+                           WHEN EXISTS (
+                               SELECT 1 FROM leave_requests lr
+                               WHERE lr.employee_id = ep.employee_id
+                               AND lr.status = 'Approved'
+                               AND CURDATE() BETWEEN lr.start_date AND lr.end_date
+                           ) THEN 'On Leave'
+                           ELSE 'Active'
+                       END as status,
+                       pi.first_name, pi.last_name, d.department_name,
                        es.employee_shift_id, es.shift_id, es.assigned_date, es.is_overtime,
                        s.shift_name
                 FROM employee_profiles ep

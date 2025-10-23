@@ -32,7 +32,7 @@ try {
         LEFT JOIN personal_information pi ON ep.personal_info_id = pi.personal_info_id
         LEFT JOIN job_roles jr ON ep.job_role_id = jr.job_role_id
         LEFT JOIN attendance a ON ep.employee_id = a.employee_id
-            AND a.attendance_date = CURDATE()
+            AND a.attendance_date = DATE(NOW())
         WHERE ep.employment_status IN ('Full-time', 'Part-time')
         AND ep.employee_id IN (
             SELECT employee_id FROM employment_history

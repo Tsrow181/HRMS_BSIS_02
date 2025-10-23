@@ -16,6 +16,7 @@ require_once 'dp.php';
 // Get employee information
 $user_id = $_SESSION['user_id'];
 $username = $_SESSION['username'];
+$employee_id = null; // Initialize to prevent undefined variable errors
 
 // Get employee_id from users table (primary source based on schema)
 try {
@@ -36,7 +37,7 @@ try {
     $employee_id = null;
 }
 
-if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+if (isset($_SERVER['REQUEST_METHOD']) && $_SERVER['REQUEST_METHOD'] === 'POST') {
     $redirect = true;
 
     if (!$employee_id) {
