@@ -52,7 +52,7 @@ CREATE TABLE `audit_logs` (
   CONSTRAINT `audit_logs_ibfk_1` FOREIGN KEY (`user_id`) REFERENCES `users` (`user_id`) ON DELETE SET NULL
 ) ENGINE=InnoDB AUTO_INCREMENT=21 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
-INSERT INTO `audit_logs` (`audit_id`,`user_id`,`action`,`table_name`,`record_id`,`old_values`,`new_values`,`ip_address`,`user_agent`,`created_at`) VALUES
+INSERT INTO audit_logs (audit_id,user_id,action,table_name,record_id,old_values,new_values,ip_address,user_agent,created_at) VALUES
 ('1','1','Test Action','test_table','123','','{\"test\":\"data\"}','','','2025-10-08 23:05:01'),
 ('2','2','Leave Request Approved','leave_requests','3','','\"\"','::1','Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.0.0 Safari/537.36','2025-10-08 23:05:14'),
 ('3','17','Leave Request Submitted','leave_requests','4','','{\"leave_type_id\":\"5\",\"start_date\":\"2025-10-09\",\"end_date\":\"2025-10-10\",\"total_days\":2,\"reason\":\"test\"}','::1','Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.0.0 Safari/537.36','2025-10-08 23:09:51'),
@@ -187,7 +187,7 @@ CREATE TABLE `departments` (
   PRIMARY KEY (`department_id`)
 ) ENGINE=InnoDB AUTO_INCREMENT=16 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
-INSERT INTO `departments` (`department_id`,`department_name`,`description`,`location`,`created_at`,`updated_at`) VALUES
+INSERT INTO departments (department_id,department_name,description,location,created_at,updated_at) VALUES
 ('1','Office of the Mayor','Executive office responsible for municipal governance and administration','City Hall - 2nd Floor','2025-09-09 10:00:15','2025-09-09 10:00:15'),
 ('2','Sangguniang Bayan','Municipal legislative body responsible for enacting local ordinances','City Hall - Session Hall','2025-09-09 10:00:15','2025-09-09 10:00:15'),
 ('3','Municipal Treasurer\'s Office','Handles municipal revenue collection, treasury operations, and financial management','City Hall - 1st Floor','2025-09-09 10:00:15','2025-09-09 10:00:15'),
@@ -252,7 +252,7 @@ CREATE TABLE `document_management` (
   CONSTRAINT `document_management_ibfk_1` FOREIGN KEY (`employee_id`) REFERENCES `employee_profiles` (`employee_id`) ON DELETE CASCADE
 ) ENGINE=InnoDB AUTO_INCREMENT=33 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
-INSERT INTO `document_management` (`document_id`,`employee_id`,`document_type`,`document_name`,`file_path`,`upload_date`,`expiry_date`,`document_status`,`notes`,`created_at`,`updated_at`) VALUES
+INSERT INTO document_management (document_id,employee_id,document_type,document_name,file_path,upload_date,expiry_date,document_status,notes,created_at,updated_at) VALUES
 ('1','1','','Appointment Order - Municipal Treasurer','/documents/appointments/maria_santos_appointment.pdf','2025-09-09 10:00:16','','Active','Appointed by Mayor per Civil Service guidelines','2025-09-09 10:00:16','2025-09-09 10:00:16'),
 ('2','1','Contract','Employment Contract - Municipal Treasurer','/documents/contracts/maria_santos_contract.pdf','2025-09-09 10:00:16','2025-07-01','Active','Department head contract','2025-09-09 10:00:16','2025-09-09 10:00:16'),
 ('3','1','Resume','Resume - Maria Santos','/documents/resumes/maria_santos_resume.pdf','2025-09-09 10:00:16','','Active','CPA with municipal finance experience','2025-09-09 10:00:16','2025-09-09 10:00:16'),
@@ -388,7 +388,7 @@ CREATE TABLE `employee_profiles` (
   CONSTRAINT `employee_profiles_ibfk_2` FOREIGN KEY (`job_role_id`) REFERENCES `job_roles` (`job_role_id`) ON DELETE SET NULL
 ) ENGINE=InnoDB AUTO_INCREMENT=16 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
-INSERT INTO `employee_profiles` (`employee_id`,`personal_info_id`,`job_role_id`,`employee_number`,`hire_date`,`employment_status`,`current_salary`,`work_email`,`work_phone`,`location`,`remote_work`,`created_at`,`updated_at`) VALUES
+INSERT INTO employee_profiles (employee_id,personal_info_id,job_role_id,employee_number,hire_date,employment_status,current_salary,work_email,work_phone,location,remote_work,created_at,updated_at) VALUES
 ('1','1','4','MUN001','2019-07-01','Full-time','65000.00','maria.santos@municipality.gov.ph','034-123-0001','City Hall - 1st Floor','0','2025-09-09 10:00:16','2025-09-09 10:00:16'),
 ('2','2','8','MUN002','2018-06-15','Full-time','75000.00','roberto.cruz@municipality.gov.ph','034-123-0002','Engineering Building','0','2025-09-09 10:00:16','2025-09-09 10:00:16'),
 ('3','3','17','MUN003','2020-01-20','Full-time','42000.00','jennifer.reyes@municipality.gov.ph','034-123-0003','Municipal Health Office','0','2025-09-09 10:00:16','2025-09-09 10:00:16'),
@@ -439,7 +439,7 @@ CREATE TABLE `employee_shifts` (
   CONSTRAINT `employee_shifts_ibfk_2` FOREIGN KEY (`shift_id`) REFERENCES `shifts` (`shift_id`) ON DELETE CASCADE
 ) ENGINE=InnoDB AUTO_INCREMENT=9 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
-INSERT INTO `employee_shifts` (`employee_shift_id`,`employee_id`,`shift_id`,`assigned_date`,`is_overtime`,`created_at`,`updated_at`) VALUES
+INSERT INTO employee_shifts (employee_shift_id,employee_id,shift_id,assigned_date,is_overtime,created_at,updated_at) VALUES
 ('1','1','1','2024-01-15','0','2025-09-14 15:13:53','2025-09-14 15:13:53'),
 ('2','2','2','2024-01-15','1','2025-09-14 15:13:53','2025-09-14 15:13:53'),
 ('3','3','1','2024-01-16','0','2025-09-14 15:13:53','2025-09-14 15:13:53'),
@@ -500,7 +500,7 @@ CREATE TABLE `employment_history` (
   CONSTRAINT `employment_history_ibfk_3` FOREIGN KEY (`reporting_manager_id`) REFERENCES `employee_profiles` (`employee_id`) ON DELETE SET NULL
 ) ENGINE=InnoDB AUTO_INCREMENT=16 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
-INSERT INTO `employment_history` (`history_id`,`employee_id`,`job_title`,`department_id`,`employment_type`,`start_date`,`end_date`,`employment_status`,`reporting_manager_id`,`location`,`base_salary`,`allowances`,`bonuses`,`salary_adjustments`,`reason_for_change`,`promotions_transfers`,`duties_responsibilities`,`performance_evaluations`,`training_certifications`,`contract_details`,`remarks`,`created_at`,`updated_at`) VALUES
+INSERT INTO employment_history (history_id,employee_id,job_title,department_id,employment_type,start_date,end_date,employment_status,reporting_manager_id,location,base_salary,allowances,bonuses,salary_adjustments,reason_for_change,promotions_transfers,duties_responsibilities,performance_evaluations,training_certifications,contract_details,remarks,created_at,updated_at) VALUES
 ('1','1','Municipal Treasurer','3','Full-time','2019-07-01','','Active','','City Hall - 1st Floor','65000.00','5000.00','0.00','0.00','Appointed as Municipal Treasurer','Promoted from Administrative Aide','Oversees treasury operations, municipal revenue collection, and financial management.','Consistently rated \"Excellent\" in financial audits','CPA Certification, Treasury Management Training','Appointed by Mayor, renewable 6-year term','Key finance official','2025-09-09 10:00:16','2025-09-09 10:00:16'),
 ('2','2','Municipal Engineer','7','Full-time','2018-06-15','','Active','','Engineering Building','75000.00','6000.00','0.00','0.00','Appointed as Municipal Engineer','Promoted from CAD Operator','Supervises infrastructure projects, designs municipal roads and buildings.','Rated \"Very Satisfactory\" in infrastructure project completion','PRC Civil Engineer License, Project Management Certification','Appointed by Mayor, renewable 6-year term','Head of engineering department','2025-09-09 10:00:16','2025-09-09 10:00:16'),
 ('3','3','Nurse','9','Full-time','2020-01-20','','Active','10','Municipal Health Office','42000.00','3000.00','0.00','0.00','Hired as Nurse','','Provides nursing care, assists doctors, administers vaccinations.','Highly commended during pandemic response','PRC Nursing License, Basic Life Support Training','Contract renewable every 3 years','Dedicated health staff','2025-09-09 10:00:16','2025-09-09 10:00:16'),
@@ -731,7 +731,7 @@ CREATE TABLE `job_roles` (
   PRIMARY KEY (`job_role_id`)
 ) ENGINE=InnoDB AUTO_INCREMENT=38 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
-INSERT INTO `job_roles` (`job_role_id`,`title`,`description`,`department`,`min_salary`,`max_salary`,`created_at`,`updated_at`) VALUES
+INSERT INTO job_roles (job_role_id,title,description,department,min_salary,max_salary,created_at,updated_at) VALUES
 ('1','Mayor','Chief executive of the municipality responsible for overall governance','Office of the Mayor','80000.00','120000.00','2025-09-09 10:00:15','2025-09-09 10:00:15'),
 ('2','Vice Mayor','Presiding officer of Sangguniang Bayan and assistant to the Mayor','Sangguniang Bayan','70000.00','100000.00','2025-09-09 10:00:15','2025-09-09 10:00:15'),
 ('3','Councilor','Member of the municipal legislative body','Sangguniang Bayan','60000.00','85000.00','2025-09-09 10:00:15','2025-09-09 10:00:15'),
@@ -822,7 +822,7 @@ CREATE TABLE `leave_balances` (
   CONSTRAINT `leave_balances_ibfk_2` FOREIGN KEY (`leave_type_id`) REFERENCES `leave_types` (`leave_type_id`) ON DELETE CASCADE
 ) ENGINE=InnoDB AUTO_INCREMENT=33 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
-INSERT INTO `leave_balances` (`balance_id`,`employee_id`,`leave_type_id`,`year`,`total_leaves`,`leaves_taken`,`leaves_pending`,`leaves_remaining`,`last_updated`,`created_at`,`updated_at`) VALUES
+INSERT INTO leave_balances (balance_id,employee_id,leave_type_id,year,total_leaves,leaves_taken,leaves_pending,leaves_remaining,last_updated,created_at,updated_at) VALUES
 ('17','1','1','2024','15.00','3.00','0.00','12.00','','2025-09-14 15:13:53','2025-09-14 15:13:53'),
 ('18','2','1','2024','15.00','5.00','1.00','9.00','','2025-09-14 15:13:53','2025-09-14 15:13:53'),
 ('19','3','1','2024','15.00','2.00','0.00','13.00','','2025-09-14 15:13:53','2025-09-14 15:13:53'),
@@ -874,7 +874,7 @@ CREATE TABLE `leave_types` (
   PRIMARY KEY (`leave_type_id`)
 ) ENGINE=InnoDB AUTO_INCREMENT=6 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
-INSERT INTO `leave_types` (`leave_type_id`,`leave_type_name`,`description`,`paid`,`default_days`,`carry_forward`,`max_carry_forward_days`,`created_at`,`updated_at`) VALUES
+INSERT INTO leave_types (leave_type_id,leave_type_name,description,paid,default_days,carry_forward,max_carry_forward_days,created_at,updated_at) VALUES
 ('1','Vacation Leave','Annual vacation leave','1','15.00','0','0.00','2025-09-14 15:13:35','2025-09-14 15:13:35'),
 ('2','Sick Leave','Medical leave for illness','1','10.00','0','0.00','2025-09-14 15:13:35','2025-09-14 15:13:35'),
 ('3','Maternity Leave','Leave for new mothers','1','60.00','0','0.00','2025-09-14 15:13:35','2025-09-14 15:13:35'),
@@ -1027,7 +1027,7 @@ CREATE TABLE `personal_information` (
   PRIMARY KEY (`personal_info_id`)
 ) ENGINE=InnoDB AUTO_INCREMENT=16 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
-INSERT INTO `personal_information` (`personal_info_id`,`first_name`,`last_name`,`date_of_birth`,`gender`,`marital_status`,`nationality`,`tax_id`,`social_security_number`,`phone_number`,`emergency_contact_name`,`emergency_contact_relationship`,`emergency_contact_phone`,`created_at`,`updated_at`) VALUES
+INSERT INTO personal_information (personal_info_id,first_name,last_name,date_of_birth,gender,marital_status,nationality,tax_id,social_security_number,phone_number,emergency_contact_name,emergency_contact_relationship,emergency_contact_phone,created_at,updated_at) VALUES
 ('1','Maria','Santos','1985-03-12','Female','Married','Filipino','123-45-6789','123456789','0917-123-4567','Carlos Santos','Spouse','0917-567-8901','2025-09-09 10:00:15','2025-09-09 10:00:15'),
 ('2','Roberto','Cruz','1978-07-20','Male','Married','Filipino','234-56-7890','234567890','0917-234-5678','Elena Cruz','Spouse','0917-678-9012','2025-09-09 10:00:15','2025-09-09 10:00:15'),
 ('3','Jennifer','Reyes','1988-11-08','Female','Single','Filipino','345-67-8901','345678901','0917-345-6789','Mark Reyes','Brother','0917-789-0123','2025-09-09 10:00:15','2025-09-09 10:00:15'),
@@ -1072,7 +1072,7 @@ CREATE TABLE `public_holidays` (
   UNIQUE KEY `holiday_date` (`holiday_date`)
 ) ENGINE=InnoDB AUTO_INCREMENT=22 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
-INSERT INTO `public_holidays` (`holiday_id`,`holiday_date`,`holiday_name`,`description`,`created_at`,`updated_at`) VALUES
+INSERT INTO public_holidays (holiday_id,holiday_date,holiday_name,description,created_at,updated_at) VALUES
 ('1','2025-01-01','New Year\'s Day','Bagong Taon','2025-09-09 10:00:56','2025-09-09 10:00:56'),
 ('2','2025-01-29','Chinese New Year','Chinese New Year','2025-09-09 10:00:56','2025-09-09 10:00:56'),
 ('3','2025-04-01','Feast of Ramadhan','Eid???l Fitr','2025-09-09 10:00:56','2025-09-09 10:00:56'),
@@ -1161,7 +1161,7 @@ CREATE TABLE `shifts` (
   PRIMARY KEY (`shift_id`)
 ) ENGINE=InnoDB AUTO_INCREMENT=9 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
-INSERT INTO `shifts` (`shift_id`,`shift_name`,`start_time`,`end_time`,`description`,`created_at`,`updated_at`) VALUES
+INSERT INTO shifts (shift_id,shift_name,start_time,end_time,description,created_at,updated_at) VALUES
 ('1','Morning Shift','08:00:00','16:00:00','Standard morning shift from 8 AM to 4 PM','2025-09-14 15:12:31','2025-09-14 15:12:31'),
 ('2','Afternoon Shift','14:00:00','22:00:00','Afternoon/evening shift from 2 PM to 10 PM','2025-09-14 15:12:31','2025-09-14 15:12:31'),
 ('3','Night Shift','22:00:00','06:00:00','Night shift from 10 PM to 6 AM','2025-09-14 15:12:31','2025-09-14 15:12:31'),
@@ -1299,7 +1299,7 @@ CREATE TABLE `user_roles` (
   PRIMARY KEY (`role_id`)
 ) ENGINE=InnoDB AUTO_INCREMENT=4 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
-INSERT INTO `user_roles` (`role_id`,`role_name`,`description`) VALUES
+INSERT INTO user_roles (role_id,role_name,description) VALUES
 ('1','admin','Administrator role with full system access.'),
 ('2','hr','Human Resources role with access to employee and payroll management.'),
 ('3','employee','Standard employee role with limited access to personal information and timesheets.');
@@ -1322,7 +1322,7 @@ CREATE TABLE `users` (
   CONSTRAINT `users_ibfk_1` FOREIGN KEY (`employee_id`) REFERENCES `employee_profiles` (`employee_id`) ON DELETE SET NULL
 ) ENGINE=InnoDB AUTO_INCREMENT=18 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
-INSERT INTO `users` (`user_id`,`username`,`password`,`email`,`role`,`employee_id`,`is_active`,`last_login`,`created_at`,`updated_at`) VALUES
+INSERT INTO users (user_id,username,password,email,role,employee_id,is_active,last_login,created_at,updated_at) VALUES
 ('1','admin','admin123','admin@municipality.gov.ph','admin','','1','','2025-09-09 10:00:16','2025-09-09 10:00:16'),
 ('2','hr_manager','hr123','hr@municipality.gov.ph','hr','','1','','2025-09-09 10:00:16','2025-09-09 10:00:16'),
 ('3','maria.santos','emp123','maria.santos@municipality.gov.ph','employee','1','1','','2025-09-09 10:00:16','2025-09-09 10:00:16'),

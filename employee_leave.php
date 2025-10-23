@@ -59,23 +59,29 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['submitLeaveRequest'])
             }
         }
 
-        try {
-            $sql = "INSERT INTO leave_requests (employee_id, leave_type_id, start_date, end_date, total_days, reason, status, applied_on, document_path)
-                    VALUES (?, ?, ?, ?, ?, ?, 'Pending', NOW(), ?)";
-            $stmt = $conn->prepare($sql);
-            $stmt->execute([$employee_id, $leaveTypeId, $startDate, $endDate, $duration, $reason, $documentPath]);
-            $leave_id = $conn->lastInsertId();
-            error_log("Employee leave: About to log activity for leave_id $leave_id");
-            logActivity("Leave Request Submitted", "leave_requests", $leave_id, [
-                'leave_type_id' => $leaveTypeId,
-                'start_date' => $startDate,
-                'end_date' => $endDate,
-                'total_days' => $duration,
-                'reason' => $reason
-            ]);
-            $success = "Leave request submitted successfully!";
-        } catch (PDOException $e) {
-            $error = "Error submitting leave request: " . $e->getMessage();
+        // Validate gender-based leave restrictions
+        $genderValidation = validateLeaveRequestByGender($employee_id, $leaveTypeId);
+        if (!$genderValidation['valid']) {
+            $error = $genderValidation['message'];
+        } else {
+            try {
+                $sql = "INSERT INTO leave_requests (employee_id, leave_type_id, start_date, end_date, total_days, reason, status, applied_on)
+                        VALUES (?, ?, ?, ?, ?, ?, 'Pending', NOW())";
+                $stmt = $conn->prepare($sql);
+                $stmt->execute([$employee_id, $leaveTypeId, $startDate, $endDate, $duration, $reason]);
+                $leave_id = $conn->lastInsertId();
+                error_log("Employee leave: About to log activity for leave_id $leave_id");
+                logActivity("Leave Request Submitted", "leave_requests", $leave_id, [
+                    'leave_type_id' => $leaveTypeId,
+                    'start_date' => $startDate,
+                    'end_date' => $endDate,
+                    'total_days' => $duration,
+                    'reason' => $reason
+                ]);
+                $success = "Leave request submitted successfully!";
+            } catch (PDOException $e) {
+                $error = "Error submitting leave request: " . $e->getMessage();
+            }
         }
     }
 }
@@ -120,7 +126,9 @@ if ($employee_id) {
     $leaveBalances = [];
     $leaveRequests = [];
 }
-if (function_exists('getLeaveTypes')) {
+if ($employee_id && function_exists('getLeaveTypesForEmployee')) {
+    $leaveTypes = getLeaveTypesForEmployee($employee_id);
+} elseif (function_exists('getLeaveTypes')) {
     $leaveTypes = getLeaveTypes();
 } else {
     $leaveTypes = [];

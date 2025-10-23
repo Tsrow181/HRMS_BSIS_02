@@ -27,13 +27,19 @@ try {
             a.working_hours,
             a.status,
             a.overtime_hours,
-            a.late_minutes
+            CASE WHEN TIME(a.clock_in) > '08:00:00' THEN TIMESTAMPDIFF(MINUTE, '08:00:00', TIME(a.clock_in)) ELSE 0 END as late_minutes
         FROM employee_profiles ep
         LEFT JOIN personal_information pi ON ep.personal_info_id = pi.personal_info_id
         LEFT JOIN job_roles jr ON ep.job_role_id = jr.job_role_id
         LEFT JOIN attendance a ON ep.employee_id = a.employee_id
             AND a.attendance_date = CURDATE()
         WHERE ep.employment_status IN ('Full-time', 'Part-time')
+        AND ep.employee_id IN (
+            SELECT employee_id FROM employment_history
+            WHERE history_id IN (
+                SELECT MAX(history_id) FROM employment_history GROUP BY employee_id
+            ) AND employment_status = 'Active'
+        )
         ORDER BY pi.first_name, pi.last_name
     ");
     $employees = $stmt->fetchAll(PDO::FETCH_ASSOC);

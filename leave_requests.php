@@ -9,6 +9,8 @@ if (!isset($_SESSION['loggedin']) || $_SESSION['loggedin'] !== true) {
 
 // Include database connection
 require_once 'dp.php';
+// Include employee status functions
+require_once 'employee_status_functions.php';
 
 // Get current user ID
 $user_id = $_SESSION['user_id'];
@@ -29,9 +31,21 @@ function getLeaveRequests() {
     if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         if (isset($_POST['approveRequest'])) {
             $requestId = $_POST['requestId'];
+            
+            // Get employee_id for this leave request
+            $empStmt = $conn->prepare("SELECT employee_id FROM leave_requests WHERE leave_id = ?");
+            $empStmt->execute([$requestId]);
+            $employee_id = $empStmt->fetchColumn();
+            
             $sql = "UPDATE leave_requests SET status = 'Approved' WHERE leave_id = ?";
             $stmt = $conn->prepare($sql);
             $stmt->execute([$requestId]);
+            
+            // Update employee status based on leave approval
+            if ($employee_id) {
+                handleLeaveStatusChange($employee_id, 'Approved');
+            }
+            
             error_log("Leave requests: About to log approve for request $requestId");
             error_log("Logging activity: Leave request #$requestId approved by user ID $user_id");
             logActivity("Leave request #$requestId approved by user ID $user_id", "leave_requests", $requestId);
@@ -40,9 +54,21 @@ function getLeaveRequests() {
             exit;
         } elseif (isset($_POST['rejectRequest'])) {
             $requestId = $_POST['requestId'];
+            
+            // Get employee_id for this leave request
+            $empStmt = $conn->prepare("SELECT employee_id FROM leave_requests WHERE leave_id = ?");
+            $empStmt->execute([$requestId]);
+            $employee_id = $empStmt->fetchColumn();
+            
             $sql = "UPDATE leave_requests SET status = 'Rejected' WHERE leave_id = ?";
             $stmt = $conn->prepare($sql);
             $stmt->execute([$requestId]);
+            
+            // Update employee status based on leave rejection
+            if ($employee_id) {
+                handleLeaveStatusChange($employee_id, 'Rejected');
+            }
+            
             error_log("Leave requests: About to log reject for request $requestId");
             error_log("Logging activity: Leave request #$requestId rejected by user ID $user_id");
             logActivity("Leave request #$requestId rejected by user ID $user_id", "leave_requests", $requestId);
@@ -78,10 +104,10 @@ function getLeaveRequests() {
         }
 
         try {
-            $sql = "INSERT INTO leave_requests (employee_id, leave_type_id, start_date, end_date, total_days, reason, status, applied_on, document_path)
-                    VALUES (?, ?, ?, ?, ?, ?, 'Pending', NOW(), ?)";
+            $sql = "INSERT INTO leave_requests (employee_id, leave_type_id, start_date, end_date, total_days, reason, status, applied_on)
+                    VALUES (?, ?, ?, ?, ?, ?, 'Pending', NOW())";
             $stmt = $conn->prepare($sql);
-            $stmt->execute([$employeeId, $leaveTypeId, $startDate, $endDate, $duration, $reason, $documentPath]);
+            $stmt->execute([$employeeId, $leaveTypeId, $startDate, $endDate, $duration, $reason]);
             error_log("Logging activity: New leave request submitted by employee ID $employeeId");
             logActivity("New leave request submitted by employee ID $employeeId", "leave_requests");
             // Redirect to refresh the page

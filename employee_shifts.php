@@ -9,6 +9,7 @@ if (!isset($_SESSION['loggedin']) || $_SESSION['loggedin'] !== true) {
 
 // Include database connection
 require_once 'dp.php';
+require_once 'employee_status_functions.php';
 
 // Handle CRUD operations
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
@@ -176,7 +177,7 @@ $shifts = getShifts();
                                                     <tr>
                                                         <td>
                                                             <div class="d-flex align-items-center">
-                                                                <img src="https://ui-avatars.com/api/?name=<?php echo urlencode($shift['first_name'] . ' ' . $shift['last_name']); ?>&background=E91E63&color=fff&size=35" 
+                                                                <img src="https://ui-avatars.com/api/?name=<?php echo urlencode($shift['first_name'] . ' ' . $shift['last_name']); ?>&background=E91E63&color=fff&size=35"
                                                                      alt="Profile" class="profile-image mr-2">
                                                                 <div>
                                                                     <h6 class="mb-0"><?php echo htmlspecialchars($shift['first_name'] . ' ' . $shift['last_name']); ?></h6>
@@ -184,26 +185,35 @@ $shifts = getShifts();
                                                                 </div>
                                                             </div>
                                                         </td>
-                                                        <td><?php echo htmlspecialchars($shift['shift_name']); ?></td>
-                                                        <td><?php echo htmlspecialchars($shift['assigned_date']); ?></td>
-                                                        <td><?php echo $shift['is_overtime'] ? 'Yes' : 'No'; ?></td>
+                                                        <td><?php echo htmlspecialchars($shift['shift_name'] ?? 'No Shift Assigned'); ?></td>
+                                                        <td><?php echo htmlspecialchars($shift['assigned_date'] ?? 'N/A'); ?></td>
+                                                        <td><?php echo isset($shift['is_overtime']) ? ($shift['is_overtime'] ? 'Yes' : 'No') : 'N/A'; ?></td>
                                                         <td>
-                                                            <span class="badge <?php echo $shift['is_overtime'] ? 'badge-success' : 'badge-danger'; ?>">
-                                                                <?php echo $shift['is_overtime'] ? 'Active' : 'Inactive'; ?>
+                                                            <?php
+                                                            $isOnLeave = isEmployeeOnLeave($shift['employee_id']);
+                                                            $status = $isOnLeave ? 'Inactive' : 'Active';
+                                                            $badgeClass = $isOnLeave ? 'badge-danger' : 'badge-success';
+                                                            ?>
+                                                            <span class="badge <?php echo $badgeClass; ?>">
+                                                                <?php echo $status; ?>
                                                             </span>
                                                         </td>
                                                         <td>
-                                                            <form method="POST" action="employee_shifts.php" class="d-inline">
-                                                                <input type="hidden" name="employeeShiftId" value="<?php echo $shift['employee_shift_id']; ?>">
-                                                                <input type="hidden" name="shiftId" value="<?php echo $shift['shift_id']; ?>">
-                                                                <input type="hidden" name="assignedDate" value="<?php echo $shift['assigned_date']; ?>">
-                                                                <button type="submit" name="editEmployeeShift" class="btn btn-sm btn-outline-primary mr-2">
-                                                                    <i class="fas fa-edit"></i>
-                                                                </button>
-                                                                <button type="submit" name="deleteEmployeeShift" class="btn btn-sm btn-outline-danger">
-                                                                    <i class="fas fa-trash"></i>
-                                                                </button>
-                                                            </form>
+                                                            <?php if (isset($shift['employee_shift_id'])): ?>
+                                                                <form method="POST" action="employee_shifts.php" class="d-inline">
+                                                                    <input type="hidden" name="employeeShiftId" value="<?php echo $shift['employee_shift_id']; ?>">
+                                                                    <input type="hidden" name="shiftId" value="<?php echo $shift['shift_id']; ?>">
+                                                                    <input type="hidden" name="assignedDate" value="<?php echo $shift['assigned_date']; ?>">
+                                                                    <button type="submit" name="editEmployeeShift" class="btn btn-sm btn-outline-primary mr-2">
+                                                                        <i class="fas fa-edit"></i>
+                                                                    </button>
+                                                                    <button type="submit" name="deleteEmployeeShift" class="btn btn-sm btn-outline-danger">
+                                                                        <i class="fas fa-trash"></i>
+                                                                    </button>
+                                                                </form>
+                                                            <?php else: ?>
+                                                                <span class="text-muted">No shift assigned</span>
+                                                            <?php endif; ?>
                                                         </td>
                                                     </tr>
                                                 <?php endforeach; ?>
@@ -230,7 +240,7 @@ $shifts = getShifts();
                                 <form method="POST" action="employee_shifts.php">
                                     <div class="form-group">
                                         <label for="employeeId">Employee</label>
-                                        <select name="employeeId" class="form-control" required>
+                                        <select name="employeeId" id="employeeId" class="form-control" required>
                                             <option value="">Select Employee</option>
                                             <?php foreach ($employees as $employee): ?>
                                                 <option value="<?php echo $employee['employee_id']; ?>"><?php echo htmlspecialchars($employee['first_name'] . ' ' . $employee['last_name']); ?></option>
@@ -248,7 +258,7 @@ $shifts = getShifts();
                                     </div>
                                     <div class="form-group">
                                         <label for="assignedDate">Assigned Date</label>
-                                        <input type="date" name="assignedDate" class="form-control" required>
+                                        <input type="date" name="assignedDate" id="assignedDate" class="form-control" required>
                                     </div>
                                     <div class="form-group form-check">
                                         <input type="checkbox" name="isOvertime" class="form-check-input" id="isOvertime">
@@ -268,5 +278,37 @@ $shifts = getShifts();
     <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.1/dist/umd/popper.min.js"></script>
     <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+
+    <script>
+        // Function to fetch employee hire date and set default assigned date
+        function updateAssignedDate() {
+            const employeeId = document.getElementById('employeeId').value;
+            const assignedDateField = document.getElementById('assignedDate');
+
+            if (employeeId) {
+                fetch(`get_employee_hire_date.php?employee_id=${employeeId}`)
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.hire_date) {
+                            assignedDateField.value = data.hire_date;
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Error fetching hire date:', error);
+                    });
+            } else {
+                // Clear the date if no employee is selected
+                assignedDateField.value = '';
+            }
+        }
+
+        // Add event listener to employee select dropdown
+        document.getElementById('employeeId').addEventListener('change', updateAssignedDate);
+
+        // Also update when modal is shown (in case employee is pre-selected)
+        $('#addEmployeeShiftModal').on('shown.bs.modal', function () {
+            updateAssignedDate();
+        });
+    </script>
 </body>
 </html>

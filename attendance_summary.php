@@ -60,14 +60,33 @@ require_once 'dp.php';
                 $totalAbsent = 0;
 
                 try {
-                    // Get total employees
-                    $stmt = $conn->query("SELECT COUNT(*) as count FROM employee_profiles WHERE employment_status IN ('Full-time', 'Part-time')");
+                    // Get total active employees (only those with 'Active' status in latest employment_history)
+                    $stmt = $conn->query("
+                        SELECT COUNT(*) as count FROM employee_profiles
+                        WHERE employment_status IN ('Full-time', 'Part-time')
+                        AND employee_id IN (
+                            SELECT employee_id FROM employment_history
+                            WHERE history_id IN (
+                                SELECT MAX(history_id) FROM employment_history GROUP BY employee_id
+                            ) AND employment_status = 'Active'
+                        )
+                    ");
                     $result = $stmt->fetch(PDO::FETCH_ASSOC);
                     $totalEmployees = $result['count'];
 
-                    // Get today's attendance summary (if available)
+                    // Get today's attendance summary (if available) for active employees only
                     $today = date('Y-m-d');
-                    $stmt = $conn->query("SELECT COUNT(*) as present FROM attendance WHERE attendance_date = '$today' AND status = 'Present'");
+                    $stmt = $conn->query("
+                        SELECT COUNT(*) as present FROM attendance a
+                        JOIN employee_profiles ep ON a.employee_id = ep.employee_id
+                        WHERE a.attendance_date = '$today' AND a.status = 'Present'
+                        AND ep.employee_id IN (
+                            SELECT employee_id FROM employment_history
+                            WHERE history_id IN (
+                                SELECT MAX(history_id) FROM employment_history GROUP BY employee_id
+                            ) AND employment_status = 'Active'
+                        )
+                    ");
                     $result = $stmt->fetch(PDO::FETCH_ASSOC);
                     $totalPresent = $result['present'];
 

@@ -1,13 +1,5 @@
-# TODO: Add Clock-Out Button and Real-Time Attendance
+# TODO: Fix Shifts.php - Remove Duplicates and Correct Duration Computation
 
 ## Tasks
-- [ ] Modify employee_attendance.php to use AJAX (fetch) for clock-in/out submissions instead of form POST.
-- [ ] Use JavaScript Date() to get real-time client time for clock-in/out timestamps.
-- [ ] On AJAX success, update the clock card UI dynamically (show clock-in/out times, hide/show buttons).
-- [ ] Add loadAttendanceHistory() function to fetch and update the attendance history table via AJAX.
-- [ ] Call loadAttendanceHistory() after successful clock-in/out to reflect changes immediately in overview.
-
-## Followup Steps
-- [ ] Test clock-in/out functionality with real-time time.
-- [ ] Verify UI updates without page reload.
-- [ ] Ensure attendance history reflects changes immediately.
+- [x] Update calculateDuration function in shifts.php to handle overnight shifts (add 24 hours if end_time < start_time)
+- [x] Modify getShifts function in dp.php to use SELECT DISTINCT to remove duplicate rows

@@ -67,19 +67,32 @@ function getRecentActivities() {
 function getLeaveBalances() {
     global $conn;
     try {
-        $sql = "SELECT lb.*, pi.first_name, pi.last_name, d.department_name,
-                       (lb.vacation_leave + lb.sick_leave + lb.maternity_leave + lb.paternity_leave) as total_balance
-                FROM leave_balances lb
-                JOIN employee_profiles ep ON lb.employee_id = ep.employee_id
+        // Get all employees with their leave balances grouped by employee, including gender info
+        $sql = "SELECT 
+                    ep.employee_id,
+                    pi.first_name, 
+                    pi.last_name,
+                    pi.gender,
+                    ep.employee_number,
+                    d.department_name,
+                    COALESCE(SUM(CASE WHEN lt.leave_type_name = 'Vacation Leave' THEN lb.leaves_remaining ELSE 0 END), 0) as vacation_leave,
+                    COALESCE(SUM(CASE WHEN lt.leave_type_name = 'Sick Leave' THEN lb.leaves_remaining ELSE 0 END), 0) as sick_leave,
+                    COALESCE(SUM(CASE WHEN lt.leave_type_name = 'Maternity Leave' AND pi.gender = 'Female' THEN lb.leaves_remaining ELSE 0 END), 0) as maternity_leave,
+                    COALESCE(SUM(CASE WHEN lt.leave_type_name = 'Paternity Leave' AND pi.gender = 'Male' THEN lb.leaves_remaining ELSE 0 END), 0) as paternity_leave,
+                    COALESCE(SUM(lb.leaves_remaining), 0) as total_balance
+                FROM employee_profiles ep
                 JOIN personal_information pi ON ep.personal_info_id = pi.personal_info_id
                 LEFT JOIN departments d ON ep.job_role_id IN (
                     SELECT job_role_id FROM job_roles WHERE department = d.department_name
                 )
-                WHERE lb.year = YEAR(CURDATE())
+                LEFT JOIN leave_balances lb ON ep.employee_id = lb.employee_id AND lb.year = YEAR(CURDATE())
+                LEFT JOIN leave_types lt ON lb.leave_type_id = lt.leave_type_id
+                GROUP BY ep.employee_id, pi.first_name, pi.last_name, pi.gender, ep.employee_number, d.department_name
                 ORDER BY pi.first_name, pi.last_name";
         $stmt = $conn->query($sql);
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
     } catch (PDOException $e) {
+        error_log("getLeaveBalances error: " . $e->getMessage());
         return [];
     }
 }
@@ -124,17 +137,24 @@ function getLeaveUtilizationTrend() {
 function getLowBalanceAlerts() {
     global $conn;
     try {
-        $sql = "SELECT pi.first_name, pi.last_name, lb.vacation_leave, lb.sick_leave,
-                       (lb.vacation_leave + lb.sick_leave + lb.maternity_leave + lb.paternity_leave) as total_balance
-                FROM leave_balances lb
-                JOIN employee_profiles ep ON lb.employee_id = ep.employee_id
+        $sql = "SELECT 
+                    pi.first_name, 
+                    pi.last_name,
+                    pi.gender,
+                    COALESCE(SUM(CASE WHEN lt.leave_type_name = 'Vacation Leave' THEN lb.leaves_remaining ELSE 0 END), 0) as vacation_leave,
+                    COALESCE(SUM(CASE WHEN lt.leave_type_name = 'Sick Leave' THEN lb.leaves_remaining ELSE 0 END), 0) as sick_leave,
+                    COALESCE(SUM(lb.leaves_remaining), 0) as total_balance
+                FROM employee_profiles ep
                 JOIN personal_information pi ON ep.personal_info_id = pi.personal_info_id
-                WHERE lb.year = YEAR(CURDATE())
-                AND (lb.vacation_leave < 5 OR lb.sick_leave < 5 OR (lb.vacation_leave + lb.sick_leave + lb.maternity_leave + lb.paternity_leave) < 10)
+                LEFT JOIN leave_balances lb ON ep.employee_id = lb.employee_id AND lb.year = YEAR(CURDATE())
+                LEFT JOIN leave_types lt ON lb.leave_type_id = lt.leave_type_id
+                GROUP BY ep.employee_id, pi.first_name, pi.last_name, pi.gender
+                HAVING (vacation_leave < 5 OR sick_leave < 5 OR total_balance < 10)
                 ORDER BY total_balance ASC";
         $stmt = $conn->query($sql);
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
     } catch (PDOException $e) {
+        error_log("getLowBalanceAlerts error: " . $e->getMessage());
         return [];
     }
 }
@@ -143,7 +163,7 @@ function getLowBalanceAlerts() {
 function getShifts() {
     global $conn;
     try {
-        $sql = "SELECT * FROM shifts ORDER BY shift_name";
+        $sql = "SELECT DISTINCT * FROM shifts ORDER BY shift_name";
         $stmt = $conn->query($sql);
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
     } catch (PDOException $e) {
@@ -155,15 +175,23 @@ function getShifts() {
 function getEmployeeShifts() {
     global $conn;
     try {
-        $sql = "SELECT es.*, s.shift_name, pi.first_name, pi.last_name, d.department_name
-                FROM employee_shifts es
-                JOIN shifts s ON es.shift_id = s.shift_id
-                JOIN employee_profiles ep ON es.employee_id = ep.employee_id
+        $sql = "SELECT ep.employee_id, pi.first_name, pi.last_name, d.department_name,
+                       es.employee_shift_id, es.shift_id, es.assigned_date, es.is_overtime,
+                       s.shift_name
+                FROM employee_profiles ep
                 JOIN personal_information pi ON ep.personal_info_id = pi.personal_info_id
+                LEFT JOIN employee_shifts es ON ep.employee_id = es.employee_id
+                LEFT JOIN shifts s ON es.shift_id = s.shift_id
                 LEFT JOIN departments d ON ep.job_role_id IN (
                     SELECT job_role_id FROM job_roles WHERE department = d.department_name
                 )
-                ORDER BY es.assigned_date DESC, pi.first_name, pi.last_name";
+                WHERE ep.employee_id IN (
+                    SELECT employee_id FROM employment_history
+                    WHERE history_id IN (
+                        SELECT MAX(history_id) FROM employment_history GROUP BY employee_id
+                    ) AND employment_status = 'Active'
+                )
+                ORDER BY pi.first_name, pi.last_name";
         $stmt = $conn->query($sql);
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
     } catch (PDOException $e) {
@@ -281,5 +309,215 @@ function getRecentAuditLogs($limit = 5) {
     $result = $stmt->fetchAll(PDO::FETCH_ASSOC);
     error_log("getRecentAuditLogs: fetched " . count($result) . " activities");
     return $result;
+}
+
+// Function to ensure all employees have leave balance records with gender-based restrictions
+function ensureEmployeeLeaveBalances() {
+    global $conn;
+    try {
+        // Get all employees with their gender information who don't have leave balance records for current year
+        $sql = "SELECT ep.employee_id, pi.gender, lt.leave_type_id, lt.leave_type_name, lt.default_days
+                FROM employee_profiles ep
+                JOIN personal_information pi ON ep.personal_info_id = pi.personal_info_id
+                CROSS JOIN leave_types lt
+                LEFT JOIN leave_balances lb ON ep.employee_id = lb.employee_id 
+                    AND lt.leave_type_id = lb.leave_type_id 
+                    AND lb.year = YEAR(CURDATE())
+                WHERE lb.balance_id IS NULL";
+        
+        $stmt = $conn->query($sql);
+        $missingBalances = $stmt->fetchAll(PDO::FETCH_ASSOC);
+        
+        $createdCount = 0;
+        
+        // Insert missing leave balance records with gender restrictions
+        foreach ($missingBalances as $balance) {
+            $employeeGender = $balance['gender'];
+            $leaveTypeName = $balance['leave_type_name'];
+            
+            // Apply gender-based restrictions
+            $shouldCreate = true;
+            
+            if ($leaveTypeName === 'Maternity Leave' && $employeeGender !== 'Female') {
+                $shouldCreate = false;
+                error_log("Skipping Maternity Leave for non-female employee: {$balance['employee_id']} (Gender: $employeeGender)");
+            }
+            
+            if ($leaveTypeName === 'Paternity Leave' && $employeeGender !== 'Male') {
+                $shouldCreate = false;
+                error_log("Skipping Paternity Leave for non-male employee: {$balance['employee_id']} (Gender: $employeeGender)");
+            }
+            
+            if ($shouldCreate) {
+                $insertSql = "INSERT INTO leave_balances (employee_id, leave_type_id, year, total_leaves, leaves_taken, leaves_pending, leaves_remaining) 
+                             VALUES (?, ?, ?, ?, 0, 0, ?)";
+                $insertStmt = $conn->prepare($insertSql);
+                $insertStmt->execute([
+                    $balance['employee_id'],
+                    $balance['leave_type_id'],
+                    date('Y'),
+                    $balance['default_days'],
+                    $balance['default_days']
+                ]);
+                $createdCount++;
+            }
+        }
+        
+        return $createdCount;
+    } catch (PDOException $e) {
+        error_log("ensureEmployeeLeaveBalances error: " . $e->getMessage());
+        return 0;
+    }
+}
+
+// Function to clean up leave balance records that violate gender restrictions
+function cleanupGenderViolations() {
+    global $conn;
+    try {
+        // Remove maternity leave records for non-female employees
+        $sql = "DELETE lb FROM leave_balances lb
+                JOIN employee_profiles ep ON lb.employee_id = ep.employee_id
+                JOIN personal_information pi ON ep.personal_info_id = pi.personal_info_id
+                JOIN leave_types lt ON lb.leave_type_id = lt.leave_type_id
+                WHERE lt.leave_type_name = 'Maternity Leave' AND pi.gender != 'Female'";
+        
+        $stmt = $conn->prepare($sql);
+        $stmt->execute();
+        $maternityRemoved = $stmt->rowCount();
+        
+        // Remove paternity leave records for non-male employees
+        $sql = "DELETE lb FROM leave_balances lb
+                JOIN employee_profiles ep ON lb.employee_id = ep.employee_id
+                JOIN personal_information pi ON ep.personal_info_id = pi.personal_info_id
+                JOIN leave_types lt ON lb.leave_type_id = lt.leave_type_id
+                WHERE lt.leave_type_name = 'Paternity Leave' AND pi.gender != 'Male'";
+        
+        $stmt = $conn->prepare($sql);
+        $stmt->execute();
+        $paternityRemoved = $stmt->rowCount();
+        
+        $totalRemoved = $maternityRemoved + $paternityRemoved;
+        
+        if ($totalRemoved > 0) {
+            error_log("Cleaned up $totalRemoved gender-violating leave balance records ($maternityRemoved maternity, $paternityRemoved paternity)");
+        }
+        
+        return $totalRemoved;
+    } catch (PDOException $e) {
+        error_log("cleanupGenderViolations error: " . $e->getMessage());
+        return 0;
+    }
+}
+
+// Function to validate leave requests based on gender
+function validateLeaveRequestByGender($employee_id, $leave_type_id) {
+    global $conn;
+    try {
+        // Get employee gender and leave type name
+        $sql = "SELECT pi.gender, lt.leave_type_name
+                FROM employee_profiles ep
+                JOIN personal_information pi ON ep.personal_info_id = pi.personal_info_id
+                JOIN leave_types lt ON lt.leave_type_id = ?
+                WHERE ep.employee_id = ?";
+        
+        $stmt = $conn->prepare($sql);
+        $stmt->execute([$leave_type_id, $employee_id]);
+        $result = $stmt->fetch(PDO::FETCH_ASSOC);
+        
+        if (!$result) {
+            return ['valid' => false, 'message' => 'Employee or leave type not found.'];
+        }
+        
+        $employeeGender = $result['gender'];
+        $leaveTypeName = $result['leave_type_name'];
+        
+        // Check gender restrictions
+        if ($leaveTypeName === 'Maternity Leave' && $employeeGender !== 'Female') {
+            return [
+                'valid' => false, 
+                'message' => 'Maternity leave is only available for female employees. Your gender is recorded as: ' . $employeeGender
+            ];
+        }
+        
+        if ($leaveTypeName === 'Paternity Leave' && $employeeGender !== 'Male') {
+            return [
+                'valid' => false, 
+                'message' => 'Paternity leave is only available for male employees. Your gender is recorded as: ' . $employeeGender
+            ];
+        }
+        
+        return ['valid' => true, 'message' => 'Leave request is valid.'];
+        
+    } catch (PDOException $e) {
+        error_log("validateLeaveRequestByGender error: " . $e->getMessage());
+        return ['valid' => false, 'message' => 'Error validating leave request. Please contact administrator.'];
+    }
+}
+
+// Function to get leave types appropriate for an employee's gender
+function getLeaveTypesForEmployee($employee_id) {
+    global $conn;
+    try {
+        // Get employee gender
+        $sql = "SELECT pi.gender
+                FROM employee_profiles ep
+                JOIN personal_information pi ON ep.personal_info_id = pi.personal_info_id
+                WHERE ep.employee_id = ?";
+
+        $stmt = $conn->prepare($sql);
+        $stmt->execute([$employee_id]);
+        $result = $stmt->fetch(PDO::FETCH_ASSOC);
+
+        if (!$result) {
+            return [];
+        }
+
+        $employeeGender = $result['gender'];
+
+        // Get all leave types with gender restrictions
+        $sql = "SELECT * FROM leave_types ORDER BY leave_type_name";
+        $stmt = $conn->query($sql);
+        $allLeaveTypes = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+        $appropriateLeaveTypes = [];
+
+        foreach ($allLeaveTypes as $leaveType) {
+            $leaveTypeName = $leaveType['leave_type_name'];
+            $shouldInclude = true;
+
+            // Apply gender restrictions
+            if ($leaveTypeName === 'Maternity Leave' && $employeeGender !== 'Female') {
+                $shouldInclude = false;
+            }
+
+            if ($leaveTypeName === 'Paternity Leave' && $employeeGender !== 'Male') {
+                $shouldInclude = false;
+            }
+
+            if ($shouldInclude) {
+                $appropriateLeaveTypes[] = $leaveType;
+            }
+        }
+
+        return $appropriateLeaveTypes;
+
+    } catch (PDOException $e) {
+        error_log("getLeaveTypesForEmployee error: " . $e->getMessage());
+        return [];
+    }
+}
+
+// Function to get employee hire date
+function getEmployeeHireDate($employeeId) {
+    global $conn;
+    try {
+        $sql = "SELECT hire_date FROM employee_profiles WHERE employee_id = ?";
+        $stmt = $conn->prepare($sql);
+        $stmt->execute([$employeeId]);
+        $result = $stmt->fetch(PDO::FETCH_ASSOC);
+        return $result ? $result['hire_date'] : null;
+    } catch (PDOException $e) {
+        return null;
+    }
 }
 ?>
