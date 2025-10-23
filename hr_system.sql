@@ -13,7 +13,10 @@ CREATE TABLE `attendance` (
   PRIMARY KEY (`attendance_id`),
   KEY `employee_id` (`employee_id`),
   CONSTRAINT `attendance_ibfk_1` FOREIGN KEY (`employee_id`) REFERENCES `employee_profiles` (`employee_id`) ON DELETE CASCADE
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+INSERT INTO attendance (attendance_id,employee_id,attendance_date,clock_in,clock_out,status,working_hours,overtime_hours,notes,created_at,updated_at) VALUES
+('1','15','2025-10-21','2025-10-21 18:18:38','2025-10-21 18:18:38','Present','0.00','0.00','','2025-10-21 18:18:38','2025-10-21 18:18:38');
 
 CREATE TABLE `attendance_summary` (
   `summary_id` int(11) NOT NULL AUTO_INCREMENT,
@@ -50,7 +53,7 @@ CREATE TABLE `audit_logs` (
   KEY `record_id` (`record_id`),
   KEY `created_at` (`created_at`),
   CONSTRAINT `audit_logs_ibfk_1` FOREIGN KEY (`user_id`) REFERENCES `users` (`user_id`) ON DELETE SET NULL
-) ENGINE=InnoDB AUTO_INCREMENT=21 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=33 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 INSERT INTO audit_logs (audit_id,user_id,action,table_name,record_id,old_values,new_values,ip_address,user_agent,created_at) VALUES
 ('1','1','Test Action','test_table','123','','{\"test\":\"data\"}','','','2025-10-08 23:05:01'),
@@ -72,7 +75,19 @@ INSERT INTO audit_logs (audit_id,user_id,action,table_name,record_id,old_values,
 ('17','17','Leave Request Submitted','leave_requests','11','','{\"leave_type_id\":\"3\",\"start_date\":\"2025-10-16\",\"end_date\":\"2025-10-23\",\"total_days\":8,\"reason\":\"test\"}','::1','Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.0.0 Safari/537.36','2025-10-16 15:29:11'),
 ('18','2','Leave request #11 rejected by user ID 2','leave_requests','11','','\"\"','::1','Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.0.0 Safari/537.36','2025-10-16 15:29:27'),
 ('19','2','Leave request #10 rejected by user ID 2','leave_requests','10','','\"\"','::1','Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.0.0 Safari/537.36','2025-10-16 15:29:28'),
-('20','2','Leave request #9 rejected by user ID 2','leave_requests','9','','\"\"','::1','Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.0.0 Safari/537.36','2025-10-16 15:29:29');
+('20','2','Leave request #9 rejected by user ID 2','leave_requests','9','','\"\"','::1','Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.0.0 Safari/537.36','2025-10-16 15:29:29'),
+('21','17','Leave Request Submitted','leave_requests','2','','{\"leave_type_id\":\"2\",\"start_date\":\"2025-10-24\",\"end_date\":\"2025-10-31\",\"total_days\":8,\"reason\":\"test\"}','::1','Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.0.0 Safari/537.36','2025-10-24 00:20:14'),
+('22','2','Leave request #2 rejected by user ID 2','leave_requests','2','','\"\"','::1','Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.0.0 Safari/537.36','2025-10-24 00:20:36'),
+('23','2','Leave request #1 rejected by user ID 2','leave_requests','1','','\"\"','::1','Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.0.0 Safari/537.36','2025-10-24 00:20:37'),
+('24','17','Leave Request Submitted','leave_requests','3','','{\"leave_type_id\":\"2\",\"start_date\":\"2025-10-24\",\"end_date\":\"2025-10-25\",\"total_days\":2,\"reason\":\"test\"}','::1','Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.0.0 Safari/537.36','2025-10-24 00:44:06'),
+('25','2','Leave request #3 approved by user ID 2','leave_requests','3','','\"\"','::1','Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.0.0 Safari/537.36','2025-10-24 00:44:22'),
+('26','6','Leave Request Submitted','leave_requests','4','','{\"leave_type_id\":\"5\",\"start_date\":\"2025-10-24\",\"end_date\":\"2025-10-25\",\"total_days\":2,\"reason\":\"test\"}','::1','Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.0.0 Safari/537.36','2025-10-24 01:27:00'),
+('27','2','Leave request #4 rejected by user ID 2','leave_requests','4','','\"\"','::1','Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.0.0 Safari/537.36','2025-10-24 01:41:05'),
+('28','6','Leave Request Submitted','leave_requests','6','','{\"leave_type_id\":\"4\",\"start_date\":\"2025-10-24\",\"end_date\":\"2025-10-25\",\"total_days\":2,\"reason\":\"test\"}','::1','Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.0.0 Safari/537.36','2025-10-24 01:49:41'),
+('29','6','Leave Request Submitted','leave_requests','7','','{\"leave_type_id\":\"5\",\"start_date\":\"2025-10-24\",\"end_date\":\"2025-10-25\",\"total_days\":2,\"reason\":\"e\"}','::1','Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.0.0 Safari/537.36','2025-10-24 01:58:29'),
+('30','2','Leave request #6 rejected by user ID 2','leave_requests','6','','\"\"','::1','Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.0.0 Safari/537.36','2025-10-24 01:58:51'),
+('31','2','Leave request #5 rejected by user ID 2','leave_requests','5','','\"\"','::1','Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.0.0 Safari/537.36','2025-10-24 01:58:52'),
+('32','2','Leave request #7 approved by user ID 2','leave_requests','7','','\"\"','::1','Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.0.0 Safari/537.36','2025-10-24 01:59:03');
 
 CREATE TABLE `benefits_plans` (
   `benefit_plan_id` int(11) NOT NULL AUTO_INCREMENT,
@@ -250,7 +265,7 @@ CREATE TABLE `document_management` (
   PRIMARY KEY (`document_id`),
   KEY `employee_id` (`employee_id`),
   CONSTRAINT `document_management_ibfk_1` FOREIGN KEY (`employee_id`) REFERENCES `employee_profiles` (`employee_id`) ON DELETE CASCADE
-) ENGINE=InnoDB AUTO_INCREMENT=33 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=36 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 INSERT INTO document_management (document_id,employee_id,document_type,document_name,file_path,upload_date,expiry_date,document_status,notes,created_at,updated_at) VALUES
 ('1','1','','Appointment Order - Municipal Treasurer','/documents/appointments/maria_santos_appointment.pdf','2025-09-09 10:00:16','','Active','Appointed by Mayor per Civil Service guidelines','2025-09-09 10:00:16','2025-09-09 10:00:16'),
@@ -284,7 +299,10 @@ INSERT INTO document_management (document_id,employee_id,document_type,document_
 ('29','14','Contract','Employment Contract - Driver','/documents/contracts/eduardo_hernandez_contract.pdf','2025-09-09 10:00:16','2025-01-10','Active','Municipal vehicle operator','2025-09-09 10:00:16','2025-09-09 10:00:16'),
 ('30','14','Certificate','Professional Driver License','/documents/licenses/eduardo_hernandez_driver_license.pdf','2025-09-09 10:00:16','2025-12-31','Active','Professional driver\'s license','2025-09-09 10:00:16','2025-09-09 10:00:16'),
 ('31','15','Contract','Employment Contract - Security Personnel','/documents/contracts/rosario_gonzales_contract.pdf','2025-09-09 10:00:16','2024-11-05','Active','Municipal facility security','2025-09-09 10:00:16','2025-09-09 10:00:16'),
-('32','15','Certificate','Security Guard License','/documents/licenses/rosario_gonzales_security_license.pdf','2025-09-09 10:00:16','2025-08-31','Active','SOSIA security guard license','2025-09-09 10:00:16','2025-09-09 10:00:16');
+('32','15','Certificate','Security Guard License','/documents/licenses/rosario_gonzales_security_license.pdf','2025-09-09 10:00:16','2025-08-31','Active','SOSIA security guard license','2025-09-09 10:00:16','2025-09-09 10:00:16'),
+('33','4','','Leave Request Document - Oct 24, 2025 to Oct 25, 2025','uploads/leave_documents/68fa65648330a_white.png','2025-10-24 01:27:00','','Active','Leave request document for test','2025-10-24 01:27:00','2025-10-24 01:27:00'),
+('34','4','','Leave Request Document - Oct 24, 2025 to Oct 25, 2025','uploads/leave_documents/68fa6ab5abdb7_ltfrbsv1.png','2025-10-24 01:49:41','','Active','Leave request document for test','2025-10-24 01:49:41','2025-10-24 01:49:41'),
+('35','4','','Leave Request Document - Oct 24, 2025 to Oct 25, 2025','uploads/leave_documents/68fa6cc560371_ltfrbhotlineredg.png','2025-10-24 01:58:29','','Active','Leave request document for e','2025-10-24 01:58:29','2025-10-24 01:58:29');
 
 CREATE TABLE `employee_benefits` (
   `benefit_id` int(11) NOT NULL AUTO_INCREMENT,
@@ -372,6 +390,7 @@ CREATE TABLE `employee_profiles` (
   `employee_number` varchar(20) NOT NULL,
   `hire_date` date NOT NULL,
   `employment_status` enum('Full-time','Part-time','Contract','Intern','Terminated') NOT NULL,
+  `status` enum('Active','Inactive','On Leave') DEFAULT 'Active',
   `current_salary` decimal(10,2) NOT NULL,
   `work_email` varchar(100) DEFAULT NULL,
   `work_phone` varchar(20) DEFAULT NULL,
@@ -386,24 +405,25 @@ CREATE TABLE `employee_profiles` (
   KEY `job_role_id` (`job_role_id`),
   CONSTRAINT `employee_profiles_ibfk_1` FOREIGN KEY (`personal_info_id`) REFERENCES `personal_information` (`personal_info_id`) ON DELETE SET NULL,
   CONSTRAINT `employee_profiles_ibfk_2` FOREIGN KEY (`job_role_id`) REFERENCES `job_roles` (`job_role_id`) ON DELETE SET NULL
-) ENGINE=InnoDB AUTO_INCREMENT=16 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=17 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
-INSERT INTO employee_profiles (employee_id,personal_info_id,job_role_id,employee_number,hire_date,employment_status,current_salary,work_email,work_phone,location,remote_work,created_at,updated_at) VALUES
-('1','1','4','MUN001','2019-07-01','Full-time','65000.00','maria.santos@municipality.gov.ph','034-123-0001','City Hall - 1st Floor','0','2025-09-09 10:00:16','2025-09-09 10:00:16'),
-('2','2','8','MUN002','2018-06-15','Full-time','75000.00','roberto.cruz@municipality.gov.ph','034-123-0002','Engineering Building','0','2025-09-09 10:00:16','2025-09-09 10:00:16'),
-('3','3','17','MUN003','2020-01-20','Full-time','42000.00','jennifer.reyes@municipality.gov.ph','034-123-0003','Municipal Health Office','0','2025-09-09 10:00:16','2025-09-09 10:00:16'),
-('4','4','21','MUN004','2019-03-10','Full-time','38000.00','antonio.garcia@municipality.gov.ph','034-123-0004','Municipal Engineer\'s Office','0','2025-09-09 10:00:16','2025-09-09 10:00:16'),
-('5','5','20','MUN005','2021-09-05','Full-time','45000.00','lisa.mendoza@municipality.gov.ph','034-123-0005','Municipal Social Welfare & Development Office','0','2025-09-09 10:00:16','2025-09-09 10:00:16'),
-('6','6','25','MUN006','2020-11-12','Full-time','28000.00','michael.torres@municipality.gov.ph','034-123-0006','Municipal Accountant\'s Office','0','2025-09-09 10:00:16','2025-09-09 10:00:16'),
-('7','7','27','MUN007','2022-02-28','Full-time','30000.00','carmen.delacruz@municipality.gov.ph','034-123-0007','Municipal Civil Registrar\'s Office','0','2025-09-09 10:00:16','2025-09-09 10:00:16'),
-('8','8','32','MUN008','2021-05-18','Full-time','22000.00','ricardo.villanueva@municipality.gov.ph','034-123-0008','General Services Office','0','2025-09-09 10:00:16','2025-09-09 10:00:16'),
-('9','9','28','MUN009','2020-09-10','Full-time','32000.00','sandra.pascual@municipality.gov.ph','034-123-0009','Municipal Treasurer\'s Office','0','2025-09-09 10:00:16','2025-09-09 10:00:16'),
-('10','10','29','MUN010','2019-12-01','Full-time','35000.00','jose.ramos@municipality.gov.ph','034-123-0010','Municipal Treasurer\'s Office','0','2025-09-09 10:00:16','2025-09-09 10:00:16'),
-('11','11','26','MUN011','2022-04-15','Full-time','28000.00','ana.morales@municipality.gov.ph','034-123-0011','Municipal Human Resource & Administrative Office','0','2025-09-09 10:00:16','2025-09-09 10:00:16'),
-('12','12','19','MUN012','2021-08-20','Full-time','40000.00','pablo.fernandez@municipality.gov.ph','034-123-0012','Municipal Agriculture Office','0','2025-09-09 10:00:16','2025-09-09 10:00:16'),
-('13','13','18','MUN013','2020-06-30','Full-time','42000.00','grace.lopez@municipality.gov.ph','034-123-0013','Municipal Health Office','0','2025-09-09 10:00:16','2025-09-09 10:00:16'),
-('14','14','31','MUN014','2022-01-10','Full-time','25000.00','eduardo.hernandez@municipality.gov.ph','034-123-0014','General Services Office','0','2025-09-09 10:00:16','2025-09-09 10:00:16'),
-('15','15','33','MUN015','2021-11-05','Full-time','24000.00','rosario.gonzales@municipality.gov.ph','034-123-0015','General Services Office','0','2025-09-09 10:00:16','2025-09-09 10:00:16');
+INSERT INTO employee_profiles (employee_id,personal_info_id,job_role_id,employee_number,hire_date,employment_status,status,current_salary,work_email,work_phone,location,remote_work,created_at,updated_at) VALUES
+('1','1','4','MUN001','2019-07-01','Full-time','Active','65000.00','maria.santos@municipality.gov.ph','034-123-0001','City Hall - 1st Floor','0','2025-09-09 10:00:16','2025-09-09 10:00:16'),
+('2','2','8','MUN002','2018-06-15','Full-time','Active','75000.00','roberto.cruz@municipality.gov.ph','034-123-0002','Engineering Building','0','2025-09-09 10:00:16','2025-09-09 10:00:16'),
+('3','3','17','MUN003','2020-01-20','Full-time','Active','42000.00','jennifer.reyes@municipality.gov.ph','034-123-0003','Municipal Health Office','0','2025-09-09 10:00:16','2025-09-09 10:00:16'),
+('4','4','21','MUN004','2019-03-10','Full-time','Active','38000.00','antonio.garcia@municipality.gov.ph','034-123-0004','Municipal Engineer\'s Office','0','2025-09-09 10:00:16','2025-09-09 10:00:16'),
+('5','5','20','MUN005','2021-09-05','Full-time','Active','45000.00','lisa.mendoza@municipality.gov.ph','034-123-0005','Municipal Social Welfare & Development Office','0','2025-09-09 10:00:16','2025-09-09 10:00:16'),
+('6','6','25','MUN006','2020-11-12','Full-time','Active','28000.00','michael.torres@municipality.gov.ph','034-123-0006','Municipal Accountant\'s Office','0','2025-09-09 10:00:16','2025-09-09 10:00:16'),
+('7','7','27','MUN007','2022-02-28','Full-time','Active','30000.00','carmen.delacruz@municipality.gov.ph','034-123-0007','Municipal Civil Registrar\'s Office','0','2025-09-09 10:00:16','2025-09-09 10:00:16'),
+('8','8','32','MUN008','2021-05-18','Full-time','Active','22000.00','ricardo.villanueva@municipality.gov.ph','034-123-0008','General Services Office','0','2025-09-09 10:00:16','2025-09-09 10:00:16'),
+('9','9','28','MUN009','2020-09-10','Full-time','Active','32000.00','sandra.pascual@municipality.gov.ph','034-123-0009','Municipal Treasurer\'s Office','0','2025-09-09 10:00:16','2025-09-09 10:00:16'),
+('10','10','29','MUN010','2019-12-01','Full-time','Active','35000.00','jose.ramos@municipality.gov.ph','034-123-0010','Municipal Treasurer\'s Office','0','2025-09-09 10:00:16','2025-09-09 10:00:16'),
+('11','11','26','MUN011','2022-04-15','Full-time','Active','28000.00','ana.morales@municipality.gov.ph','034-123-0011','Municipal Human Resource & Administrative Office','0','2025-09-09 10:00:16','2025-09-09 10:00:16'),
+('12','12','19','MUN012','2021-08-20','Full-time','Active','40000.00','pablo.fernandez@municipality.gov.ph','034-123-0012','Municipal Agriculture Office','0','2025-09-09 10:00:16','2025-09-09 10:00:16'),
+('13','13','18','MUN013','2020-06-30','Full-time','Active','42000.00','grace.lopez@municipality.gov.ph','034-123-0013','Municipal Health Office','0','2025-09-09 10:00:16','2025-09-09 10:00:16'),
+('14','14','31','MUN014','2022-01-10','Full-time','Active','25000.00','eduardo.hernandez@municipality.gov.ph','034-123-0014','General Services Office','0','2025-09-09 10:00:16','2025-09-09 10:00:16'),
+('15','15','33','MUN015','2021-11-05','Full-time','Active','24000.00','rosario.gonzales@municipality.gov.ph','034-123-0015','General Services Office','0','2025-09-09 10:00:16','2025-09-09 10:00:16'),
+('16','','','EMP001','2023-01-01','Full-time','Active','50000.00','john.doe@municipality.gov.ph','','City Hall','0','2025-10-21 18:10:29','2025-10-21 18:10:29');
 
 CREATE TABLE `employee_resources` (
   `employee_resource_id` int(11) NOT NULL AUTO_INCREMENT,
@@ -432,22 +452,30 @@ CREATE TABLE `employee_shifts` (
   `is_overtime` tinyint(1) DEFAULT 0,
   `created_at` timestamp NOT NULL DEFAULT current_timestamp(),
   `updated_at` timestamp NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp(),
+  `status` enum('Active','Inactive') DEFAULT 'Active',
   PRIMARY KEY (`employee_shift_id`),
   KEY `employee_id` (`employee_id`),
   KEY `shift_id` (`shift_id`),
   CONSTRAINT `employee_shifts_ibfk_1` FOREIGN KEY (`employee_id`) REFERENCES `employee_profiles` (`employee_id`) ON DELETE CASCADE,
   CONSTRAINT `employee_shifts_ibfk_2` FOREIGN KEY (`shift_id`) REFERENCES `shifts` (`shift_id`) ON DELETE CASCADE
-) ENGINE=InnoDB AUTO_INCREMENT=9 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=16 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
-INSERT INTO employee_shifts (employee_shift_id,employee_id,shift_id,assigned_date,is_overtime,created_at,updated_at) VALUES
-('1','1','1','2024-01-15','0','2025-09-14 15:13:53','2025-09-14 15:13:53'),
-('2','2','2','2024-01-15','1','2025-09-14 15:13:53','2025-09-14 15:13:53'),
-('3','3','1','2024-01-16','0','2025-09-14 15:13:53','2025-09-14 15:13:53'),
-('4','4','3','2024-01-16','0','2025-09-14 15:13:53','2025-09-14 15:13:53'),
-('5','5','1','2024-01-17','0','2025-09-14 15:13:53','2025-09-14 15:13:53'),
-('6','6','2','2024-01-17','1','2025-09-14 15:13:53','2025-09-14 15:13:53'),
-('7','7','1','2024-01-18','0','2025-09-14 15:13:53','2025-09-14 15:13:53'),
-('8','8','4','2024-01-18','0','2025-09-14 15:13:53','2025-09-14 15:13:53');
+INSERT INTO employee_shifts (employee_shift_id,employee_id,shift_id,assigned_date,is_overtime,created_at,updated_at,status) VALUES
+('1','1','1','2024-01-15','0','2025-09-14 15:13:53','2025-09-14 15:13:53','Active'),
+('2','2','2','2024-01-15','1','2025-09-14 15:13:53','2025-09-14 15:13:53','Active'),
+('3','3','1','2024-01-16','0','2025-09-14 15:13:53','2025-09-14 15:13:53','Active'),
+('4','4','3','2024-01-16','0','2025-09-14 15:13:53','2025-10-24 02:06:22','Inactive'),
+('5','5','1','2024-01-17','0','2025-09-14 15:13:53','2025-09-14 15:13:53','Active'),
+('6','6','2','2024-01-17','1','2025-09-14 15:13:53','2025-09-14 15:13:53','Active'),
+('7','7','1','2024-01-18','0','2025-09-14 15:13:53','2025-09-14 15:13:53','Active'),
+('8','8','4','2024-01-18','0','2025-09-14 15:13:53','2025-09-14 15:13:53','Active'),
+('9','11','2','2022-04-15','0','2025-10-24 01:07:42','2025-10-24 01:07:42','Active'),
+('10','14','2','2022-01-10','0','2025-10-24 01:07:42','2025-10-24 01:07:42','Active'),
+('11','13','2','2020-06-30','0','2025-10-24 01:07:42','2025-10-24 01:07:42','Active'),
+('12','10','2','2019-12-01','0','2025-10-24 01:07:42','2025-10-24 01:07:42','Active'),
+('13','12','2','2021-08-20','0','2025-10-24 01:07:42','2025-10-24 01:07:42','Active'),
+('14','15','2','2021-11-05','0','2025-10-24 01:07:42','2025-10-24 01:07:42','Active'),
+('15','9','2','2020-09-10','0','2025-10-24 01:07:42','2025-10-24 01:07:42','Active');
 
 CREATE TABLE `employee_skills` (
   `employee_skill_id` int(11) NOT NULL AUTO_INCREMENT,
@@ -820,7 +848,7 @@ CREATE TABLE `leave_balances` (
   KEY `leave_type_id` (`leave_type_id`),
   CONSTRAINT `leave_balances_ibfk_1` FOREIGN KEY (`employee_id`) REFERENCES `employee_profiles` (`employee_id`) ON DELETE CASCADE,
   CONSTRAINT `leave_balances_ibfk_2` FOREIGN KEY (`leave_type_id`) REFERENCES `leave_types` (`leave_type_id`) ON DELETE CASCADE
-) ENGINE=InnoDB AUTO_INCREMENT=33 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=113 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 INSERT INTO leave_balances (balance_id,employee_id,leave_type_id,year,total_leaves,leaves_taken,leaves_pending,leaves_remaining,last_updated,created_at,updated_at) VALUES
 ('17','1','1','2024','15.00','3.00','0.00','12.00','','2025-09-14 15:13:53','2025-09-14 15:13:53'),
@@ -834,11 +862,74 @@ INSERT INTO leave_balances (balance_id,employee_id,leave_type_id,year,total_leav
 ('25','4','2','2024','10.00','2.00','0.00','8.00','','2025-09-14 15:13:53','2025-09-14 15:13:53'),
 ('26','5','2','2024','10.00','1.00','0.00','9.00','','2025-09-14 15:13:53','2025-09-14 15:13:53'),
 ('27','1','3','2024','60.00','0.00','0.00','60.00','','2025-09-14 15:13:53','2025-09-14 15:13:53'),
-('28','2','3','2024','60.00','0.00','0.00','60.00','','2025-09-14 15:13:53','2025-09-14 15:13:53'),
 ('29','3','3','2024','60.00','0.00','0.00','60.00','','2025-09-14 15:13:53','2025-09-14 15:13:53'),
-('30','1','4','2024','7.00','0.00','0.00','7.00','','2025-09-14 15:13:53','2025-09-14 15:13:53'),
 ('31','2','4','2024','7.00','0.00','0.00','7.00','','2025-09-14 15:13:53','2025-09-14 15:13:53'),
-('32','4','4','2024','7.00','0.00','0.00','7.00','','2025-09-14 15:13:53','2025-09-14 15:13:53');
+('32','4','4','2024','7.00','0.00','0.00','7.00','','2025-09-14 15:13:53','2025-09-14 15:13:53'),
+('33','16','1','2025','15.00','0.00','0.00','15.00','','2025-10-24 00:22:19','2025-10-24 00:22:19'),
+('34','16','2','2025','10.00','0.00','0.00','10.00','','2025-10-24 00:22:19','2025-10-24 00:22:19'),
+('35','16','3','2025','60.00','0.00','0.00','60.00','','2025-10-24 00:22:19','2025-10-24 00:22:19'),
+('36','16','4','2025','7.00','0.00','0.00','7.00','','2025-10-24 00:22:19','2025-10-24 00:22:19'),
+('37','16','5','2025','5.00','0.00','0.00','5.00','','2025-10-24 00:22:19','2025-10-24 00:22:19'),
+('38','1','1','2025','15.00','0.00','0.00','15.00','','2025-10-24 00:22:19','2025-10-24 00:22:19'),
+('39','1','2','2025','10.00','0.00','0.00','10.00','','2025-10-24 00:22:19','2025-10-24 00:22:19'),
+('40','1','3','2025','60.00','0.00','0.00','60.00','','2025-10-24 00:22:19','2025-10-24 00:22:19'),
+('42','1','5','2025','5.00','0.00','0.00','5.00','','2025-10-24 00:22:19','2025-10-24 00:22:19'),
+('43','2','1','2025','15.00','0.00','0.00','15.00','','2025-10-24 00:22:19','2025-10-24 00:22:19'),
+('44','2','2','2025','10.00','0.00','0.00','10.00','','2025-10-24 00:22:19','2025-10-24 00:22:19'),
+('46','2','4','2025','7.00','0.00','0.00','7.00','','2025-10-24 00:22:19','2025-10-24 00:22:19'),
+('47','2','5','2025','5.00','0.00','0.00','5.00','','2025-10-24 00:22:19','2025-10-24 00:22:19'),
+('48','3','1','2025','15.00','0.00','0.00','15.00','','2025-10-24 00:22:19','2025-10-24 00:22:19'),
+('49','3','2','2025','10.00','0.00','0.00','10.00','','2025-10-24 00:22:19','2025-10-24 00:22:19'),
+('50','3','3','2025','60.00','0.00','0.00','60.00','','2025-10-24 00:22:19','2025-10-24 00:22:19'),
+('52','3','5','2025','5.00','0.00','0.00','5.00','','2025-10-24 00:22:19','2025-10-24 00:22:19'),
+('53','4','1','2025','15.00','0.00','0.00','15.00','','2025-10-24 00:22:19','2025-10-24 00:22:19'),
+('54','4','2','2025','10.00','0.00','0.00','10.00','','2025-10-24 00:22:19','2025-10-24 00:22:19'),
+('56','4','4','2025','7.00','0.00','0.00','7.00','','2025-10-24 00:22:19','2025-10-24 00:22:19'),
+('57','4','5','2025','5.00','0.00','0.00','5.00','','2025-10-24 00:22:19','2025-10-24 00:22:19'),
+('58','5','1','2025','15.00','0.00','0.00','15.00','','2025-10-24 00:22:19','2025-10-24 00:22:19'),
+('59','5','2','2025','10.00','0.00','0.00','10.00','','2025-10-24 00:22:19','2025-10-24 00:22:19'),
+('60','5','3','2025','60.00','0.00','0.00','60.00','','2025-10-24 00:22:19','2025-10-24 00:22:19'),
+('62','5','5','2025','5.00','0.00','0.00','5.00','','2025-10-24 00:22:19','2025-10-24 00:22:19'),
+('63','6','1','2025','15.00','0.00','0.00','15.00','','2025-10-24 00:22:19','2025-10-24 00:22:19'),
+('64','6','2','2025','10.00','0.00','0.00','10.00','','2025-10-24 00:22:19','2025-10-24 00:22:19'),
+('66','6','4','2025','7.00','0.00','0.00','7.00','','2025-10-24 00:22:19','2025-10-24 00:22:19'),
+('67','6','5','2025','5.00','0.00','0.00','5.00','','2025-10-24 00:22:19','2025-10-24 00:22:19'),
+('68','7','1','2025','15.00','0.00','0.00','15.00','','2025-10-24 00:22:19','2025-10-24 00:22:19'),
+('69','7','2','2025','10.00','0.00','0.00','10.00','','2025-10-24 00:22:19','2025-10-24 00:22:19'),
+('70','7','3','2025','60.00','0.00','0.00','60.00','','2025-10-24 00:22:19','2025-10-24 00:22:19'),
+('72','7','5','2025','5.00','0.00','0.00','5.00','','2025-10-24 00:22:19','2025-10-24 00:22:19'),
+('73','8','1','2025','15.00','0.00','0.00','15.00','','2025-10-24 00:22:19','2025-10-24 00:22:19'),
+('74','8','2','2025','10.00','0.00','0.00','10.00','','2025-10-24 00:22:19','2025-10-24 00:22:19'),
+('76','8','4','2025','7.00','0.00','0.00','7.00','','2025-10-24 00:22:19','2025-10-24 00:22:19'),
+('77','8','5','2025','5.00','0.00','0.00','5.00','','2025-10-24 00:22:19','2025-10-24 00:22:19'),
+('78','9','1','2025','15.00','0.00','0.00','15.00','','2025-10-24 00:22:19','2025-10-24 00:22:19'),
+('79','9','2','2025','10.00','0.00','0.00','10.00','','2025-10-24 00:22:19','2025-10-24 00:22:19'),
+('80','9','3','2025','60.00','0.00','0.00','60.00','','2025-10-24 00:22:19','2025-10-24 00:22:19'),
+('82','9','5','2025','5.00','0.00','0.00','5.00','','2025-10-24 00:22:19','2025-10-24 00:22:19'),
+('83','10','1','2025','15.00','0.00','0.00','15.00','','2025-10-24 00:22:19','2025-10-24 00:22:19'),
+('84','10','2','2025','10.00','0.00','0.00','10.00','','2025-10-24 00:22:19','2025-10-24 00:22:19'),
+('86','10','4','2025','7.00','0.00','0.00','7.00','','2025-10-24 00:22:19','2025-10-24 00:22:19'),
+('87','10','5','2025','5.00','0.00','0.00','5.00','','2025-10-24 00:22:19','2025-10-24 00:22:19'),
+('88','11','1','2025','15.00','0.00','0.00','15.00','','2025-10-24 00:22:19','2025-10-24 00:22:19'),
+('89','11','2','2025','10.00','0.00','0.00','10.00','','2025-10-24 00:22:19','2025-10-24 00:22:19'),
+('90','11','3','2025','60.00','0.00','0.00','60.00','','2025-10-24 00:22:19','2025-10-24 00:22:19'),
+('92','11','5','2025','5.00','0.00','0.00','5.00','','2025-10-24 00:22:19','2025-10-24 00:22:19'),
+('93','12','1','2025','15.00','0.00','0.00','15.00','','2025-10-24 00:22:19','2025-10-24 00:22:19'),
+('94','12','2','2025','10.00','0.00','0.00','10.00','','2025-10-24 00:22:19','2025-10-24 00:22:19'),
+('96','12','4','2025','7.00','0.00','0.00','7.00','','2025-10-24 00:22:19','2025-10-24 00:22:19'),
+('97','12','5','2025','5.00','0.00','0.00','5.00','','2025-10-24 00:22:19','2025-10-24 00:22:19'),
+('98','13','1','2025','15.00','0.00','0.00','15.00','','2025-10-24 00:22:19','2025-10-24 00:22:19'),
+('99','13','2','2025','10.00','0.00','0.00','10.00','','2025-10-24 00:22:19','2025-10-24 00:22:19'),
+('100','13','3','2025','60.00','0.00','0.00','60.00','','2025-10-24 00:22:19','2025-10-24 00:22:19'),
+('102','13','5','2025','5.00','0.00','0.00','5.00','','2025-10-24 00:22:19','2025-10-24 00:22:19'),
+('103','14','1','2025','15.00','0.00','0.00','15.00','','2025-10-24 00:22:19','2025-10-24 00:22:19'),
+('104','14','2','2025','10.00','0.00','0.00','10.00','','2025-10-24 00:22:19','2025-10-24 00:22:19'),
+('106','14','4','2025','7.00','0.00','0.00','7.00','','2025-10-24 00:22:19','2025-10-24 00:22:19'),
+('107','14','5','2025','5.00','0.00','0.00','5.00','','2025-10-24 00:22:19','2025-10-24 00:22:19'),
+('108','15','1','2025','15.00','0.00','0.00','15.00','','2025-10-24 00:22:19','2025-10-24 00:22:19'),
+('109','15','2','2025','10.00','0.00','0.00','10.00','','2025-10-24 00:22:19','2025-10-24 00:22:19'),
+('110','15','3','2025','60.00','0.00','0.00','60.00','','2025-10-24 00:22:19','2025-10-24 00:22:19'),
+('112','15','5','2025','5.00','0.00','0.00','5.00','','2025-10-24 00:22:19','2025-10-24 00:22:19');
 
 CREATE TABLE `leave_requests` (
   `leave_id` int(11) NOT NULL AUTO_INCREMENT,
@@ -854,12 +945,22 @@ CREATE TABLE `leave_requests` (
   `rejection_reason` text DEFAULT NULL,
   `created_at` timestamp NOT NULL DEFAULT current_timestamp(),
   `updated_at` timestamp NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp(),
+  `document_path` varchar(255) DEFAULT NULL,
   PRIMARY KEY (`leave_id`),
   KEY `employee_id` (`employee_id`),
   KEY `leave_type_id` (`leave_type_id`),
   CONSTRAINT `leave_requests_ibfk_1` FOREIGN KEY (`employee_id`) REFERENCES `employee_profiles` (`employee_id`) ON DELETE CASCADE,
   CONSTRAINT `leave_requests_ibfk_2` FOREIGN KEY (`leave_type_id`) REFERENCES `leave_types` (`leave_type_id`) ON DELETE CASCADE
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=8 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+INSERT INTO leave_requests (leave_id,employee_id,leave_type_id,start_date,end_date,total_days,reason,status,applied_on,approved_on,rejection_reason,created_at,updated_at,document_path) VALUES
+('1','15','1','2025-01-15','2025-01-16','2.00','Test leave request - Fixed version','Rejected','2025-10-24 00:19:30','','','2025-10-24 00:19:30','2025-10-24 00:20:37',''),
+('2','15','2','2025-10-24','2025-10-31','8.00','test','Rejected','2025-10-24 00:20:14','','','2025-10-24 00:20:14','2025-10-24 00:20:36',''),
+('3','15','2','2025-10-24','2025-10-25','2.00','test','Approved','2025-10-24 00:44:06','','','2025-10-24 00:44:06','2025-10-24 00:44:22',''),
+('4','4','5','2025-10-24','2025-10-25','2.00','test','Rejected','2025-10-24 01:27:00','','','2025-10-24 01:27:00','2025-10-24 01:41:05',''),
+('5','1','1','2023-10-01','2023-10-05','5.00','Test leave with document','Rejected','2025-10-24 01:40:11','','','2025-10-24 01:40:11','2025-10-24 01:58:52','uploads/leave_documents/test_doc.pdf'),
+('6','4','4','2025-10-24','2025-10-25','2.00','test','Rejected','2025-10-24 01:49:41','','','2025-10-24 01:49:41','2025-10-24 01:58:51',''),
+('7','4','5','2025-10-24','2025-10-25','2.00','e','Approved','2025-10-24 01:58:29','','','2025-10-24 01:58:29','2025-10-24 01:59:03','uploads/leave_documents/68fa6cc560371_ltfrbhotlineredg.png');
 
 CREATE TABLE `leave_types` (
   `leave_type_id` int(11) NOT NULL AUTO_INCREMENT,
@@ -1070,17 +1171,17 @@ CREATE TABLE `public_holidays` (
   `updated_at` timestamp NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp(),
   PRIMARY KEY (`holiday_id`),
   UNIQUE KEY `holiday_date` (`holiday_date`)
-) ENGINE=InnoDB AUTO_INCREMENT=22 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=43 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 INSERT INTO public_holidays (holiday_id,holiday_date,holiday_name,description,created_at,updated_at) VALUES
 ('1','2025-01-01','New Year\'s Day','Bagong Taon','2025-09-09 10:00:56','2025-09-09 10:00:56'),
 ('2','2025-01-29','Chinese New Year','Chinese New Year','2025-09-09 10:00:56','2025-09-09 10:00:56'),
-('3','2025-04-01','Feast of Ramadhan','Eid???l Fitr','2025-09-09 10:00:56','2025-09-09 10:00:56'),
+('3','2025-04-01','Feast of Ramadhan','Eid’l Fitr','2025-09-09 10:00:56','2025-10-21 18:20:44'),
 ('4','2025-04-09','Day of Valor','Araw ng Kagitingan','2025-09-09 10:00:56','2025-09-09 10:00:56'),
 ('5','2025-04-17','Maundy Thursday','Huwebes Santo','2025-09-09 10:00:57','2025-09-09 10:00:57'),
 ('6','2025-04-18','Good Friday','Biyernes Santo','2025-09-09 10:00:57','2025-09-09 10:00:57'),
 ('7','2025-04-19','Holy Saturday','Sabado de Gloria','2025-09-09 10:00:57','2025-09-09 10:00:57'),
-('8','2025-05-01','Labor Day','Araw ng Paggawa','2025-09-09 10:00:57','2025-09-09 10:00:57'),
+('8','2025-05-01','Labour Day','Araw ng Paggawa','2025-09-09 10:00:57','2025-10-21 18:20:44'),
 ('9','2025-05-12','Midterm Elections','Halalan 2025','2025-09-09 10:00:57','2025-09-09 10:00:57'),
 ('10','2025-06-06','Feast of Sacrifice','Eid\'l Adha','2025-09-09 10:00:57','2025-09-09 10:00:57'),
 ('11','2025-06-12','Independence Day','Araw ng Kalayaan','2025-09-09 10:00:57','2025-09-09 10:00:57'),
@@ -1165,11 +1266,7 @@ INSERT INTO shifts (shift_id,shift_name,start_time,end_time,description,created_
 ('1','Morning Shift','08:00:00','16:00:00','Standard morning shift from 8 AM to 4 PM','2025-09-14 15:12:31','2025-09-14 15:12:31'),
 ('2','Afternoon Shift','14:00:00','22:00:00','Afternoon/evening shift from 2 PM to 10 PM','2025-09-14 15:12:31','2025-09-14 15:12:31'),
 ('3','Night Shift','22:00:00','06:00:00','Night shift from 10 PM to 6 AM','2025-09-14 15:12:31','2025-09-14 15:12:31'),
-('4','Flexible Shift','09:00:00','17:00:00','Flexible working hours','2025-09-14 15:12:31','2025-09-14 15:12:31'),
-('5','Morning Shift','08:00:00','16:00:00','Standard morning shift from 8 AM to 4 PM','2025-09-14 15:13:53','2025-09-14 15:13:53'),
-('6','Afternoon Shift','14:00:00','22:00:00','Afternoon/evening shift from 2 PM to 10 PM','2025-09-14 15:13:53','2025-09-14 15:13:53'),
-('7','Night Shift','22:00:00','06:00:00','Night shift from 10 PM to 6 AM','2025-09-14 15:13:53','2025-09-14 15:13:53'),
-('8','Flexible Shift','09:00:00','17:00:00','Flexible working hours','2025-09-14 15:13:53','2025-09-14 15:13:53');
+('4','Flexible Shift','09:00:00','17:00:00','Flexible working hours','2025-09-14 15:12:31','2025-09-14 15:12:31');
 
 CREATE TABLE `skill_matrix` (
   `skill_id` int(11) NOT NULL AUTO_INCREMENT,
@@ -1320,7 +1417,7 @@ CREATE TABLE `users` (
   UNIQUE KEY `email` (`email`),
   KEY `employee_id` (`employee_id`),
   CONSTRAINT `users_ibfk_1` FOREIGN KEY (`employee_id`) REFERENCES `employee_profiles` (`employee_id`) ON DELETE SET NULL
-) ENGINE=InnoDB AUTO_INCREMENT=18 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=19 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 INSERT INTO users (user_id,username,password,email,role,employee_id,is_active,last_login,created_at,updated_at) VALUES
 ('1','admin','admin123','admin@municipality.gov.ph','admin','','1','','2025-09-09 10:00:16','2025-09-09 10:00:16'),
@@ -1339,5 +1436,6 @@ INSERT INTO users (user_id,username,password,email,role,employee_id,is_active,la
 ('14','pablo.fernandez','emp123','pablo.fernandez@municipality.gov.ph','employee','12','1','','2025-09-09 10:00:16','2025-09-09 10:00:16'),
 ('15','grace.lopez','emp123','grace.lopez@municipality.gov.ph','employee','13','1','','2025-09-09 10:00:16','2025-09-09 10:00:16'),
 ('16','eduardo.hernandez','emp123','eduardo.hernandez@municipality.gov.ph','employee','14','1','','2025-09-09 10:00:16','2025-09-09 10:00:16'),
-('17','rosario.gonzales','emp123','rosario.gonzales@municipality.gov.ph','employee','15','1','','2025-09-09 10:00:16','2025-09-09 10:00:16');
+('17','rosario.gonzales','emp123','rosario.gonzales@municipality.gov.ph','employee','15','1','','2025-09-09 10:00:16','2025-09-09 10:00:16'),
+('18','test_employee','$2y$10$W5/YtNRxGPU7Uvi3eafjNOtQrTcTc0BJsPrwvqPTpOVBAN8igfmyK','john.doe@municipality.gov.ph','employee','16','1','','2025-10-21 18:10:29','2025-10-21 18:10:29');
 

@@ -194,10 +194,18 @@ $shifts = getShifts();
                                                         <td>
                                                             <?php
                                                             $status = $shift['status'] ?? 'Active';
+<<<<<<< HEAD
                                                             $badgeClass = ($status === 'On Leave') ? 'badge-danger' : 'badge-success';
                                                             ?>
                                                             <span class="badge <?php echo $badgeClass; ?>">
                                                                 <?php echo htmlspecialchars($status); ?>
+=======
+                                                            $displayStatus = ($status === 'Inactive') ? 'ON LEAVE' : $status;
+                                                            $badgeClass = ($status === 'Inactive') ? 'badge-danger' : 'badge-success';
+                                                            ?>
+                                                            <span class="badge <?php echo $badgeClass; ?>">
+                                                                <?php echo $displayStatus; ?>
+>>>>>>> 48f0fd909401d87fc7e82ce488dfd81cd0dfc6fa
                                                             </span>
                                                         </td>
                                                         <td>
