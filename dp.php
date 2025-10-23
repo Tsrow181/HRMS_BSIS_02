@@ -176,7 +176,7 @@ function getEmployeeShifts() {
     global $conn;
     try {
         $sql = "SELECT ep.employee_id, pi.first_name, pi.last_name, d.department_name,
-                       es.employee_shift_id, es.shift_id, es.assigned_date, es.is_overtime,
+                       es.employee_shift_id, es.shift_id, es.assigned_date, es.is_overtime, es.status,
                        s.shift_name
                 FROM employee_profiles ep
                 JOIN personal_information pi ON ep.personal_info_id = pi.personal_info_id
@@ -202,7 +202,7 @@ function getEmployeeShifts() {
 function addEmployeeShift($employeeId, $shiftId, $assignedDate, $isOvertime) {
     global $conn;
     try {
-        $sql = "INSERT INTO employee_shifts (employee_id, shift_id, assigned_date, is_overtime) VALUES (?, ?, ?, ?)";
+        $sql = "INSERT INTO employee_shifts (employee_id, shift_id, assigned_date, is_overtime, status) VALUES (?, ?, ?, ?, 'Active')";
         $stmt = $conn->prepare($sql);
         return $stmt->execute([$employeeId, $shiftId, $assignedDate, $isOvertime]);
     } catch (PDOException $e) {
@@ -213,7 +213,7 @@ function addEmployeeShift($employeeId, $shiftId, $assignedDate, $isOvertime) {
 function updateEmployeeShift($employeeShiftId, $shiftId, $assignedDate, $isOvertime) {
     global $conn;
     try {
-        $sql = "UPDATE employee_shifts SET shift_id = ?, assigned_date = ?, is_overtime = ? WHERE employee_shift_id = ?";
+        $sql = "UPDATE employee_shifts SET shift_id = ?, assigned_date = ?, is_overtime = ?, status = 'Active' WHERE employee_shift_id = ?";
         $stmt = $conn->prepare($sql);
         return $stmt->execute([$shiftId, $assignedDate, $isOvertime, $employeeShiftId]);
     } catch (PDOException $e) {

@@ -45,6 +45,10 @@ function getLeaveRequests() {
             if ($employee_id) {
                 handleLeaveStatusChange($employee_id, 'Approved');
             }
+
+            // Update shift status based on leave approval
+            require_once 'shift_status_functions.php';
+            updateShiftStatusOnLeaveApproval($requestId);
             
             error_log("Leave requests: About to log approve for request $requestId");
             error_log("Logging activity: Leave request #$requestId approved by user ID $user_id");
@@ -104,10 +108,10 @@ function getLeaveRequests() {
         }
 
         try {
-            $sql = "INSERT INTO leave_requests (employee_id, leave_type_id, start_date, end_date, total_days, reason, status, applied_on)
-                    VALUES (?, ?, ?, ?, ?, ?, 'Pending', NOW())";
+            $sql = "INSERT INTO leave_requests (employee_id, leave_type_id, start_date, end_date, total_days, reason, document_path, status, applied_on)
+                    VALUES (?, ?, ?, ?, ?, ?, ?, 'Pending', NOW())";
             $stmt = $conn->prepare($sql);
-            $stmt->execute([$employeeId, $leaveTypeId, $startDate, $endDate, $duration, $reason]);
+            $stmt->execute([$employeeId, $leaveTypeId, $startDate, $endDate, $duration, $reason, $documentPath]);
             error_log("Logging activity: New leave request submitted by employee ID $employeeId");
             logActivity("New leave request submitted by employee ID $employeeId", "leave_requests");
             // Redirect to refresh the page
@@ -251,7 +255,10 @@ $rejectedPercentage = $totalRequests > 0 ? ($rejectedRequests / $totalRequests) 
                                                 <td><?php echo htmlspecialchars($request['total_days']); ?></td>
                                                 <td><?php echo htmlspecialchars($request['reason']); ?></td>
                                                 <td><span class="status-badge badge-<?php echo strtolower($request['status']); ?>"><?php echo htmlspecialchars($request['status']); ?></span></td>
-                                                <td><?php if ($request['document_path']): ?><a href="<?php echo htmlspecialchars($request['document_path']); ?>" target="_blank">View</a><?php endif; ?></td>
+                                                <td><?php if ($request['document_path']): ?>
+                                                    <button class="btn btn-sm btn-outline-primary mr-1" onclick="viewDocument('<?php echo htmlspecialchars($request['document_path']); ?>', '<?php echo htmlspecialchars($request['employee_name']); ?>', '<?php echo htmlspecialchars($request['leave_type_name']); ?>', '<?php echo htmlspecialchars($request['start_date']); ?> to <?php echo htmlspecialchars($request['end_date']); ?>')"><i class="fas fa-eye"></i> View</button>
+                                                    <a href="<?php echo htmlspecialchars($request['document_path']); ?>" download class="btn btn-sm btn-outline-secondary"><i class="fas fa-download"></i> Download</a>
+                                                <?php endif; ?></td>
                                                 <td>
                                                     <?php if ($request['status'] == 'Pending'): ?>
                                                     <form method="POST" style="display:inline;">
@@ -371,6 +378,29 @@ $rejectedPercentage = $totalRequests > 0 ? ($rejectedRequests / $totalRequests) 
         </div>
     </div>
 
+    <!-- Document Viewer Modal -->
+    <div id="documentViewerModal" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="documentViewerModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="documentViewerModalLabel">Document Viewer</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <div id="documentViewerContent">
+                        <!-- Document content will be loaded here -->
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                    <a id="downloadDocumentBtn" href="#" target="_blank" class="btn btn-primary">Download Document</a>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <!-- New Request Modal -->
     <div class="modal fade" id="newRequestModal" tabindex="-1" role="dialog" aria-labelledby="newRequestModalLabel" aria-hidden="true">
         <div class="modal-dialog" role="document">
@@ -460,6 +490,28 @@ $rejectedPercentage = $totalRequests > 0 ? ($rejectedRequests / $totalRequests) 
                     console.error('Failed to fetch recent activity');
                 }
             });
+        }
+
+        function viewDocument(documentPath, employeeName, leaveType, dates) {
+            var fileExtension = documentPath.split('.').pop().toLowerCase();
+            var content = '';
+
+            // Update modal title
+            $('#documentViewerModalLabel').text('Document Viewer - ' + employeeName + ' (' + leaveType + ' - ' + dates + ')');
+
+            // Set download link
+            $('#downloadDocumentBtn').attr('href', documentPath);
+
+            if (fileExtension === 'pdf') {
+                content = '<iframe src="view_document.php?file=' + encodeURIComponent(documentPath) + '" width="100%" height="600px" style="border: none;"></iframe>';
+            } else if (fileExtension === 'jpg' || fileExtension === 'jpeg' || fileExtension === 'png') {
+                content = '<img src="view_document.php?file=' + encodeURIComponent(documentPath) + '" class="img-fluid" alt="Document Image" style="max-width: 100%; max-height: 600px;">';
+            } else {
+                content = '<div class="alert alert-warning">Unsupported file type. <a href="' + documentPath + '" target="_blank">Click here to download and view the file</a></div>';
+            }
+
+            $('#documentViewerContent').html(content);
+            $('#documentViewerModal').modal('show');
         }
 
         $(document).ready(function() {

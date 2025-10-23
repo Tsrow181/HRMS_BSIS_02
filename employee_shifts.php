@@ -190,12 +190,12 @@ $shifts = getShifts();
                                                         <td><?php echo isset($shift['is_overtime']) ? ($shift['is_overtime'] ? 'Yes' : 'No') : 'N/A'; ?></td>
                                                         <td>
                                                             <?php
-                                                            $isOnLeave = isEmployeeOnLeave($shift['employee_id']);
-                                                            $status = $isOnLeave ? 'Inactive' : 'Active';
-                                                            $badgeClass = $isOnLeave ? 'badge-danger' : 'badge-success';
+                                                            $status = $shift['status'] ?? 'Active';
+                                                            $displayStatus = ($status === 'Inactive') ? 'ON LEAVE' : $status;
+                                                            $badgeClass = ($status === 'Inactive') ? 'badge-danger' : 'badge-success';
                                                             ?>
                                                             <span class="badge <?php echo $badgeClass; ?>">
-                                                                <?php echo $status; ?>
+                                                                <?php echo $displayStatus; ?>
                                                             </span>
                                                         </td>
                                                         <td>
