@@ -50,13 +50,18 @@ define('PASSWORD_HASH_COST', 12);
 define('SESSION_LIFETIME', 3600); // 1 hour
 define('CSRF_TOKEN_LIFETIME', 3600); // 1 hour
 
-// Email settings
+// Business Gmail SMTP settings
 define('SMTP_HOST', 'smtp.gmail.com');
 define('SMTP_PORT', 587);
-define('SMTP_USERNAME', 'your-email@gmail.com');
-define('SMTP_PASSWORD', 'your-app-password');
-define('SMTP_FROM_EMAIL', 'noreply@hrsystem.com');
-define('SMTP_FROM_NAME', 'HR System');
+define('SMTP_USERNAME', 'hrms7052@gmail.com');
+define('SMTP_PASSWORD', 'zwxx vuiw xeis bcyl'); // Gmail App Password
+define('SMTP_FROM_EMAIL', 'hrms7052@gmail.com');
+define('SMTP_FROM_NAME', 'Municipal HR Department');
+define('SMTP_ENCRYPTION', 'tls');
+define('SMTP_AUTH', true);
+
+// Mayor Email Configuration
+define('MAYOR_EMAIL', 'mayor@city.gov'); // Change this to your Mayor's actual email
 
 // Pagination settings
 define('ITEMS_PER_PAGE', 10);

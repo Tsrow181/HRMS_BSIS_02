@@ -49,41 +49,38 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 
                 $success_message = "✅ Stage deleted successfully!";
                 break;
+                
+            case 'complete_interview':
+                $interview_id = $_POST['interview_id'];
+                $application_id = $_POST['application_id'];
+                
+                // Mark interview as completed
+                $stmt = $conn->prepare("UPDATE interviews SET status = 'Completed', completed_date = NOW() WHERE interview_id = ?");
+                $stmt->execute([$interview_id]);
+                
+                // Check if this was the final interview stage for this job
+                $final_check = $conn->prepare("SELECT COUNT(*) as remaining FROM interviews i 
+                                              JOIN interview_stages ist ON i.stage_id = ist.stage_id
+                                              WHERE i.application_id = ? AND i.status != 'Completed'");
+                $final_check->execute([$application_id]);
+                $remaining = $final_check->fetch(PDO::FETCH_ASSOC)['remaining'];
+                
+                // If no more interviews remaining, move to Assessment
+                if ($remaining == 0) {
+                    $stmt = $conn->prepare("UPDATE job_applications SET status = 'Assessment' WHERE application_id = ?");
+                    $stmt->execute([$application_id]);
+                    $success_message = "✅ Interview completed! Candidate moved to Assessment for HR review.";
+                } else {
+                    $success_message = "✅ Interview stage completed!";
+                }
+                break;
+                
+
         }
-        
-
     }
 }
 
-// Handle mayor approval for screening candidates
-if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['action'] === 'mayor_approve') {
-    $application_id = $_POST['application_id'];
-    
-    // Update application status and move to first interview stage
-    $stmt = $conn->prepare("UPDATE job_applications ja 
-                           JOIN interview_stages ist ON ja.job_opening_id = ist.job_opening_id 
-                           JOIN candidates c ON ja.candidate_id = c.candidate_id
-                           SET ja.status = 'Interview', c.source = ist.stage_name
-                           WHERE ja.application_id = ? AND ist.stage_order = 1");
-    $stmt->execute([$application_id]);
-    
-    $success_message = "✅ Candidate approved by Mayor and moved to interview stage!";
-}
 
-// Create interviews only for mayor-approved candidates
-if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['action'] === 'mayor_approve') {
-    try {
-        $result = $conn->exec("INSERT INTO interviews (application_id, stage_id, schedule_date, duration, interview_type, status)
-                     SELECT ja.application_id, ist.stage_id, NOW(), 60, 'Interview', 'Rescheduled'
-                     FROM candidates c 
-                     JOIN job_applications ja ON c.candidate_id = ja.candidate_id 
-                     JOIN interview_stages ist ON ja.job_opening_id = ist.job_opening_id AND c.source = ist.stage_name
-                     WHERE ja.status = 'Interview' AND ja.application_id = $application_id
-                     AND NOT EXISTS (SELECT 1 FROM interviews i WHERE i.application_id = ja.application_id AND i.stage_id = ist.stage_id)");
-    } catch (Exception $e) {
-        // Silent fail
-    }
-}
 
 // Get job openings with candidates ready for onboarding (based on job application status)
 $job_openings = $conn->query("SELECT DISTINCT jo.job_opening_id, jo.title, d.department_name, 
@@ -97,6 +94,15 @@ $job_openings = $conn->query("SELECT DISTINCT jo.job_opening_id, jo.title, d.dep
                               ORDER BY jo.title")->fetchAll(PDO::FETCH_ASSOC);
 
 if ($selected_job) {
+    // Auto-create interview records for Interview status candidates without interviews
+    $conn->exec("INSERT INTO interviews (application_id, stage_id, schedule_date, duration, interview_type, status)
+                 SELECT ja.application_id, ist.stage_id, NOW(), 60, 'Interview', 'Rescheduled'
+                 FROM job_applications ja 
+                 JOIN interview_stages ist ON ja.job_opening_id = ist.job_opening_id 
+                 WHERE ja.job_opening_id = $selected_job AND ja.status = 'Interview' 
+                 AND ist.stage_order = 1
+                 AND NOT EXISTS (SELECT 1 FROM interviews i WHERE i.application_id = ja.application_id)");
+    
     // Get stages for selected job
     $job_stages = $conn->prepare("SELECT * FROM interview_stages WHERE job_opening_id = ? ORDER BY stage_order");
     $job_stages->execute([$selected_job]);
@@ -121,14 +127,31 @@ if ($selected_job) {
     // Get candidates for each stage with interview status
     $candidates_by_stage = [];
     foreach ($stages as $stage) {
-        $candidates = $conn->prepare("SELECT c.*, ja.application_id, ja.application_date, 
-                                            i.interview_id, i.status as interview_status, i.schedule_date
-                                     FROM candidates c 
-                                     JOIN job_applications ja ON c.candidate_id = ja.candidate_id
-                                     LEFT JOIN interviews i ON ja.application_id = i.application_id AND i.stage_id = ?
-                                     WHERE ja.job_opening_id = ? AND ja.status IN ('Interview', 'Screening', 'Hired') AND c.source = ?
-                                     ORDER BY ja.application_date DESC");
-        $candidates->execute([$stage['stage_id'], $selected_job, $stage['stage_name']]);
+        if ($stage['stage_order'] == 1) {
+            // First stage: show all Interview status candidates
+            $candidates = $conn->prepare("SELECT c.*, ja.application_id, ja.application_date, 
+                                                i.interview_id, i.status as interview_status, i.schedule_date
+                                         FROM candidates c 
+                                         JOIN job_applications ja ON c.candidate_id = ja.candidate_id
+                                         LEFT JOIN interviews i ON ja.application_id = i.application_id AND i.stage_id = ?
+                                         WHERE ja.job_opening_id = ? AND ja.status = 'Interview'
+                                         ORDER BY ja.application_date DESC");
+            $candidates->execute([$stage['stage_id'], $selected_job]);
+        } else {
+            // Other stages: show candidates who completed previous stages
+            $candidates = $conn->prepare("SELECT c.*, ja.application_id, ja.application_date, 
+                                                i.interview_id, i.status as interview_status, i.schedule_date
+                                         FROM candidates c 
+                                         JOIN job_applications ja ON c.candidate_id = ja.candidate_id
+                                         LEFT JOIN interviews i ON ja.application_id = i.application_id AND i.stage_id = ?
+                                         WHERE ja.job_opening_id = ? AND ja.status = 'Interview'
+                                         AND EXISTS (SELECT 1 FROM interviews prev_i 
+                                                    JOIN interview_stages prev_s ON prev_i.stage_id = prev_s.stage_id
+                                                    WHERE prev_i.application_id = ja.application_id 
+                                                    AND prev_s.stage_order < ? AND prev_i.status = 'Completed')
+                                         ORDER BY ja.application_date DESC");
+            $candidates->execute([$stage['stage_id'], $selected_job, $stage['stage_order']]);
+        }
         $candidates_by_stage[$stage['stage_name']] = $candidates->fetchAll(PDO::FETCH_ASSOC);
     }
 }
@@ -332,16 +355,26 @@ if ($selected_job) {
                                                                             <i class="fas fa-clock"></i> <?php echo date('M d, Y H:i', strtotime($candidate['schedule_date'])); ?>
                                                                         </p>
                                                                     <?php endif; ?>
-                                                                    <a href="interviews.php" class="btn btn-info btn-sm w-100">
+                                                                    <?php if ($candidate['interview_status'] == 'Scheduled'): ?>
+                                                                        <form method="POST" class="mb-1">
+                                                                            <input type="hidden" name="action" value="complete_interview">
+                                                                            <input type="hidden" name="interview_id" value="<?php echo $candidate['interview_id']; ?>">
+                                                                            <input type="hidden" name="application_id" value="<?php echo $candidate['application_id']; ?>">
+                                                                            <button type="submit" class="btn btn-success btn-sm w-100" onclick="return confirm('Mark this interview as completed?')">
+                                                                                <i class="fas fa-check"></i> Complete Interview
+                                                                            </button>
+                                                                        </form>
+                                                                    <?php endif; ?>
+                                                                    <a href="interviews.php?interview_id=<?php echo $candidate['interview_id']; ?>" class="btn btn-info btn-sm w-100">
                                                                         <i class="fas fa-calendar-alt"></i> Manage Interview
                                                                     </a>
                                                                 <?php else: ?>
                                                                     <div class="alert alert-warning p-2">
-                                                                        <small><i class="fas fa-exclamation-triangle"></i> Interview not created yet</small>
+                                                                        <small><i class="fas fa-exclamation-triangle"></i> Interview not scheduled yet</small>
                                                                     </div>
-                                                                    <button class="btn btn-primary btn-sm w-100" onclick="window.location.reload()">
-                                                                        <i class="fas fa-refresh"></i> Refresh
-                                                                    </button>
+                                                                    <a href="interviews.php?application_id=<?php echo $candidate['application_id']; ?>&stage_id=<?php echo $stage['stage_id']; ?>" class="btn btn-primary btn-sm w-100">
+                                                                        <i class="fas fa-calendar-plus"></i> Schedule Interview
+                                                                    </a>
                                                                 <?php endif; ?>
                                                             </div>
                                                         </div>

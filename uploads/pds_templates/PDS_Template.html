@@ -1,0 +1,388 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Personal Data Sheet (PDS) Template</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            font-size: 12px;
+            line-height: 1.4;
+            margin: 20px;
+            color: #000;
+        }
+        .header {
+            text-align: center;
+            margin-bottom: 20px;
+            border-bottom: 2px solid #000;
+            padding-bottom: 10px;
+        }
+        .section {
+            margin-bottom: 20px;
+            border: 1px solid #000;
+            padding: 10px;
+        }
+        .section-title {
+            background-color: #f0f0f0;
+            font-weight: bold;
+            padding: 5px;
+            margin: -10px -10px 10px -10px;
+            border-bottom: 1px solid #000;
+        }
+        .form-row {
+            display: flex;
+            margin-bottom: 8px;
+            align-items: center;
+        }
+        .form-group {
+            flex: 1;
+            margin-right: 15px;
+        }
+        .form-group:last-child {
+            margin-right: 0;
+        }
+        label {
+            font-weight: bold;
+            display: block;
+            margin-bottom: 2px;
+        }
+        .input-line {
+            border: none;
+            border-bottom: 1px solid #000;
+            width: 100%;
+            padding: 2px 0;
+            background: transparent;
+        }
+        .checkbox-group {
+            display: flex;
+            align-items: center;
+            margin-right: 20px;
+        }
+        .checkbox {
+            width: 15px;
+            height: 15px;
+            border: 1px solid #000;
+            margin-right: 5px;
+            display: inline-block;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 10px;
+        }
+        th, td {
+            border: 1px solid #000;
+            padding: 5px;
+            text-align: left;
+        }
+        th {
+            background-color: #f0f0f0;
+            font-weight: bold;
+        }
+        .signature-section {
+            margin-top: 30px;
+            display: flex;
+            justify-content: space-between;
+        }
+        .signature-box {
+            text-align: center;
+            width: 200px;
+        }
+        .signature-line {
+            border-bottom: 1px solid #000;
+            height: 40px;
+            margin-bottom: 5px;
+        }
+        @media print {
+            body { margin: 0; }
+            .section { page-break-inside: avoid; }
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h2>PERSONAL DATA SHEET</h2>
+        <p><strong>Municipality/City Government</strong></p>
+        <p>Instructions: Fill out completely and accurately. Use black ink only.</p>
+    </div>
+
+    <div class="section">
+        <div class="section-title">I. PERSONAL INFORMATION</div>
+        
+        <div class="form-row">
+            <div class="form-group">
+                <label>Surname:</label>
+                <input type="text" class="input-line">
+            </div>
+            <div class="form-group">
+                <label>First Name:</label>
+                <input type="text" class="input-line">
+            </div>
+            <div class="form-group">
+                <label>Middle Name:</label>
+                <input type="text" class="input-line">
+            </div>
+        </div>
+
+        <div class="form-row">
+            <div class="form-group">
+                <label>Date of Birth (mm/dd/yyyy):</label>
+                <input type="text" class="input-line">
+            </div>
+            <div class="form-group">
+                <label>Place of Birth:</label>
+                <input type="text" class="input-line">
+            </div>
+        </div>
+
+        <div class="form-row">
+            <div class="form-group">
+                <label>Sex:</label>
+                <div style="display: flex; margin-top: 5px;">
+                    <div class="checkbox-group">
+                        <span class="checkbox"></span> Male
+                    </div>
+                    <div class="checkbox-group">
+                        <span class="checkbox"></span> Female
+                    </div>
+                </div>
+            </div>
+            <div class="form-group">
+                <label>Civil Status:</label>
+                <div style="display: flex; margin-top: 5px; flex-wrap: wrap;">
+                    <div class="checkbox-group">
+                        <span class="checkbox"></span> Single
+                    </div>
+                    <div class="checkbox-group">
+                        <span class="checkbox"></span> Married
+                    </div>
+                    <div class="checkbox-group">
+                        <span class="checkbox"></span> Widowed
+                    </div>
+                    <div class="checkbox-group">
+                        <span class="checkbox"></span> Separated
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="form-row">
+            <div class="form-group">
+                <label>Height (m):</label>
+                <input type="text" class="input-line">
+            </div>
+            <div class="form-group">
+                <label>Weight (kg):</label>
+                <input type="text" class="input-line">
+            </div>
+            <div class="form-group">
+                <label>Blood Type:</label>
+                <input type="text" class="input-line">
+            </div>
+        </div>
+
+        <div class="form-row">
+            <div class="form-group">
+                <label>Citizenship:</label>
+                <input type="text" class="input-line">
+            </div>
+            <div class="form-group">
+                <label>Religion:</label>
+                <input type="text" class="input-line">
+            </div>
+        </div>
+    </div>
+
+    <div class="section">
+        <div class="section-title">II. CONTACT INFORMATION</div>
+        
+        <div class="form-row">
+            <div class="form-group">
+                <label>Residential Address:</label>
+                <input type="text" class="input-line">
+            </div>
+        </div>
+
+        <div class="form-row">
+            <div class="form-group">
+                <label>ZIP Code:</label>
+                <input type="text" class="input-line">
+            </div>
+            <div class="form-group">
+                <label>Telephone No.:</label>
+                <input type="text" class="input-line">
+            </div>
+            <div class="form-group">
+                <label>Mobile No.:</label>
+                <input type="text" class="input-line">
+            </div>
+        </div>
+
+        <div class="form-row">
+            <div class="form-group">
+                <label>Email Address:</label>
+                <input type="text" class="input-line">
+            </div>
+        </div>
+    </div>
+
+    <div class="section">
+        <div class="section-title">III. EDUCATIONAL BACKGROUND</div>
+        
+        <table>
+            <thead>
+                <tr>
+                    <th>Level</th>
+                    <th>Name of School</th>
+                    <th>Basic Education/Degree/Course</th>
+                    <th>Period of Attendance</th>
+                    <th>Highest Level/Units Earned</th>
+                    <th>Year Graduated</th>
+                    <th>Scholarship/Academic Honors Received</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td><strong>Elementary</strong></td>
+                    <td>&nbsp;</td>
+                    <td>&nbsp;</td>
+                    <td>&nbsp;</td>
+                    <td>&nbsp;</td>
+                    <td>&nbsp;</td>
+                    <td>&nbsp;</td>
+                </tr>
+                <tr>
+                    <td><strong>Secondary</strong></td>
+                    <td>&nbsp;</td>
+                    <td>&nbsp;</td>
+                    <td>&nbsp;</td>
+                    <td>&nbsp;</td>
+                    <td>&nbsp;</td>
+                    <td>&nbsp;</td>
+                </tr>
+                <tr>
+                    <td><strong>Vocational/Trade Course</strong></td>
+                    <td>&nbsp;</td>
+                    <td>&nbsp;</td>
+                    <td>&nbsp;</td>
+                    <td>&nbsp;</td>
+                    <td>&nbsp;</td>
+                    <td>&nbsp;</td>
+                </tr>
+                <tr>
+                    <td><strong>College</strong></td>
+                    <td>&nbsp;</td>
+                    <td>&nbsp;</td>
+                    <td>&nbsp;</td>
+                    <td>&nbsp;</td>
+                    <td>&nbsp;</td>
+                    <td>&nbsp;</td>
+                </tr>
+                <tr>
+                    <td><strong>Graduate Studies</strong></td>
+                    <td>&nbsp;</td>
+                    <td>&nbsp;</td>
+                    <td>&nbsp;</td>
+                    <td>&nbsp;</td>
+                    <td>&nbsp;</td>
+                    <td>&nbsp;</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <div class="section">
+        <div class="section-title">IV. WORK EXPERIENCE</div>
+        
+        <table>
+            <thead>
+                <tr>
+                    <th>Period (From-To)</th>
+                    <th>Position Title</th>
+                    <th>Department/Agency/Office/Company</th>
+                    <th>Monthly Salary</th>
+                    <th>Status of Appointment</th>
+                    <th>Gov't Service (Y/N)</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td></tr>
+                <tr><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td></tr>
+                <tr><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td></tr>
+                <tr><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td></tr>
+                <tr><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td></tr>
+            </tbody>
+        </table>
+    </div>
+
+    <div class="section">
+        <div class="section-title">V. SKILLS AND COMPETENCIES</div>
+        
+        <div class="form-row">
+            <div class="form-group">
+                <label>Special Skills and Hobbies:</label>
+                <textarea class="input-line" style="height: 60px; width: 100%; border: 1px solid #000; padding: 5px;"></textarea>
+            </div>
+        </div>
+
+        <div class="form-row">
+            <div class="form-group">
+                <label>Non-Academic Distinctions/Recognition:</label>
+                <textarea class="input-line" style="height: 60px; width: 100%; border: 1px solid #000; padding: 5px;"></textarea>
+            </div>
+        </div>
+
+        <div class="form-row">
+            <div class="form-group">
+                <label>Membership in Association/Organization:</label>
+                <textarea class="input-line" style="height: 60px; width: 100%; border: 1px solid #000; padding: 5px;"></textarea>
+            </div>
+        </div>
+    </div>
+
+    <div class="section">
+        <div class="section-title">VI. CHARACTER REFERENCES</div>
+        
+        <table>
+            <thead>
+                <tr>
+                    <th>Name</th>
+                    <th>Address</th>
+                    <th>Telephone No.</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td></tr>
+                <tr><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td></tr>
+                <tr><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td></tr>
+            </tbody>
+        </table>
+    </div>
+
+    <div class="section">
+        <div class="section-title">VII. DECLARATION</div>
+        
+        <p>I declare under oath that I have personally accomplished this Personal Data Sheet which is a true, correct and complete statement pursuant to the provisions of pertinent laws, rules and regulations of the Republic of the Philippines. I authorize the agency head/authorized representative to verify/validate the contents stated herein. I agree that any misrepresentation made in this document and its attachments shall cause the filing of administrative/criminal case/s against me.</p>
+        
+        <div class="signature-section">
+            <div class="signature-box">
+                <div class="signature-line"></div>
+                <p><strong>Signature</strong></p>
+            </div>
+            <div class="signature-box">
+                <div class="signature-line"></div>
+                <p><strong>Date Accomplished</strong></p>
+            </div>
+        </div>
+    </div>
+
+    <div style="margin-top: 20px; text-align: center; font-size: 10px; color: #666;">
+        <p><strong>Instructions:</strong></p>
+        <p>1. Fill out this form completely and accurately using black ink or type.</p>
+        <p>2. Print this document and fill it out by hand, or fill it out digitally and save as PDF.</p>
+        <p>3. Submit the completed PDS along with your job application.</p>
+        <p>4. Attach required supporting documents as specified in the job posting.</p>
+    </div>
+</body>
+</html>

@@ -1,5 +1,6 @@
 <?php
 require_once 'config.php';
+require_once 'link_candidate_documents.php';
 
 $job_id = $_GET['job_id'] ?? null;
 if (!$job_id) {
@@ -17,90 +18,211 @@ if (!$job) {
     exit;
 }
 
-$step = $_GET['step'] ?? 1;
 $success = false;
-$processing = false;
+$error = '';
 
-if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    if ($step == 1) {
-        session_start();
-        $email = $_POST['email'];
+// Check for existing candidate or create draft
+$candidateId = null;
+if (isset($_POST['email']) && !empty($_POST['email'])) {
+    // Check by email first
+    $stmt = $conn->prepare("SELECT candidate_id, first_name, last_name FROM candidates WHERE email = ?");
+    $stmt->execute([$_POST['email']]);
+    $existing = $stmt->fetch(PDO::FETCH_ASSOC);
+    
+    if ($existing) {
+        $candidateId = $existing['candidate_id'];
         
-        // Check if email already applied for this job
-        $stmt = $conn->prepare("SELECT ja.application_id FROM job_applications ja 
-                               JOIN candidates c ON ja.candidate_id = c.candidate_id 
-                               WHERE c.email = ? AND ja.job_opening_id = ?");
-        $stmt->execute([$email, $job_id]);
-        $existing_application = $stmt->fetch();
-        
-        if ($existing_application) {
-            $error_message = "This email has already been used to apply for this position.";
-        } else {
-            // Store step 1 data in session
-            $_SESSION['application_data'] = [
-                'first_name' => $_POST['first_name'],
-                'last_name' => $_POST['last_name'],
-                'email' => $_POST['email'],
-                'phone' => $_POST['phone']
-            ];
-            header('Location: apply.php?job_id=' . $job_id . '&step=2');
-            exit;
+        // If names are provided and different, check for potential duplicate person
+        if (isset($_POST['first_name']) && isset($_POST['last_name'])) {
+            $providedName = strtolower(trim($_POST['first_name'] . ' ' . $_POST['last_name']));
+            $existingName = strtolower(trim($existing['first_name'] . ' ' . $existing['last_name']));
+            
+            if (!empty($existingName) && $providedName !== $existingName) {
+                throw new Exception('This email is already registered with a different name. Please use a different email or contact support.');
+            }
         }
-    } elseif ($step == 2) {
-        session_start();
-        $_SESSION['application_data']['current_position'] = $_POST['current_position'];
-        $_SESSION['application_data']['current_company'] = $_POST['current_company'];
-        header('Location: apply.php?job_id=' . $job_id . '&step=3');
-        exit;
-    } elseif ($step == 3) {
-        session_start();
-        $app_data = $_SESSION['application_data'];
+    }
+    
+    // Check for duplicate full name with different email
+    if (isset($_POST['first_name']) && isset($_POST['last_name'])) {
+        $fullName = trim($_POST['first_name'] . ' ' . $_POST['last_name']);
+        $stmt = $conn->prepare("SELECT candidate_id, email FROM candidates WHERE CONCAT(first_name, ' ', last_name) = ? AND email != ?");
+        $stmt->execute([$fullName, $_POST['email']]);
+        $nameMatch = $stmt->fetch(PDO::FETCH_ASSOC);
         
-        // Check for duplicate email
-        $stmt = $conn->prepare("SELECT candidate_id FROM candidates WHERE email = ?");
-        $stmt->execute([$app_data['email']]);
-        $existing = $stmt->fetch();
-        
-        if ($existing) {
-            // Use existing candidate
-            $candidate_id = $existing['candidate_id'];
-        } else {
-            // Insert new candidate
-            $stmt = $conn->prepare("INSERT INTO candidates (first_name, last_name, email, phone, current_position, current_company, source) VALUES (?, ?, ?, ?, ?, ?, 'Job Application')");
-            $stmt->execute([
-                $app_data['first_name'], 
-                $app_data['last_name'], 
-                $app_data['email'], 
-                $app_data['phone'],
-                $app_data['current_position'],
-                $app_data['current_company']
-            ]);
-            $candidate_id = $conn->lastInsertId();
+        if ($nameMatch && !isset($_POST['confirm_duplicate'])) {
+            throw new Exception('DUPLICATE_NAME:' . $nameMatch['email']);
         }
-        
-        // Check for duplicate application
-        $stmt = $conn->prepare("SELECT application_id FROM job_applications WHERE job_opening_id = ? AND candidate_id = ?");
-        $stmt->execute([$job_id, $candidate_id]);
-        $existing_app = $stmt->fetch();
-        
-        if (!$existing_app) {
-            // Insert application
-            $stmt = $conn->prepare("INSERT INTO job_applications (job_opening_id, candidate_id, application_date, status) VALUES (?, ?, NOW(), 'Applied')");
-            $stmt->execute([$job_id, $candidate_id]);
-        }
-        
-        unset($_SESSION['application_data']);
-        $success = true;
     }
 }
 
-if ($step == 3 && !$success) {
-    $processing = true;
+// Handle email confirmation
+if (isset($_GET['confirm']) && isset($_GET['token'])) {
+    $token = $_GET['token'];
+    // Use source field to store token temporarily
+    $stmt = $conn->prepare("SELECT * FROM candidates WHERE source = ?");
+    $stmt->execute(['TOKEN:' . $token]);
+    $candidate = $stmt->fetch(PDO::FETCH_ASSOC);
+    
+    if ($candidate) {
+        // Update candidate source and application status
+        $stmt = $conn->prepare("UPDATE candidates SET source = 'Website' WHERE candidate_id = ?");
+        $stmt->execute([$candidate['candidate_id']]);
+        
+        // Update application status to Applied
+        $stmt = $conn->prepare("UPDATE job_applications SET status = 'Applied' WHERE candidate_id = ? AND job_opening_id = ?");
+        $stmt->execute([$candidate['candidate_id'], $job_id]);
+        
+        $success = true;
+    } else {
+        $error = 'Invalid or expired confirmation link.';
+    }
 }
 
-if (($step == 2 || $step == 3) && !isset($_SESSION)) {
-    session_start();
+// Process application submission
+if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    try {
+        // Check if email is verified
+        session_start();
+        $email = $_POST['email'] ?? '';
+        if (!isset($_SESSION['verified_emails'][$email])) {
+            throw new Exception('Please verify your email address before submitting the application.');
+        }
+        // Create uploads directories if not exist
+        $resumeDir = 'uploads/resumes/';
+        $coverLetterDir = 'uploads/cover_letters/';
+        $pdsDir = 'uploads/pds/';
+        
+        if (!file_exists($resumeDir)) mkdir($resumeDir, 0777, true);
+        if (!file_exists($coverLetterDir)) mkdir($coverLetterDir, 0777, true);
+        if (!file_exists($pdsDir)) mkdir($pdsDir, 0777, true);
+        
+        // Handle file uploads
+        $resumePath = null;
+        $coverLetterPath = null;
+        $pdsPath = null;
+        
+        if (isset($_FILES['resume']) && $_FILES['resume']['error'] === UPLOAD_ERR_OK) {
+            $fileName = time() . '_resume_' . $_FILES['resume']['name'];
+            $resumePath = $resumeDir . $fileName;
+            if (!move_uploaded_file($_FILES['resume']['tmp_name'], $resumePath)) {
+                throw new Exception('Failed to upload resume');
+            }
+        }
+        
+        if (isset($_FILES['cover_letter']) && $_FILES['cover_letter']['error'] === UPLOAD_ERR_OK) {
+            $fileName = time() . '_cover_' . $_FILES['cover_letter']['name'];
+            $coverLetterPath = $coverLetterDir . $fileName;
+            if (!move_uploaded_file($_FILES['cover_letter']['tmp_name'], $coverLetterPath)) {
+                throw new Exception('Failed to upload cover letter');
+            }
+        }
+        
+        if (isset($_FILES['pds']) && $_FILES['pds']['error'] === UPLOAD_ERR_OK) {
+            $fileName = time() . '_pds_' . $_FILES['pds']['name'];
+            $pdsPath = $pdsDir . $fileName;
+            if (!move_uploaded_file($_FILES['pds']['tmp_name'], $pdsPath)) {
+                throw new Exception('Failed to upload PDS');
+            }
+        }
+        
+        if ($candidateId) {
+            
+            // Update existing candidate
+            $stmt = $conn->prepare("UPDATE candidates SET first_name = ?, last_name = ?, phone = ?, address = ?, resume_url = ?, current_position = ?, current_company = ?, expected_salary = ?, cover_letter_url = ?, source = ? WHERE candidate_id = ?");
+            $stmt->execute([
+                $_POST['first_name'],
+                $_POST['last_name'],
+                $_POST['phone'],
+                $_POST['address'],
+                $resumePath ?: null,
+                $_POST['current_position'] ?: null,
+                $_POST['current_company'] ?: null,
+                $_POST['expected_salary'] ?: null,
+                $pdsPath ?: null,
+                'Website',
+                $candidateId
+            ]);
+        } else {
+            
+            // Insert new candidate
+            $stmt = $conn->prepare("INSERT INTO candidates (first_name, last_name, email, phone, address, resume_url, current_position, current_company, expected_salary, cover_letter_url, source) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
+            $stmt->execute([
+                $_POST['first_name'],
+                $_POST['last_name'], 
+                $_POST['email'],
+                $_POST['phone'],
+                $_POST['address'],
+                $resumePath ?: null,
+                $_POST['current_position'] ?: null,
+                $_POST['current_company'] ?: null,
+                $_POST['expected_salary'] ?: null,
+                $pdsPath ?: null,
+                'Website'
+            ]);
+            $candidateId = $conn->lastInsertId();
+        }
+        
+        // Check if application already exists
+        $stmt = $conn->prepare("SELECT application_id FROM job_applications WHERE job_opening_id = ? AND candidate_id = ?");
+        $stmt->execute([$job_id, $candidateId]);
+        $existingApp = $stmt->fetch(PDO::FETCH_ASSOC);
+        
+        if ($existingApp) {
+            throw new Exception('You have already applied for this position.');
+        }
+        
+        // Insert job application with Applied status
+        $stmt = $conn->prepare("INSERT INTO job_applications (job_opening_id, candidate_id, application_date, status) VALUES (?, ?, NOW(), 'Applied')");
+        $stmt->execute([$job_id, $candidateId]);
+        
+
+        
+        // Insert documents into document management
+        $conn->exec("SET FOREIGN_KEY_CHECKS = 0");
+        
+        $candidateName = $_POST['first_name'] . ' ' . $_POST['last_name'];
+        $jobTitle = $job['title'];
+        
+        // Handle Resume
+        if ($resumePath) {
+            $documentName = 'Resume - ' . $candidateName . ' - ' . $jobTitle;
+            $stmt = $conn->prepare("SELECT document_id FROM document_management WHERE employee_id = ? AND document_type = 'Resume'");
+            $stmt->execute([$candidateId]);
+            $existingDoc = $stmt->fetch(PDO::FETCH_ASSOC);
+            
+            if ($existingDoc) {
+                $stmt = $conn->prepare("UPDATE document_management SET document_name = ?, file_path = ?, notes = ? WHERE document_id = ?");
+                $stmt->execute([$documentName, $resumePath, 'Resume updated during job application. Candidate ID: ' . $candidateId, $existingDoc['document_id']]);
+            } else {
+                $stmt = $conn->prepare("INSERT INTO document_management (employee_id, document_type, document_name, file_path, document_status, notes) VALUES (?, 'Resume', ?, ?, 'Active', ?)");
+                $stmt->execute([$candidateId, $documentName, $resumePath, 'Resume uploaded during job application. Candidate ID: ' . $candidateId]);
+            }
+        }
+        
+        // Handle Cover Letter
+        if ($coverLetterPath) {
+            $documentName = 'Cover Letter - ' . $candidateName . ' - ' . $jobTitle;
+            $stmt = $conn->prepare("INSERT INTO document_management (employee_id, document_type, document_name, file_path, document_status, notes) VALUES (?, 'Contract', ?, ?, 'Active', ?)");
+            $stmt->execute([$candidateId, $documentName, $coverLetterPath, 'Cover Letter uploaded during job application. Candidate ID: ' . $candidateId]);
+        }
+        
+        // Handle PDS
+        if ($pdsPath) {
+            $documentName = 'PDS - ' . $candidateName . ' - ' . $jobTitle;
+            $stmt = $conn->prepare("INSERT INTO document_management (employee_id, document_type, document_name, file_path, document_status, notes) VALUES (?, 'Contract', ?, ?, 'Active', ?)");
+            $stmt->execute([$candidateId, $documentName, $pdsPath, 'PDS uploaded during job application. Candidate ID: ' . $candidateId]);
+        }
+        
+        $conn->exec("SET FOREIGN_KEY_CHECKS = 1");
+        
+        $success = true;
+        
+    } catch (Exception $e) {
+        $error = $e->getMessage();
+    }
 }
+
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -337,65 +459,47 @@ if (($step == 2 || $step == 3) && !isset($_SESSION)) {
             60% { transform: translateY(-10px); }
         }
         
-        .processing-animation {
-            margin: 40px 0;
-        }
-        
-        .spinner {
-            width: 80px;
-            height: 80px;
-            border: 4px solid var(--accent);
-            border-top: 4px solid var(--primary);
-            border-radius: 50%;
-            animation: spin 1s linear infinite;
-            margin: 0 auto;
-        }
-        
-        @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
-        }
-        
-        .progress-steps {
-            max-width: 400px;
-            margin: 0 auto;
-        }
-        
-        .progress-step {
-            padding: 15px 20px;
-            margin: 10px 0;
+        .form-check {
+            padding: 15px;
+            border: 2px solid #e9ecef;
             border-radius: 10px;
-            background: #f8f9fa;
-            color: #6c757d;
             transition: all 0.3s ease;
-            border-left: 4px solid #e9ecef;
+            background: #f8f9fa;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
         }
         
-        .progress-step.processing {
-            background: linear-gradient(135deg, var(--light), #fff);
+        .form-check:hover {
+            border-color: var(--primary-light);
+            background: var(--light);
+        }
+        
+        .form-check-input:checked ~ .form-check-label {
             color: var(--primary-dark);
-            border-left-color: var(--primary);
-            box-shadow: 0 2px 10px rgba(233, 30, 99, 0.1);
+            font-weight: 600;
         }
         
-        .progress-step.completed {
-            background: linear-gradient(135deg, #d4edda, #f8fff9);
-            color: #155724;
-            border-left-color: #28a745;
+        .form-check-input {
+            width: 20px;
+            height: 20px;
+            margin-top: 0;
+            margin-right: 10px;
+            flex-shrink: 0;
         }
         
-        .review-card {
-            background: linear-gradient(135deg, var(--light), #fff);
-            border: 2px solid var(--accent);
-            border-radius: 15px;
-            padding: 25px;
-            margin-bottom: 20px;
+        .form-check-label {
+            font-size: 16px;
+            margin-left: 0;
+            cursor: pointer;
+            flex: 1;
         }
         
-        .review-card h5 {
-            color: var(--primary-dark);
-            border-bottom: 2px solid var(--accent);
-            padding-bottom: 10px;
+        .form-control-file {
+            margin-top: 10px;
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
         }
     </style>
 </head>
@@ -403,170 +507,182 @@ if (($step == 2 || $step == 3) && !isset($_SESSION)) {
     <div class="container">
         <div class="application-container">
             <?php if ($success): ?>
-                <div class="application-header">
-                    <h2><i class="fas fa-check-circle mr-3"></i>Application Submitted!</h2>
-                    <p>Thank you for your interest in joining our team</p>
-                </div>
-                <div class="success-container">
-                    <i class="fas fa-paper-plane success-icon"></i>
-                    <h4>Your application has been successfully submitted</h4>
-                    <p class="text-muted mb-4">We will review your application and contact you soon.</p>
-                    <a href="public_jobs.php" class="btn btn-primary">
-                        <i class="fas fa-arrow-left mr-2"></i>Back to Job Listings
-                    </a>
-                </div>
+                <?php if (isset($_GET['confirm'])): ?>
+                    <div class="application-header">
+                        <h2><i class="fas fa-check-circle mr-3"></i>Email Confirmed!</h2>
+                        <p>Your application has been successfully submitted</p>
+                    </div>
+                    <div class="success-container">
+                        <i class="fas fa-check-circle success-icon"></i>
+                        <h4>Application Confirmed and Submitted</h4>
+                        <p class="text-muted mb-4">Thank you for confirming your email. We will review your application and contact you soon.</p>
+                        <a href="public_jobs.php" class="btn btn-primary">
+                            <i class="fas fa-arrow-left mr-2"></i>Back to Job Listings
+                        </a>
+                    </div>
+                <?php else: ?>
+                    <div class="application-header">
+                        <h2><i class="fas fa-envelope mr-3"></i>Check Your Email!</h2>
+                        <p>Confirmation email sent</p>
+                    </div>
+                    <div class="success-container">
+                        <i class="fas fa-envelope success-icon"></i>
+                        <h4>Confirmation Email Sent</h4>
+                        <p class="text-muted mb-4">We've sent a confirmation email to <strong><?php echo htmlspecialchars($_POST['email'] ?? ''); ?></strong>. Please check your inbox and click the confirmation link to complete your application.</p>
+                        <div class="alert alert-info mt-3">
+                            <i class="fas fa-info-circle mr-2"></i>
+                            <strong>Important:</strong> The confirmation link will expire in 24 hours. If you don't see the email, please check your spam folder.
+                        </div>
+                        <a href="public_jobs.php" class="btn btn-primary">
+                            <i class="fas fa-arrow-left mr-2"></i>Back to Job Listings
+                        </a>
+                    </div>
+                <?php endif; ?>
             <?php else: ?>
                 <div class="application-header">
                     <h2><i class="fas fa-briefcase mr-3"></i><?php echo htmlspecialchars($job['title']); ?></h2>
                     <p><?php echo htmlspecialchars($job['department_name']); ?></p>
                 </div>
                 
-                <div class="step-indicator">
-                    <div class="step <?php echo $step >= 1 ? ($step > 1 ? 'completed' : 'active') : ''; ?>">1</div>
-                    <div class="step <?php echo $step >= 2 ? ($step > 2 ? 'completed' : 'active') : ''; ?>">2</div>
-                    <div class="step <?php echo $step >= 3 ? 'active' : ''; ?>">3</div>
-                </div>
+                <?php if ($error): ?>
+                    <?php if (strpos($error, 'DUPLICATE_NAME:') === 0): ?>
+                        <?php $existingEmail = substr($error, 15); ?>
+                        <div class="alert alert-warning m-4">
+                            <h6><i class="fas fa-exclamation-triangle mr-2"></i>Duplicate Name Detected</h6>
+                            <p>A candidate with the same name already exists with email: <strong><?php echo htmlspecialchars($existingEmail); ?></strong></p>
+                            <p>Are you sure this is a different person?</p>
+                            <form method="POST" enctype="multipart/form-data" style="display: inline;">
+                                <?php foreach($_POST as $key => $value): ?>
+                                    <?php if ($key !== 'confirm_duplicate'): ?>
+                                        <input type="hidden" name="<?php echo htmlspecialchars($key); ?>" value="<?php echo htmlspecialchars($value); ?>">
+                                    <?php endif; ?>
+                                <?php endforeach; ?>
+                                <input type="hidden" name="confirm_duplicate" value="1">
+                                <button type="submit" class="btn btn-warning mr-2">
+                                    <i class="fas fa-check mr-1"></i>Yes, Continue
+                                </button>
+                            </form>
+                            <a href="apply.php?job_id=<?php echo $job_id; ?>" class="btn btn-secondary">
+                                <i class="fas fa-times mr-1"></i>No, Review
+                            </a>
+                        </div>
+                    <?php else: ?>
+                        <div class="alert alert-danger m-4"><?php echo htmlspecialchars($error); ?></div>
+                    <?php endif; ?>
+                <?php endif; ?>
                 
                 <div class="form-section">
-                    <?php if ($processing): ?>
-                        <div class="text-center">
-                            <div class="processing-animation mb-4">
-                                <div class="spinner"></div>
+                    <form method="POST" enctype="multipart/form-data" id="applicationForm">
+                        <input type="hidden" name="confirm_duplicate" id="confirmDuplicate" value="">
+                        <!-- Personal Information -->
+                        <h5 class="mb-4"><i class="fas fa-user mr-2"></i>Personal Information</h5>
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label>First Name *</label>
+                                    <input type="text" name="first_name" class="form-control" required>
+                                </div>
                             </div>
-                            <h4 class="mb-3" style="color: var(--primary-dark);">Processing Your Application</h4>
-                            <div class="progress-steps">
-                                <div class="progress-step completed" id="step1">
-                                    <i class="fas fa-check"></i> Validating Information
-                                </div>
-                                <div class="progress-step processing" id="step2">
-                                    <i class="fas fa-spinner fa-spin"></i> Checking for Duplicates
-                                </div>
-                                <div class="progress-step" id="step3">
-                                    <i class="fas fa-database"></i> Saving to Database
-                                </div>
-                                <div class="progress-step" id="step4">
-                                    <i class="fas fa-envelope"></i> Sending Confirmation
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label>Last Name *</label>
+                                    <input type="text" name="last_name" class="form-control" required>
                                 </div>
                             </div>
                         </div>
-                        <script>
-                        setTimeout(() => {
-                            document.getElementById('step2').className = 'progress-step completed';
-                            document.getElementById('step2').innerHTML = '<i class="fas fa-check"></i> Checking for Duplicates';
-                            document.getElementById('step3').className = 'progress-step processing';
-                            document.getElementById('step3').innerHTML = '<i class="fas fa-spinner fa-spin"></i> Saving to Database';
-                        }, 1500);
-                        
-                        setTimeout(() => {
-                            document.getElementById('step3').className = 'progress-step completed';
-                            document.getElementById('step3').innerHTML = '<i class="fas fa-check"></i> Saving to Database';
-                            document.getElementById('step4').className = 'progress-step processing';
-                            document.getElementById('step4').innerHTML = '<i class="fas fa-spinner fa-spin"></i> Sending Confirmation';
-                        }, 3000);
-                        
-                        setTimeout(() => {
-                            document.getElementById('step4').className = 'progress-step completed';
-                            document.getElementById('step4').innerHTML = '<i class="fas fa-check"></i> Sending Confirmation';
-                            
-                            // Submit form to complete process
-                            const form = document.createElement('form');
-                            form.method = 'POST';
-                            document.body.appendChild(form);
-                            form.submit();
-                        }, 4500);
-                        </script>
-                    <?php elseif ($step == 1): ?>
-                        <div class="mb-4">
-                            <h4 class="text-center mb-3" style="color: var(--primary-dark); font-weight: 700;">
-                                <i class="fas fa-user-circle mr-3" style="font-size: 1.5em; color: var(--primary);"></i>
-                                Personal Information
-                            </h4>
-                            <p class="text-center text-muted">Let's start with your basic details</p>
+                        <div class="row">
+                            <div class="col-md-12">
+                                <div id="nameAlert"></div>
+                            </div>
                         </div>
-                        <?php if (isset($error_message)): ?>
-                            <div class="alert alert-danger">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label>Email *</label>
+                                    <input type="email" name="email" class="form-control" required>
+                                    <div id="emailAlert" class="mt-2"></div>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label>Phone</label>
+                                    <input type="tel" name="phone" class="form-control">
+                                </div>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label>Address</label>
+                            <textarea name="address" class="form-control" rows="3"></textarea>
+                        </div>
+                        
+                        <hr class="my-4">
+                        
+                        <!-- Professional Questions -->
+                        <h5 class="mb-4"><i class="fas fa-question-circle mr-2"></i>Professional Questions</h5>
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label>Current Position <small class="text-muted">(Leave blank if new graduate)</small></label>
+                                    <input type="text" name="current_position" class="form-control" placeholder="e.g., Software Developer, Student, etc.">
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label>Current Company <small class="text-muted">(Leave blank if unemployed/student)</small></label>
+                                    <input type="text" name="current_company" class="form-control" placeholder="e.g., ABC Corporation, University, etc.">
+                                </div>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label>Expected Salary <small class="text-muted">(Monthly in PHP)</small></label>
+                            <input type="number" name="expected_salary" class="form-control" step="1000" placeholder="e.g., 25000">
+                            <small class="text-muted">Please provide your salary expectation for this position</small>
+                        </div>
+                        
+                        <hr class="my-4">
+                        
+                        <!-- Documents -->
+                        <h5 class="mb-4"><i class="fas fa-file-upload mr-2"></i>Upload Documents</h5>
+                        <div class="form-group">
+                            <label>Resume/CV *</label>
+                            <input type="file" name="resume" class="form-control-file" accept=".pdf,.doc,.docx" required>
+                            <small class="text-muted">Accepted formats: PDF, DOC, DOCX (Max 5MB)</small>
+                            <div id="resumePreview" class="mt-2"></div>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label>Cover Letter <small class="text-muted">(Optional)</small></label>
+                            <input type="file" name="cover_letter" class="form-control-file" accept=".pdf,.doc,.docx">
+                            <small class="text-muted">Accepted formats: PDF, DOC, DOCX (Max 5MB)</small>
+                            <div id="coverLetterPreview" class="mt-2"></div>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label>Personal Data Sheet (PDS) * <span class="text-danger">(Required - Will be sent to Mayor)</span></label>
+                            <input type="file" name="pds" class="form-control-file" accept=".pdf,.doc,.docx" required>
+                            <small class="text-muted">Accepted formats: PDF, DOC, DOCX (Max 5MB)</small>
+                            <div class="alert alert-warning mt-2">
                                 <i class="fas fa-exclamation-triangle mr-2"></i>
-                                <?php echo $error_message; ?>
-                            </div>
-                        <?php endif; ?>
-                        <form method="POST">
-                            <div class="row">
-                                <div class="col-md-6">
-                                    <div class="form-group">
-                                        <label><i class="fas fa-user mr-2"></i>First Name</label>
-                                        <input type="text" name="first_name" class="form-control" required>
-                                    </div>
-                                </div>
-                                <div class="col-md-6">
-                                    <div class="form-group">
-                                        <label><i class="fas fa-user mr-2"></i>Last Name</label>
-                                        <input type="text" name="last_name" class="form-control" required>
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="row">
-                                <div class="col-md-6">
-                                    <div class="form-group">
-                                        <label><i class="fas fa-envelope mr-2"></i>Email Address</label>
-                                        <input type="email" name="email" class="form-control" required>
-                                    </div>
-                                </div>
-                                <div class="col-md-6">
-                                    <div class="form-group">
-                                        <label><i class="fas fa-phone mr-2"></i>Phone Number</label>
-                                        <input type="text" name="phone" class="form-control" required>
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="text-right mt-4">
-                                <a href="public_jobs.php" class="btn btn-secondary mr-3">
-                                    <i class="fas fa-times mr-2"></i>Cancel
+                                <strong>IMPORTANT:</strong> PDS is mandatory and will be forwarded to the Mayor's office for review.
+                                <br>
+                                <strong>Need PDS Template?</strong> 
+                                <a href="uploads/pds_templates/PDS_Template.html" target="_blank" class="btn btn-sm btn-outline-primary ml-2">
+                                    <i class="fas fa-download mr-1"></i>Download PDS Template
                                 </a>
-                                <button type="submit" class="btn btn-primary">
-                                    Next Step <i class="fas fa-arrow-right ml-2"></i>
-                                </button>
+                                <small class="d-block mt-1 text-muted">Print and fill out the PDF template completely, then scan/photo and upload</small>
                             </div>
-                        </form>
-                    <?php elseif ($step == 2): ?>
-                        <div class="mb-4">
-                            <h4 class="text-center mb-3" style="color: var(--primary-dark); font-weight: 700;">
-                                <i class="fas fa-briefcase mr-3" style="font-size: 1.5em; color: var(--primary);"></i>
-                                Professional Information
-                            </h4>
-                            <p class="text-center text-muted">Tell us about your current role</p>
+                            <div id="pdsPreview" class="mt-2"></div>
                         </div>
-                        <form method="POST">
-                            <div class="form-group">
-                                <label><i class="fas fa-id-badge mr-2"></i>Current Position</label>
-                                <input type="text" name="current_position" class="form-control" placeholder="e.g. Software Developer">
-                            </div>
-                            <div class="form-group">
-                                <label><i class="fas fa-building mr-2"></i>Current Company</label>
-                                <input type="text" name="current_company" class="form-control" placeholder="e.g. ABC Corporation">
-                            </div>
-                            <div class="review-card">
-                                <h5 class="mb-3"><i class="fas fa-eye mr-2"></i>Review Your Information</h5>
-                                <div class="row">
-                                    <div class="col-md-6">
-                                        <p><strong>Name:</strong> <?php echo htmlspecialchars($_SESSION['application_data']['first_name'] . ' ' . $_SESSION['application_data']['last_name']); ?></p>
-                                        <p><strong>Email:</strong> <?php echo htmlspecialchars($_SESSION['application_data']['email']); ?></p>
-                                    </div>
-                                    <div class="col-md-6">
-                                        <p><strong>Phone:</strong> <?php echo htmlspecialchars($_SESSION['application_data']['phone']); ?></p>
-                                        <p><strong>Position:</strong> <?php echo htmlspecialchars($job['title']); ?></p>
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="text-center mt-4">
-                                <a href="apply.php?job_id=<?php echo $job_id; ?>&step=1" class="btn btn-secondary mr-3">
-                                    <i class="fas fa-arrow-left mr-2"></i>Previous
-                                </a>
-                                <a href="apply.php?job_id=<?php echo $job_id; ?>&step=3" class="btn btn-primary btn-lg">
-                                    <i class="fas fa-rocket mr-2"></i>Submit Application
-                                </a>
-                            </div>
-                        </form>
-                    <?php endif; ?>
+                        
+                        <div class="text-center mt-5">
+                            <button type="submit" class="btn btn-primary btn-lg" id="submitBtn">
+                                <i class="fas fa-paper-plane mr-2"></i>Submit Application
+                            </button>
+                            <a href="public_jobs.php" class="btn btn-secondary btn-lg ml-3">
+                                <i class="fas fa-arrow-left mr-2"></i>Back to Jobs
+                            </a>
+                        </div>
+                    </form>
                 </div>
             <?php endif; ?>
         </div>
@@ -574,5 +690,192 @@ if (($step == 2 || $step == 3) && !isset($_SESSION)) {
 
     <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
     <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+    <script>
+        let candidateDraftCreated = false;
+        let nameCheckTimeout, emailCheckTimeout;
+        
+        // Real-time name duplicate checker
+        function checkNameDuplicate() {
+            const firstName = document.querySelector('input[name="first_name"]').value.trim();
+            const lastName = document.querySelector('input[name="last_name"]').value.trim();
+            
+            if (firstName && lastName) {
+                clearTimeout(nameCheckTimeout);
+                nameCheckTimeout = setTimeout(() => {
+                    fetch('check_duplicate.php', {
+                        method: 'POST',
+                        headers: {'Content-Type': 'application/x-www-form-urlencoded'},
+                        body: `type=name&first_name=${encodeURIComponent(firstName)}&last_name=${encodeURIComponent(lastName)}`
+                    })
+                    .then(response => response.json())
+                    .then(data => {
+                        const nameAlert = document.getElementById('nameAlert');
+                        if (data.exists) {
+                            nameAlert.innerHTML = `
+                                <div class="alert alert-warning">
+                                    <i class="fas fa-exclamation-triangle mr-2"></i>
+                                    <strong>Duplicate Name Found!</strong><br>
+                                    Email: ${data.data.email}<br>
+                                    Phone: ${data.data.phone || 'Not provided'}<br>
+                                    <small>Is this a different person? You can continue if confirmed.</small>
+                                </div>
+                            `;
+                        } else {
+                            nameAlert.innerHTML = '<div class="alert alert-success"><i class="fas fa-check mr-2"></i>Name available</div>';
+                        }
+                    });
+                }, 500);
+            } else {
+                document.getElementById('nameAlert').innerHTML = '';
+            }
+        }
+        
+        // Real-time email duplicate checker with verification
+        function checkEmailDuplicate() {
+            const email = document.querySelector('input[name="email"]').value.trim();
+            
+            if (email) {
+                clearTimeout(emailCheckTimeout);
+                emailCheckTimeout = setTimeout(() => {
+                    fetch('check_duplicate.php', {
+                        method: 'POST',
+                        headers: {'Content-Type': 'application/x-www-form-urlencoded'},
+                        body: `type=email&email=${encodeURIComponent(email)}`
+                    })
+                    .then(response => response.json())
+                    .then(data => {
+                        const emailAlert = document.getElementById('emailAlert');
+                        if (data.exists) {
+                            emailAlert.innerHTML = `
+                                <div class="alert alert-danger">
+                                    <i class="fas fa-times mr-2"></i>
+                                    <strong>Email Already Registered!</strong><br>
+                                    Name: ${data.data.name}<br>
+                                    Phone: ${data.data.phone || 'Not provided'}<br>
+                                    <small>Please use a different email address.</small>
+                                </div>
+                            `;
+                        } else {
+                            emailAlert.innerHTML = `
+                                <div class="alert alert-info">
+                                    <i class="fas fa-envelope mr-2"></i>
+                                    <strong>Email Available</strong><br>
+                                    <button type="button" class="btn btn-sm btn-primary mt-2" onclick="sendVerificationEmail('${email}')">
+                                        <i class="fas fa-paper-plane mr-1"></i>Send Verification Code
+                                    </button>
+                                    <div id="verificationSection" style="display: none;" class="mt-2">
+                                        <input type="text" id="verificationCode" class="form-control form-control-sm" placeholder="Enter verification code" maxlength="6">
+                                        <button type="button" class="btn btn-sm btn-success mt-1" onclick="verifyEmail('${email}')">
+                                            <i class="fas fa-check mr-1"></i>Verify
+                                        </button>
+                                    </div>
+                                </div>
+                            `;
+                        }
+                    });
+                }, 500);
+            } else {
+                document.getElementById('emailAlert').innerHTML = '';
+            }
+        }
+        
+        // Send verification email
+        function sendVerificationEmail(email) {
+            fetch('send_verification.php', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/x-www-form-urlencoded'},
+                body: `email=${encodeURIComponent(email)}`
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    document.getElementById('verificationSection').style.display = 'block';
+                    // For testing - show the code (remove in production)
+                    if (data.debug_code) {
+                        alert(`Verification code sent! For testing, your code is: ${data.debug_code}`);
+                    } else {
+                        alert('Verification code sent to your email!');
+                    }
+                } else {
+                    alert('Failed to send verification code. Please try again.');
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('Error sending verification code. Please try again.');
+            });
+        }
+        
+        // Verify email code
+        function verifyEmail(email) {
+            const code = document.getElementById('verificationCode').value;
+            if (!code) {
+                alert('Please enter the verification code.');
+                return;
+            }
+            
+            fetch('verify_email.php', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/x-www-form-urlencoded'},
+                body: `email=${encodeURIComponent(email)}&code=${encodeURIComponent(code)}`
+            })
+            .then(response => response.json())
+            .then(data => {
+                const emailAlert = document.getElementById('emailAlert');
+                if (data.success) {
+                    emailAlert.innerHTML = '<div class="alert alert-success"><i class="fas fa-check mr-2"></i>Email verified successfully!</div>';
+                    candidateDraftCreated = true;
+                } else {
+                    alert('Invalid verification code. Please try again.');
+                }
+            });
+        }
+        
+        // Attach event listeners
+        document.querySelector('input[name="first_name"]').addEventListener('input', checkNameDuplicate);
+        document.querySelector('input[name="last_name"]').addEventListener('input', checkNameDuplicate);
+        document.querySelector('input[name="email"]').addEventListener('input', checkEmailDuplicate);
+        
+        // File preview and validation function
+        function setupFileValidation(inputName, previewId) {
+            document.querySelector(`input[name="${inputName}"]`).addEventListener('change', function(e) {
+                const file = e.target.files[0];
+                const preview = document.getElementById(previewId);
+                
+                if (file) {
+                    const fileSize = (file.size / 1024 / 1024).toFixed(2);
+                    const allowedTypes = ['application/pdf', 'application/msword', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'];
+                    
+                    if (!allowedTypes.includes(file.type)) {
+                        preview.innerHTML = '<div class="alert alert-danger">Invalid file type. Please upload PDF, DOC, or DOCX files only.</div>';
+                        e.target.value = '';
+                        return;
+                    }
+                    
+                    if (fileSize > 5) {
+                        preview.innerHTML = '<div class="alert alert-danger">File too large. Maximum size is 5MB.</div>';
+                        e.target.value = '';
+                        return;
+                    }
+                    
+                    preview.innerHTML = `<div class="alert alert-success"><i class="fas fa-file mr-2"></i>${file.name} (${fileSize} MB) - Ready to upload</div>`;
+                } else {
+                    preview.innerHTML = '';
+                }
+            });
+        }
+        
+        // Setup file validation for all file inputs
+        setupFileValidation('resume', 'resumePreview');
+        setupFileValidation('cover_letter', 'coverLetterPreview');
+        setupFileValidation('pds', 'pdsPreview');
+        
+        // Form submission confirmation
+        document.getElementById('applicationForm').addEventListener('submit', function(e) {
+            const submitBtn = document.getElementById('submitBtn');
+            submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i>Submitting...';
+            submitBtn.disabled = true;
+        });
+    </script>
 </body>
 </html>

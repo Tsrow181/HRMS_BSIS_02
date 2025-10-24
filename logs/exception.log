@@ -54,3 +54,69 @@
 2025-10-12 08:21:48 Exception: Call to undefined method PDOStatement::bind_param() in C:\xampp\htdocs\HRMS_BSIS_02-test\candidates.php on line 394
 2025-10-12 08:23:35 Exception: Call to undefined method PDOStatement::bind_param() in C:\xampp\htdocs\HRMS_BSIS_02-test\candidates.php on line 394
 2025-10-12 08:24:27 Exception: Call to undefined method PDOStatement::bind_param() in C:\xampp\htdocs\HRMS_BSIS_02-test\candidates.php on line 394
+2025-10-24 04:05:43 Exception: Class "EmailConfig" not found in C:\xampp\htdocs\HRMS_BSIS_02-test\job_offers.php on line 525
+2025-10-24 04:05:57 Exception: Class "EmailConfig" not found in C:\xampp\htdocs\HRMS_BSIS_02-test\job_offers.php on line 525
+2025-10-24 04:05:58 Exception: Class "EmailConfig" not found in C:\xampp\htdocs\HRMS_BSIS_02-test\job_offers.php on line 525
+2025-10-24 04:10:23 Exception: Class "EmailConfig" not found in C:\xampp\htdocs\HRMS_BSIS_02-test\job_offers.php on line 525
+2025-10-24 04:10:38 Exception: Class "EmailConfig" not found in C:\xampp\htdocs\HRMS_BSIS_02-test\job_offers.php on line 525
+2025-10-24 04:19:47 Exception: Class "EmailConfig" not found in C:\xampp\htdocs\HRMS_BSIS_02-test2\job_offers.php on line 525
+2025-10-24 04:21:10 Exception: Class "EmailConfig" not found in C:\xampp\htdocs\HRMS_BSIS_02-test2\job_offers.php on line 525
+2025-10-24 04:37:41 Exception: Class "EmailConfig" not found in C:\xampp\htdocs\HRMS_BSIS_02-test2\job_offers.php on line 525
+2025-10-24 04:39:19 Exception: Class "EmailConfig" not found in C:\xampp\htdocs\HRMS_BSIS_02-test2\job_offers.php on line 525
+2025-10-24 06:50:00 Exception: Call to undefined method PDOStatement::bind_param() in C:\xampp\htdocs\HRMS_BSIS_02-test2\candidates.php on line 394
+2025-10-24 07:06:02 Exception: Call to undefined method PDOStatement::bind_param() in C:\xampp\htdocs\HRMS_BSIS_02-test2\candidates.php on line 394
+2025-10-24 07:17:16 Exception: This email is already registered with a different name. Please use a different email or contact support. in C:\xampp\htdocs\HRMS_BSIS_02-test2\apply.php on line 41
+2025-10-24 07:29:50 Exception: Call to undefined method PDOStatement::bind_param() in C:\xampp\htdocs\HRMS_BSIS_02-test2\candidates.php on line 406
+2025-10-24 07:32:20 Exception: Call to undefined method PDOStatement::bind_param() in C:\xampp\htdocs\HRMS_BSIS_02-test2\candidates.php on line 406
+2025-10-24 07:35:09 Exception: Call to undefined method PDOStatement::bind_param() in C:\xampp\htdocs\HRMS_BSIS_02-test2\candidates.php on line 406
+2025-10-24 07:50:49 Exception: Call to undefined method PDOStatement::bind_param() in C:\xampp\htdocs\HRMS_BSIS_02-test2\candidates.php on line 406
+2025-10-24 08:04:55 Exception: Call to undefined method PDOStatement::bind_param() in C:\xampp\htdocs\HRMS_BSIS_02-test2\candidates.php on line 406
+2025-10-24 08:05:53 Exception: Call to undefined method PDOStatement::bind_param() in C:\xampp\htdocs\HRMS_BSIS_02-test2\candidates.php on line 406
+2025-10-24 08:06:12 Exception: Call to undefined method PDOStatement::bind_param() in C:\xampp\htdocs\HRMS_BSIS_02-test2\candidates.php on line 406
+2025-10-24 08:06:19 Exception: Call to undefined method PDOStatement::bind_param() in C:\xampp\htdocs\HRMS_BSIS_02-test2\candidates.php on line 406
+2025-10-24 08:08:10 Exception: Call to undefined method PDOStatement::bind_param() in C:\xampp\htdocs\HRMS_BSIS_02-test2\candidates.php on line 415
+2025-10-24 08:08:17 Exception: Call to undefined method PDOStatement::bind_param() in C:\xampp\htdocs\HRMS_BSIS_02-test2\candidates.php on line 421
+2025-10-24 08:08:34 Exception: Call to undefined method PDOStatement::bind_param() in C:\xampp\htdocs\HRMS_BSIS_02-test2\candidates.php on line 421
+2025-10-24 08:08:39 Exception: Call to undefined method PDOStatement::bind_param() in C:\xampp\htdocs\HRMS_BSIS_02-test2\candidates.php on line 421
+2025-10-24 08:12:19 Exception: Call to undefined method PDOStatement::bind_param() in C:\xampp\htdocs\HRMS_BSIS_02-test2\candidates.php on line 421
+2025-10-24 08:13:04 Exception: Call to undefined method PDOStatement::bind_param() in C:\xampp\htdocs\HRMS_BSIS_02-test2\candidates.php on line 421
+2025-10-24 08:13:19 Exception: Call to undefined method PDOStatement::bind_param() in C:\xampp\htdocs\HRMS_BSIS_02-test2\candidates.php on line 421
+2025-10-24 08:15:33 Exception: Call to undefined method PDOStatement::bind_param() in C:\xampp\htdocs\HRMS_BSIS_02-test2\candidates.php on line 445
+2025-10-24 08:15:37 Exception: Call to undefined method PDOStatement::bind_param() in C:\xampp\htdocs\HRMS_BSIS_02-test2\candidates.php on line 445
+2025-10-24 08:18:40 Exception: Call to undefined method PDOStatement::bind_param() in C:\xampp\htdocs\HRMS_BSIS_02-test2\candidates.php on line 450
+2025-10-24 08:19:09 Exception: Call to undefined method PDOStatement::bind_param() in C:\xampp\htdocs\HRMS_BSIS_02-test2\candidates.php on line 450
+2025-10-24 08:19:11 Exception: Call to undefined method PDOStatement::bind_param() in C:\xampp\htdocs\HRMS_BSIS_02-test2\candidates.php on line 450
+2025-10-24 08:21:01 Exception: Call to undefined method PDOStatement::bind_param() in C:\xampp\htdocs\HRMS_BSIS_02-test2\candidates.php on line 450
+2025-10-24 08:22:38 Exception: Call to undefined method PDOStatement::bind_param() in C:\xampp\htdocs\HRMS_BSIS_02-test2\candidates.php on line 451
+2025-10-24 08:22:41 Exception: Call to undefined method PDOStatement::bind_param() in C:\xampp\htdocs\HRMS_BSIS_02-test2\candidates.php on line 451
+2025-10-24 08:24:12 Exception: Call to undefined method PDOStatement::bind_param() in C:\xampp\htdocs\HRMS_BSIS_02-test2\candidates.php on line 649
+2025-10-24 08:24:15 Exception: Call to undefined method PDOStatement::bind_param() in C:\xampp\htdocs\HRMS_BSIS_02-test2\candidates.php on line 649
+2025-10-24 08:24:16 Exception: Call to undefined method PDOStatement::bind_param() in C:\xampp\htdocs\HRMS_BSIS_02-test2\candidates.php on line 649
+2025-10-24 08:25:10 Exception: Call to undefined method PDOStatement::bind_param() in C:\xampp\htdocs\HRMS_BSIS_02-test2\candidates.php on line 436
+2025-10-24 08:26:18 Exception: Call to undefined method PDOStatement::bind_param() in C:\xampp\htdocs\HRMS_BSIS_02-test2\candidates.php on line 436
+2025-10-24 08:26:21 Exception: Call to undefined method PDOStatement::bind_param() in C:\xampp\htdocs\HRMS_BSIS_02-test2\candidates.php on line 436
+2025-10-24 08:28:00 Exception: Call to undefined method PDOStatement::bind_param() in C:\xampp\htdocs\HRMS_BSIS_02-test2\candidates.php on line 436
+2025-10-24 08:28:18 Exception: Call to undefined method PDOStatement::bind_param() in C:\xampp\htdocs\HRMS_BSIS_02-test2\candidates.php on line 436
+2025-10-24 08:30:43 Exception: Call to undefined method PDOStatement::bind_param() in C:\xampp\htdocs\HRMS_BSIS_02-test2\candidates.php on line 436
+2025-10-24 08:32:19 Exception: Call to undefined method PDOStatement::bind_param() in C:\xampp\htdocs\HRMS_BSIS_02-test2\candidates.php on line 436
+2025-10-24 08:34:23 Exception: Call to undefined method PDOStatement::bind_param() in C:\xampp\htdocs\HRMS_BSIS_02-test2\candidates.php on line 436
+2025-10-24 08:34:28 Exception: Call to undefined method PDOStatement::bind_param() in C:\xampp\htdocs\HRMS_BSIS_02-test2\candidates.php on line 436
+2025-10-24 08:36:25 Exception: Call to undefined method PDOStatement::bind_param() in C:\xampp\htdocs\HRMS_BSIS_02-test2\candidates.php on line 436
+2025-10-24 08:36:28 Exception: Call to undefined method PDOStatement::bind_param() in C:\xampp\htdocs\HRMS_BSIS_02-test2\candidates.php on line 436
+2025-10-24 08:36:43 Exception: Call to undefined method PDOStatement::bind_param() in C:\xampp\htdocs\HRMS_BSIS_02-test2\candidates.php on line 436
+2025-10-24 08:41:01 Exception: Call to undefined method PDOStatement::bind_param() in C:\xampp\htdocs\HRMS_BSIS_02-test2\candidates.php on line 436
+2025-10-24 08:54:58 Exception: Call to undefined method PDOStatement::bind_param() in C:\xampp\htdocs\HRMS_BSIS_02-test2\candidates.php on line 436
+2025-10-24 08:59:47 Exception: Call to undefined method PDOStatement::bind_param() in C:\xampp\htdocs\HRMS_BSIS_02-test2\candidates.php on line 436
+2025-10-24 09:09:04 Exception: Call to undefined method PDOStatement::bind_param() in C:\xampp\htdocs\HRMS_BSIS_02-test2\candidates.php on line 612
+2025-10-24 09:09:45 Exception: Call to undefined method PDOStatement::bind_param() in C:\xampp\htdocs\HRMS_BSIS_02-test2\candidates.php on line 612
+2025-10-24 09:10:06 Exception: Call to undefined method PDOStatement::bind_param() in C:\xampp\htdocs\HRMS_BSIS_02-test2\candidates.php on line 612
+2025-10-24 09:10:14 Exception: Call to undefined method PDOStatement::bind_param() in C:\xampp\htdocs\HRMS_BSIS_02-test2\candidates.php on line 612
+2025-10-24 09:12:43 Exception: Call to undefined method PDOStatement::bind_param() in C:\xampp\htdocs\HRMS_BSIS_02-test2\candidates.php on line 612
+2025-10-24 09:15:42 Exception: Call to undefined method PDOStatement::bind_param() in C:\xampp\htdocs\HRMS_BSIS_02-test2\candidates.php on line 613
+2025-10-24 09:16:39 Exception: Call to undefined method PDOStatement::bind_param() in C:\xampp\htdocs\HRMS_BSIS_02-test2\candidates.php on line 613
+2025-10-24 09:16:57 Exception: Call to undefined method PDOStatement::bind_param() in C:\xampp\htdocs\HRMS_BSIS_02-test2\candidates.php on line 613
+2025-10-24 09:17:05 Exception: Call to undefined method PDOStatement::bind_param() in C:\xampp\htdocs\HRMS_BSIS_02-test2\candidates.php on line 613
+2025-10-24 09:17:24 Exception: Call to undefined method PDOStatement::bind_param() in C:\xampp\htdocs\HRMS_BSIS_02-test2\candidates.php on line 613
+2025-10-24 09:17:37 Exception: Call to undefined method PDOStatement::bind_param() in C:\xampp\htdocs\HRMS_BSIS_02-test2\candidates.php on line 613
+2025-10-24 09:35:14 Exception: Call to undefined method PDOStatement::bind_param() in C:\xampp\htdocs\HRMS_BSIS_02-test2\candidates.php on line 655
+2025-10-24 09:39:15 Exception: SQLSTATE[42S02]: Base table or view not found: 1146 Table 'hr_system.onboarding' doesn't exist in C:\xampp\htdocs\HRMS_BSIS_02-test2\candidates.php on line 33
