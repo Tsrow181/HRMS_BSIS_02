@@ -59,23 +59,50 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['submitLeaveRequest'])
             }
         }
 
-        try {
-            $sql = "INSERT INTO leave_requests (employee_id, leave_type_id, start_date, end_date, total_days, reason, status, applied_on, document_path)
-                    VALUES (?, ?, ?, ?, ?, ?, 'Pending', NOW(), ?)";
-            $stmt = $conn->prepare($sql);
-            $stmt->execute([$employee_id, $leaveTypeId, $startDate, $endDate, $duration, $reason, $documentPath]);
-            $leave_id = $conn->lastInsertId();
-            error_log("Employee leave: About to log activity for leave_id $leave_id");
-            logActivity("Leave Request Submitted", "leave_requests", $leave_id, [
-                'leave_type_id' => $leaveTypeId,
-                'start_date' => $startDate,
-                'end_date' => $endDate,
-                'total_days' => $duration,
-                'reason' => $reason
-            ]);
-            $success = "Leave request submitted successfully!";
-        } catch (PDOException $e) {
-            $error = "Error submitting leave request: " . $e->getMessage();
+        // Validate gender-based leave restrictions
+        $genderValidation = validateLeaveRequestByGender($employee_id, $leaveTypeId);
+        if (!$genderValidation['valid']) {
+            $error = $genderValidation['message'];
+        } else {
+            try {
+                $sql = "INSERT INTO leave_requests (employee_id, leave_type_id, start_date, end_date, total_days, reason, document_path, status, applied_on)
+                        VALUES (?, ?, ?, ?, ?, ?, ?, 'Pending', NOW())";
+                $stmt = $conn->prepare($sql);
+                $stmt->execute([$employee_id, $leaveTypeId, $startDate, $endDate, $duration, $reason, $documentPath]);
+                $leave_id = $conn->lastInsertId();
+                error_log("Employee leave: About to log activity for leave_id $leave_id");
+                logActivity("Leave Request Submitted", "leave_requests", $leave_id, [
+                    'leave_type_id' => $leaveTypeId,
+                    'start_date' => $startDate,
+                    'end_date' => $endDate,
+                    'total_days' => $duration,
+                    'reason' => $reason
+                ]);
+
+                // If a document was uploaded, add it to document_management
+                if ($documentPath) {
+                    try {
+                        $documentName = "Leave Request Document - " . date('M d, Y', strtotime($startDate)) . " to " . date('M d, Y', strtotime($endDate));
+                        $docSql = "INSERT INTO document_management (employee_id, document_type, document_name, file_path, document_status, notes, created_at)
+                                   VALUES (?, 'Leave Document', ?, ?, 'Active', ?, NOW())";
+                        $docStmt = $conn->prepare($docSql);
+                        $docStmt->execute([$employee_id, $documentName, $documentPath, "Leave request document for " . $reason]);
+                        error_log("Employee leave: Document added to document_management for leave_id $leave_id");
+                    } catch (PDOException $e) {
+                        error_log("Employee leave: Error adding document to document_management: " . $e->getMessage());
+                        // Don't fail the leave request if document insertion fails
+                    }
+                }
+
+                $success = "Leave request submitted successfully!";
+
+                // Update shift status if leave is approved and currently active
+                require_once 'shift_status_functions.php';
+                updateAllEmployeesShiftStatusBasedOnLeave();
+
+            } catch (PDOException $e) {
+                $error = "Error submitting leave request: " . $e->getMessage();
+            }
         }
     }
 }
@@ -120,7 +147,9 @@ if ($employee_id) {
     $leaveBalances = [];
     $leaveRequests = [];
 }
-if (function_exists('getLeaveTypes')) {
+if ($employee_id && function_exists('getLeaveTypesForEmployee')) {
+    $leaveTypes = getLeaveTypesForEmployee($employee_id);
+} elseif (function_exists('getLeaveTypes')) {
     $leaveTypes = getLeaveTypes();
 } else {
     $leaveTypes = [];
@@ -277,6 +306,7 @@ if (function_exists('getLeaveTypes')) {
                                                     <th>Duration</th>
                                                     <th>Reason</th>
                                                     <th>Status</th>
+                                                    <th>Document</th>
                                                     <th>Applied On</th>
                                                 </tr>
                                             </thead>
@@ -288,6 +318,14 @@ if (function_exists('getLeaveTypes')) {
                                                     <td><?php echo htmlspecialchars($request['total_days']); ?> days</td>
                                                     <td><?php echo htmlspecialchars($request['reason']); ?></td>
                                                     <td><span class="status-badge badge-<?php echo strtolower($request['status']); ?>"><?php echo htmlspecialchars($request['status']); ?></span></td>
+<<<<<<< HEAD
+                                                    <td><?php if ($request['document_path']): ?><a href="#" class="btn btn-sm btn-info view-document" data-path="<?php echo htmlspecialchars($request['document_path']); ?>" data-type="<?php echo strtolower(pathinfo($request['document_path'], PATHINFO_EXTENSION)) === 'pdf' ? 'pdf' : 'image'; ?>"><i class="fas fa-eye mr-1"></i>View</a><?php endif; ?></td>
+=======
+                                                    <td><?php if ($request['document_path']): ?>
+                                                        <button class="btn btn-sm btn-outline-primary mr-1" onclick="viewDocument('<?php echo htmlspecialchars($request['document_path']); ?>', '<?php echo htmlspecialchars($request['leave_type_name']); ?>', '<?php echo htmlspecialchars($request['start_date']); ?> to <?php echo htmlspecialchars($request['end_date']); ?>')"><i class="fas fa-eye"></i> View</button>
+                                                        <a href="<?php echo htmlspecialchars($request['document_path']); ?>" download class="btn btn-sm btn-outline-secondary"><i class="fas fa-download"></i> Download</a>
+                                                    <?php endif; ?></td>
+>>>>>>> 48f0fd909401d87fc7e82ce488dfd81cd0dfc6fa
                                                     <td><?php echo htmlspecialchars(date('M d, Y', strtotime($request['applied_on']))); ?></td>
                                                 </tr>
                                                 <?php endforeach; ?>
@@ -356,8 +394,86 @@ if (function_exists('getLeaveTypes')) {
         </div>
     </div>
 
+    <!-- Document Viewer Modal -->
+<<<<<<< HEAD
+    <div class="modal fade" id="documentViewerModal" tabindex="-1" role="dialog" aria-labelledby="documentViewerModalLabel" aria-hidden="true">
+=======
+    <div id="documentViewerModal" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="documentViewerModalLabel" aria-hidden="true">
+>>>>>>> 48f0fd909401d87fc7e82ce488dfd81cd0dfc6fa
+        <div class="modal-dialog modal-lg" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="documentViewerModalLabel">Document Viewer</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <div id="documentViewerContent">
+                        <!-- Document content will be loaded here -->
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+<<<<<<< HEAD
+=======
+                    <a id="downloadDocumentBtn" href="#" target="_blank" class="btn btn-primary">Download Document</a>
+>>>>>>> 48f0fd909401d87fc7e82ce488dfd81cd0dfc6fa
+                </div>
+            </div>
+        </div>
+    </div>
+
+<<<<<<< HEAD
     <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+=======
+    <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
+>>>>>>> 48f0fd909401d87fc7e82ce488dfd81cd0dfc6fa
     <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.1/dist/umd/popper.min.js"></script>
     <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+
+    <script>
+<<<<<<< HEAD
+        $(document).ready(function() {
+            $('.view-document').on('click', function(e) {
+                e.preventDefault();
+                var documentPath = $(this).data('path');
+                var documentType = $(this).data('type');
+
+                $('#documentViewerContent').empty();
+
+                if (documentType === 'pdf') {
+                    $('#documentViewerContent').html('<iframe src="' + documentPath + '" width="100%" height="600px" style="border: none;"></iframe>');
+                } else if (documentType === 'image') {
+                    $('#documentViewerContent').html('<img src="' + documentPath + '" class="img-fluid" alt="Document">');
+                }
+
+                $('#documentViewerModal').modal('show');
+            });
+        });
+=======
+        function viewDocument(documentPath, leaveType, dates) {
+            var fileExtension = documentPath.split('.').pop().toLowerCase();
+            var content = '';
+
+            // Update modal title
+            $('#documentViewerModalLabel').text('Document Viewer - ' + leaveType + ' (' + dates + ')');
+
+            // Set download link
+            $('#downloadDocumentBtn').attr('href', documentPath);
+
+            if (fileExtension === 'pdf') {
+                content = '<iframe src="view_document.php?file=' + encodeURIComponent(documentPath) + '" width="100%" height="600px" style="border: none;"></iframe>';
+            } else if (fileExtension === 'jpg' || fileExtension === 'jpeg' || fileExtension === 'png') {
+                content = '<img src="view_document.php?file=' + encodeURIComponent(documentPath) + '" class="img-fluid" alt="Document Image" style="max-width: 100%; max-height: 600px;">';
+            } else {
+                content = '<div class="alert alert-warning">Unsupported file type. <a href="' + documentPath + '" target="_blank">Click here to download and view the file</a></div>';
+            }
+
+            $('#documentViewerContent').html(content);
+            $('#documentViewerModal').modal('show');
+        }
+>>>>>>> 48f0fd909401d87fc7e82ce488dfd81cd0dfc6fa
+    </script>
 </body>
 </html>

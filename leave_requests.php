@@ -9,6 +9,8 @@ if (!isset($_SESSION['loggedin']) || $_SESSION['loggedin'] !== true) {
 
 // Include database connection
 require_once 'dp.php';
+// Include employee status functions
+require_once 'employee_status_functions.php';
 
 // Get current user ID
 $user_id = $_SESSION['user_id'];
@@ -29,9 +31,25 @@ function getLeaveRequests() {
     if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         if (isset($_POST['approveRequest'])) {
             $requestId = $_POST['requestId'];
+            
+            // Get employee_id for this leave request
+            $empStmt = $conn->prepare("SELECT employee_id FROM leave_requests WHERE leave_id = ?");
+            $empStmt->execute([$requestId]);
+            $employee_id = $empStmt->fetchColumn();
+            
             $sql = "UPDATE leave_requests SET status = 'Approved' WHERE leave_id = ?";
             $stmt = $conn->prepare($sql);
             $stmt->execute([$requestId]);
+            
+            // Update employee status based on leave approval
+            if ($employee_id) {
+                handleLeaveStatusChange($employee_id, 'Approved');
+            }
+
+            // Update shift status based on leave approval
+            require_once 'shift_status_functions.php';
+            updateShiftStatusOnLeaveApproval($requestId);
+            
             error_log("Leave requests: About to log approve for request $requestId");
             error_log("Logging activity: Leave request #$requestId approved by user ID $user_id");
             logActivity("Leave request #$requestId approved by user ID $user_id", "leave_requests", $requestId);
@@ -40,9 +58,21 @@ function getLeaveRequests() {
             exit;
         } elseif (isset($_POST['rejectRequest'])) {
             $requestId = $_POST['requestId'];
+            
+            // Get employee_id for this leave request
+            $empStmt = $conn->prepare("SELECT employee_id FROM leave_requests WHERE leave_id = ?");
+            $empStmt->execute([$requestId]);
+            $employee_id = $empStmt->fetchColumn();
+            
             $sql = "UPDATE leave_requests SET status = 'Rejected' WHERE leave_id = ?";
             $stmt = $conn->prepare($sql);
             $stmt->execute([$requestId]);
+            
+            // Update employee status based on leave rejection
+            if ($employee_id) {
+                handleLeaveStatusChange($employee_id, 'Rejected');
+            }
+            
             error_log("Leave requests: About to log reject for request $requestId");
             error_log("Logging activity: Leave request #$requestId rejected by user ID $user_id");
             logActivity("Leave request #$requestId rejected by user ID $user_id", "leave_requests", $requestId);
@@ -78,8 +108,8 @@ function getLeaveRequests() {
         }
 
         try {
-            $sql = "INSERT INTO leave_requests (employee_id, leave_type_id, start_date, end_date, total_days, reason, status, applied_on, document_path)
-                    VALUES (?, ?, ?, ?, ?, ?, 'Pending', NOW(), ?)";
+            $sql = "INSERT INTO leave_requests (employee_id, leave_type_id, start_date, end_date, total_days, reason, document_path, status, applied_on)
+                    VALUES (?, ?, ?, ?, ?, ?, ?, 'Pending', NOW())";
             $stmt = $conn->prepare($sql);
             $stmt->execute([$employeeId, $leaveTypeId, $startDate, $endDate, $duration, $reason, $documentPath]);
             error_log("Logging activity: New leave request submitted by employee ID $employeeId");
@@ -225,7 +255,14 @@ $rejectedPercentage = $totalRequests > 0 ? ($rejectedRequests / $totalRequests) 
                                                 <td><?php echo htmlspecialchars($request['total_days']); ?></td>
                                                 <td><?php echo htmlspecialchars($request['reason']); ?></td>
                                                 <td><span class="status-badge badge-<?php echo strtolower($request['status']); ?>"><?php echo htmlspecialchars($request['status']); ?></span></td>
-                                                <td><?php if ($request['document_path']): ?><a href="<?php echo htmlspecialchars($request['document_path']); ?>" target="_blank">View</a><?php endif; ?></td>
+<<<<<<< HEAD
+                                                <td><?php if ($request['document_path']): ?><a href="#" class="btn btn-sm btn-info view-document" data-path="<?php echo htmlspecialchars($request['document_path']); ?>" data-type="<?php echo strtolower(pathinfo($request['document_path'], PATHINFO_EXTENSION)) === 'pdf' ? 'pdf' : 'image'; ?>"><i class="fas fa-eye mr-1"></i>View</a><?php endif; ?></td>
+=======
+                                                <td><?php if ($request['document_path']): ?>
+                                                    <button class="btn btn-sm btn-outline-primary mr-1" onclick="viewDocument('<?php echo htmlspecialchars($request['document_path']); ?>', '<?php echo htmlspecialchars($request['employee_name']); ?>', '<?php echo htmlspecialchars($request['leave_type_name']); ?>', '<?php echo htmlspecialchars($request['start_date']); ?> to <?php echo htmlspecialchars($request['end_date']); ?>')"><i class="fas fa-eye"></i> View</button>
+                                                    <a href="<?php echo htmlspecialchars($request['document_path']); ?>" download class="btn btn-sm btn-outline-secondary"><i class="fas fa-download"></i> Download</a>
+                                                <?php endif; ?></td>
+>>>>>>> 48f0fd909401d87fc7e82ce488dfd81cd0dfc6fa
                                                 <td>
                                                     <?php if ($request['status'] == 'Pending'): ?>
                                                     <form method="POST" style="display:inline;">
@@ -345,6 +382,29 @@ $rejectedPercentage = $totalRequests > 0 ? ($rejectedRequests / $totalRequests) 
         </div>
     </div>
 
+    <!-- Document Viewer Modal -->
+    <div id="documentViewerModal" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="documentViewerModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="documentViewerModalLabel">Document Viewer</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <div id="documentViewerContent">
+                        <!-- Document content will be loaded here -->
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                    <a id="downloadDocumentBtn" href="#" target="_blank" class="btn btn-primary">Download Document</a>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <!-- New Request Modal -->
     <div class="modal fade" id="newRequestModal" tabindex="-1" role="dialog" aria-labelledby="newRequestModalLabel" aria-hidden="true">
         <div class="modal-dialog" role="document">
@@ -407,6 +467,28 @@ $rejectedPercentage = $totalRequests > 0 ? ($rejectedRequests / $totalRequests) 
         </div>
     </div>
 
+    <!-- Document Viewer Modal -->
+    <div class="modal fade" id="documentViewerModal" tabindex="-1" role="dialog" aria-labelledby="documentViewerModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="documentViewerModalLabel">Document Viewer</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <div id="documentViewerContent">
+                        <!-- Document content will be loaded here -->
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.1/dist/umd/popper.min.js"></script>
     <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
@@ -436,6 +518,28 @@ $rejectedPercentage = $totalRequests > 0 ? ($rejectedRequests / $totalRequests) 
             });
         }
 
+        function viewDocument(documentPath, employeeName, leaveType, dates) {
+            var fileExtension = documentPath.split('.').pop().toLowerCase();
+            var content = '';
+
+            // Update modal title
+            $('#documentViewerModalLabel').text('Document Viewer - ' + employeeName + ' (' + leaveType + ' - ' + dates + ')');
+
+            // Set download link
+            $('#downloadDocumentBtn').attr('href', documentPath);
+
+            if (fileExtension === 'pdf') {
+                content = '<iframe src="view_document.php?file=' + encodeURIComponent(documentPath) + '" width="100%" height="600px" style="border: none;"></iframe>';
+            } else if (fileExtension === 'jpg' || fileExtension === 'jpeg' || fileExtension === 'png') {
+                content = '<img src="view_document.php?file=' + encodeURIComponent(documentPath) + '" class="img-fluid" alt="Document Image" style="max-width: 100%; max-height: 600px;">';
+            } else {
+                content = '<div class="alert alert-warning">Unsupported file type. <a href="' + documentPath + '" target="_blank">Click here to download and view the file</a></div>';
+            }
+
+            $('#documentViewerContent').html(content);
+            $('#documentViewerModal').modal('show');
+        }
+
         $(document).ready(function() {
             fetchRecentActivity();
             setInterval(fetchRecentActivity, 30000); // Refresh every 30 seconds
@@ -443,6 +547,23 @@ $rejectedPercentage = $totalRequests > 0 ? ($rejectedRequests / $totalRequests) 
             // Hide action buttons immediately after clicking to prevent multiple submissions
             $('button[name="approveRequest"], button[name="rejectRequest"]').on('click', function() {
                 $(this).closest('td').find('button').hide();
+            });
+
+            // Document viewer functionality
+            $('.view-document').on('click', function(e) {
+                e.preventDefault();
+                var documentPath = $(this).data('path');
+                var documentType = $(this).data('type');
+
+                $('#documentViewerContent').empty();
+
+                if (documentType === 'pdf') {
+                    $('#documentViewerContent').html('<iframe src="' + documentPath + '" width="100%" height="600px" style="border: none;"></iframe>');
+                } else if (documentType === 'image') {
+                    $('#documentViewerContent').html('<img src="' + documentPath + '" class="img-fluid" alt="Document">');
+                }
+
+                $('#documentViewerModal').modal('show');
             });
         });
     </script>

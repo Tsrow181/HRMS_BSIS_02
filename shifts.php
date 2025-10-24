@@ -14,6 +14,12 @@ require_once 'dp.php';
 function calculateDuration($start_time, $end_time) {
     $start = new DateTime($start_time);
     $end = new DateTime($end_time);
+
+    // If end time is before start time, assume it's overnight and add 24 hours
+    if ($end < $start) {
+        $end->modify('+1 day');
+    }
+
     $interval = $start->diff($end);
     return $interval->format('%h hours %i minutes');
 }
