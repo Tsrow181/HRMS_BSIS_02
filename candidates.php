@@ -22,7 +22,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 $app_stmt->execute([$application_id]);
                 $app_data = $app_stmt->fetch(PDO::FETCH_ASSOC);
                 
-                // Update application status to Reference Check
+                                // Update application status to Reference Check
                 $stmt = $conn->prepare("UPDATE job_applications SET status = 'Reference Check' WHERE application_id = ?");
                 $stmt->execute([$application_id]);
                 
