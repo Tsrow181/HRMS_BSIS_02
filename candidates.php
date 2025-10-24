@@ -20,14 +20,64 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     
                     $application_id = $_POST['application_id'];
                     
-                    // Get application and job details
-                    $app_stmt = $conn->prepare("SELECT ja.candidate_id, jo.department_id FROM job_applications ja JOIN job_openings jo ON ja.job_opening_id = jo.job_opening_id WHERE ja.application_id = ?");
+                    // Get application and candidate details
+                    $app_stmt = $conn->prepare("SELECT ja.candidate_id, jo.department_id, jo.job_role_id, c.* 
+                                              FROM job_applications ja 
+                                              JOIN job_openings jo ON ja.job_opening_id = jo.job_opening_id 
+                                              JOIN candidates c ON ja.candidate_id = c.candidate_id 
+                                              WHERE ja.application_id = ?");
                     $app_stmt->execute([$application_id]);
                     $app_data = $app_stmt->fetch(PDO::FETCH_ASSOC);
                     
                     if (!$app_data) {
                         throw new Exception("Application not found");
                     }
+                    
+                    // First create personal information record
+                    $personal_stmt = $conn->prepare("INSERT INTO personal_information 
+                        (first_name, last_name, date_of_birth, gender, marital_status, nationality, 
+                         tax_id, social_security_number, phone_number, emergency_contact_name, 
+                         emergency_contact_relationship, emergency_contact_phone) 
+                        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
+                    
+                    $personal_stmt->execute([
+                        $app_data['first_name'],
+                        $app_data['last_name'],
+                        $app_data['date_of_birth'] ?? date('Y-m-d'),
+                        $app_data['gender'] ?? 'Prefer not to say',
+                        $app_data['marital_status'] ?? 'Single',
+                        $app_data['nationality'] ?? 'Filipino',
+                        $app_data['tax_id'] ?? null,
+                        $app_data['ssn'] ?? null,
+                        $app_data['phone'],
+                        $app_data['emergency_contact'] ?? null,
+                        $app_data['emergency_relation'] ?? null,
+                        $app_data['emergency_phone'] ?? null
+                    ]);
+                    
+                    $personal_info_id = $conn->lastInsertId();
+                    
+                    // Create employee profile with the personal info ID
+                    $emp_number = 'EMP' . str_pad($app_data['candidate_id'], 4, '0', STR_PAD_LEFT);
+                    $emp_stmt = $conn->prepare("INSERT INTO employee_profiles 
+                        (employee_number, personal_info_id, job_role_id, hire_date, employment_status,
+                         current_salary, work_email, work_phone, location, remote_work) 
+                        VALUES (?, ?, ?, CURDATE(), 'Full-time', ?, ?, ?, ?, false)");
+                    
+                    $emp_stmt->execute([
+                        $emp_number,
+                        $personal_info_id,
+                        $app_data['job_role_id'],
+                        $app_data['expected_salary'] ?? 0,
+                        $app_data['email'],
+                        $app_data['phone'],
+                        $app_data['preferred_location'] ?? 'Main Office'
+                    ]);
+                    $employee_id = $conn->lastInsertId();
+                    
+                    // Link candidate documents to the new employee
+                    require_once 'link_candidate_documents.php';
+                    linkCandidateDocuments($app_data['candidate_id'], $employee_id, $conn);
                     
                     // Update application status to Reference Check
                     $stmt = $conn->prepare("UPDATE job_applications SET status = 'Reference Check' WHERE application_id = ?");
@@ -38,14 +88,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     $completion_date = date('Y-m-d', strtotime('+7 days')); // 1 week to complete reference checks
                     
                     $onboarding_stmt = $conn->prepare("INSERT INTO employee_onboarding (employee_id, start_date, expected_completion_date, status) VALUES (?, ?, ?, 'Pending Reference Check')");
-                    $onboarding_stmt->execute([$application_id, $start_date, $completion_date]);
+                    $onboarding_stmt->execute([$employee_id, $start_date, $completion_date]);
                     $onboarding_id = $conn->lastInsertId();
                     
                     // Create reference check tasks
                     $ref_check_tasks = array(
-                        array('task_name' => 'Contact Previous Employer', 'is_mandatory' => 1),
-                        array('task_name' => 'Verify Employment History', 'is_mandatory' => 1),
-                        array('task_name' => 'Check Professional References', 'is_mandatory' => 1)
+                        array('task_name' => 'Contact Previous Employer', 'description' => 'Verify employment details with previous employer'),
+                        array('task_name' => 'Verify Employment History', 'description' => 'Check dates and positions held'),
+                        array('task_name' => 'Check Professional References', 'description' => 'Contact and verify professional references')
                     );
                     
                     foreach ($ref_check_tasks as $task) {
@@ -62,9 +112,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                             throw new Exception("Failed to get task ID");
                         }
                         
-                        // Create the task progress record
-                        $progress_stmt = $conn->prepare("INSERT INTO onboarding_task_progress (onboarding_id, task_id, status) VALUES (?, ?, 'Pending')");
-                        $progress_stmt->execute([$onboarding_id, $task_id]);
+                        // Create the task in employee_onboarding_tasks
+                        $due_date = date('Y-m-d', strtotime('+7 days'));
+                        $task_assign_stmt = $conn->prepare("INSERT INTO employee_onboarding_tasks (onboarding_id, task_id, due_date, status) VALUES (?, ?, ?, 'Not Started')");
+                        $task_assign_stmt->execute([$onboarding_id, $task_id, $due_date]);
                     }
                     
                     $conn->commit();
@@ -178,8 +229,47 @@ $recent_activities = $conn->query("SELECT c.first_name, c.last_name, ja.status, 
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.1/css/all.min.css">
     <link rel="stylesheet" href="styles.css?v=rose">
+    <style>
+        .loading-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(255, 255, 255, 0.9);
+            z-index: 9999;
+        }
+        .loading-content {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            text-align: center;
+        }
+        .loading-spinner {
+            width: 50px;
+            height: 50px;
+            margin-bottom: 10px;
+        }
+        .loading-text {
+            font-size: 18px;
+            color: #333;
+        }
+    </style>
 </head>
 <body>
+    <!-- Loading Overlay -->
+    <div class="loading-overlay" id="loadingOverlay">
+        <div class="loading-content">
+            <div class="spinner-border text-primary loading-spinner" role="status">
+                <span class="sr-only">Loading...</span>
+            </div>
+            <div class="loading-text">Processing candidate information...</div>
+            <div class="loading-progress small text-muted mt-2" id="loadingProgress">Creating employee profile...</div>
+        </div>
+    </div>
+    
     <div class="container-fluid">
         <?php include 'navigation.php'; ?>
         <div class="row">
@@ -459,13 +549,45 @@ $recent_activities = $conn->query("SELECT c.first_name, c.last_name, ja.status, 
                                                         </button>
                                                         
                                                         <?php if ($candidate['status'] == 'Assessment'): ?>
-                                                            <form method="POST" style="display:inline;" class="ml-1">
+                                                            <form method="POST" style="display:inline;" class="ml-1" onsubmit="return showLoadingScreen(this)">
                                                                 <input type="hidden" name="action" value="approve_candidate">
                                                                 <input type="hidden" name="application_id" value="<?php echo $candidate['application_id']; ?>">
-                                                                <button type="submit" class="btn btn-success btn-sm" onclick="return confirm('Approve this candidate for hiring?')">
+                                                                <button type="submit" class="btn btn-success btn-sm">
                                                                     <i class="fas fa-check"></i>
                                                                 </button>
                                                             </form>
+                                                            
+                                                            <script>
+                                                            function showLoadingScreen(form) {
+                                                                if (!confirm('Approve this candidate for hiring?')) {
+                                                                    return false;
+                                                                }
+                                                                
+                                                                document.getElementById('loadingOverlay').style.display = 'block';
+                                                                
+                                                                // Simulate progress updates
+                                                                const progress = document.getElementById('loadingProgress');
+                                                                const steps = [
+                                                                    'Creating personal information record...',
+                                                                    'Generating employee profile...',
+                                                                    'Setting up onboarding tasks...',
+                                                                    'Linking documents...',
+                                                                    'Finalizing process...'
+                                                                ];
+                                                                
+                                                                let i = 0;
+                                                                const interval = setInterval(() => {
+                                                                    if (i < steps.length) {
+                                                                        progress.textContent = steps[i];
+                                                                        i++;
+                                                                    } else {
+                                                                        clearInterval(interval);
+                                                                    }
+                                                                }, 1000);
+                                                                
+                                                                return true;
+                                                            }
+                                                            </script>
                                                             <form method="POST" style="display:inline;" class="ml-1">
                                                                 <input type="hidden" name="action" value="reject_candidate">
                                                                 <input type="hidden" name="application_id" value="<?php echo $candidate['application_id']; ?>">

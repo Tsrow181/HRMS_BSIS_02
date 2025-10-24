@@ -87,8 +87,10 @@ $result = $conn->query("SELECT c.*, ja.application_id, jo.title as job_title, d.
                                       JOIN job_applications ja ON c.candidate_id = ja.candidate_id
                                       JOIN job_openings jo ON ja.job_opening_id = jo.job_opening_id
                                       JOIN departments d ON jo.department_id = d.department_id
-                                      LEFT JOIN employee_onboarding eo ON ja.application_id = eo.employee_id
-                                      WHERE ja.status = 'Reference Check'
+                                      -- Match employee_profiles by work email (employee_profiles doesn't store candidate_id)
+                                      LEFT JOIN employee_profiles ep ON ep.work_email = c.email
+                                      LEFT JOIN employee_onboarding eo ON eo.employee_id = ep.employee_id
+                                      WHERE ja.status IN ('Reference Check', 'Approved', 'Onboarding')
                                       ORDER BY ja.application_date DESC");
 $onboarding_candidates = $result->fetch_all(MYSQLI_ASSOC);
 ?>
@@ -193,6 +195,11 @@ $onboarding_candidates = $result->fetch_all(MYSQLI_ASSOC);
                                                 </button>
                                             </form>
                                         <?php endif; ?>
+                                        <div class="mt-2">
+                                            <button type="button" class="btn btn-outline-primary btn-sm open-tasks" data-onboarding-id="<?= htmlspecialchars($candidate['onboarding_id']) ?>">
+                                                <i class="fas fa-tasks"></i> View Tasks
+                                            </button>
+                                        </div>
                                     </div>
                                 <?php else: ?>
                                     <div class="row">
@@ -274,6 +281,27 @@ $onboarding_candidates = $result->fetch_all(MYSQLI_ASSOC);
         </div>
     </div>
 
+    <!-- Tasks Modal -->
+    <div class="modal fade" id="tasksModal" tabindex="-1">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title"><i class="fas fa-tasks"></i> Onboarding Tasks</h5>
+                    <button type="button" class="close" data-dismiss="modal"><span>&times;</span></button>
+                </div>
+                <div class="modal-body" id="tasksModalBody">
+                    <div class="text-center py-5">
+                        <div class="spinner-border text-primary" role="status"></div>
+                        <div class="mt-2">Loading tasks...</div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
     <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.bundle.min.js"></script>
     <script>
@@ -282,6 +310,19 @@ $onboarding_candidates = $result->fetch_all(MYSQLI_ASSOC);
             $('#failOnboardingId').val(onboardingId);
             $('#failTaskModal').modal('show');
         }
+        
+        // Load tasks into modal when View Tasks clicked
+        $(document).on('click', '.open-tasks', function (e) {
+            e.preventDefault();
+            var onboardingId = $(this).data('onboarding-id');
+            $('#tasksModalBody').html('<div class="text-center py-5"><div class="spinner-border text-primary" role="status"></div><div class="mt-2">Loading tasks...</div></div>');
+            $('#tasksModal').modal('show');
+            $.get('tasks_fragment.php', { onboarding_id: onboardingId }, function (html) {
+                $('#tasksModalBody').html(html);
+            }).fail(function () {
+                $('#tasksModalBody').html('<div class="alert alert-danger">Failed to load tasks.</div>');
+            });
+        });
     </script>
 </body>
 </html>

@@ -187,31 +187,33 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         // Handle Resume
         if ($resumePath) {
             $documentName = 'Resume - ' . $candidateName . ' - ' . $jobTitle;
-            $stmt = $conn->prepare("SELECT document_id FROM document_management WHERE employee_id = ? AND document_type = 'Resume'");
+            // Look for existing candidate-uploaded resume by searching notes for Candidate ID
+            $stmt = $conn->prepare("SELECT document_id FROM document_management WHERE document_type = 'Resume' AND notes LIKE CONCAT('%Candidate ID: ', ?, '%') LIMIT 1");
             $stmt->execute([$candidateId]);
             $existingDoc = $stmt->fetch(PDO::FETCH_ASSOC);
-            
+
             if ($existingDoc) {
                 $stmt = $conn->prepare("UPDATE document_management SET document_name = ?, file_path = ?, notes = ? WHERE document_id = ?");
                 $stmt->execute([$documentName, $resumePath, 'Resume updated during job application. Candidate ID: ' . $candidateId, $existingDoc['document_id']]);
             } else {
-                $stmt = $conn->prepare("INSERT INTO document_management (employee_id, document_type, document_name, file_path, document_status, notes) VALUES (?, 'Resume', ?, ?, 'Active', ?)");
-                $stmt->execute([$candidateId, $documentName, $resumePath, 'Resume uploaded during job application. Candidate ID: ' . $candidateId]);
+                // Save candidate documents with employee_id = 0 (placeholder) and include candidate id in notes
+                $stmt = $conn->prepare("INSERT INTO document_management (employee_id, document_type, document_name, file_path, document_status, notes) VALUES (0, 'Resume', ?, ?, 'Active', ?)");
+                $stmt->execute([$documentName, $resumePath, 'Resume uploaded during job application. Candidate ID: ' . $candidateId]);
             }
         }
         
         // Handle Cover Letter
         if ($coverLetterPath) {
             $documentName = 'Cover Letter - ' . $candidateName . ' - ' . $jobTitle;
-            $stmt = $conn->prepare("INSERT INTO document_management (employee_id, document_type, document_name, file_path, document_status, notes) VALUES (?, 'Contract', ?, ?, 'Active', ?)");
-            $stmt->execute([$candidateId, $documentName, $coverLetterPath, 'Cover Letter uploaded during job application. Candidate ID: ' . $candidateId]);
+            $stmt = $conn->prepare("INSERT INTO document_management (employee_id, document_type, document_name, file_path, document_status, notes) VALUES (0, 'Cover Letter', ?, ?, 'Active', ?)");
+            $stmt->execute([$documentName, $coverLetterPath, 'Cover Letter uploaded during job application. Candidate ID: ' . $candidateId]);
         }
         
         // Handle PDS
         if ($pdsPath) {
             $documentName = 'PDS - ' . $candidateName . ' - ' . $jobTitle;
-            $stmt = $conn->prepare("INSERT INTO document_management (employee_id, document_type, document_name, file_path, document_status, notes) VALUES (?, 'Contract', ?, ?, 'Active', ?)");
-            $stmt->execute([$candidateId, $documentName, $pdsPath, 'PDS uploaded during job application. Candidate ID: ' . $candidateId]);
+            $stmt = $conn->prepare("INSERT INTO document_management (employee_id, document_type, document_name, file_path, document_status, notes) VALUES (0, 'PDS', ?, ?, 'Active', ?)");
+            $stmt->execute([$documentName, $pdsPath, 'PDS uploaded during job application. Candidate ID: ' . $candidateId]);
         }
         
         $conn->exec("SET FOREIGN_KEY_CHECKS = 1");
