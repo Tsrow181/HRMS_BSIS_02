@@ -88,7 +88,7 @@ $result = $conn->query("SELECT c.*, ja.application_id, jo.title as job_title, d.
                                       JOIN job_openings jo ON ja.job_opening_id = jo.job_opening_id
                                       JOIN departments d ON jo.department_id = d.department_id
                                       LEFT JOIN employee_onboarding eo ON ja.application_id = eo.employee_id
-                                      WHERE ja.status = 'Onboarding'
+                                      WHERE ja.status = 'Reference Check'
                                       ORDER BY ja.application_date DESC");
 $onboarding_candidates = $result->fetch_all(MYSQLI_ASSOC);
 ?>

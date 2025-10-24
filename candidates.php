@@ -15,48 +15,64 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     if (isset($_POST['action'])) {
         switch ($_POST['action']) {
             case 'approve_candidate':
-                $application_id = $_POST['application_id'];
-                
-                                // Get application and job details
-                $app_stmt = $conn->prepare("SELECT ja.candidate_id, jo.department_id FROM job_applications ja JOIN job_openings jo ON ja.job_opening_id = jo.job_opening_id WHERE ja.application_id = ?");
-                $app_stmt->execute([$application_id]);
-                $app_data = $app_stmt->fetch(PDO::FETCH_ASSOC);
-                
-                                // Update application status to Reference Check
-                $stmt = $conn->prepare("UPDATE job_applications SET status = 'Reference Check' WHERE application_id = ?");
-                $stmt->execute([$application_id]);
-                
-                // Create reference check record
-                $start_date = date('Y-m-d');
-                $completion_date = date('Y-m-d', strtotime('+7 days')); // 1 week to complete reference checks
-                
-                $onboarding_stmt = $conn->prepare("INSERT INTO onboarding (application_id, candidate_id, department_id, start_date, expected_completion_date, status) VALUES (?, ?, ?, ?, ?, 'Pending Reference Check')");
-                $onboarding_stmt->execute([$application_id, $app_data['candidate_id'], $app_data['department_id'], $start_date, $completion_date]);
-                $onboarding_id = $conn->lastInsertId();
-                
-                // Create reference check tasks
-                $ref_check_tasks = array(
-                    array('task_name' => 'Contact Previous Employer', 'is_mandatory' => 1),
-                    array('task_name' => 'Verify Employment History', 'is_mandatory' => 1),
-                    array('task_name' => 'Check Professional References', 'is_mandatory' => 1)
-                );
-                
-                foreach ($ref_check_tasks as $task) {
-                    // First insert the task if it doesn't exist
-                    $task_stmt = $conn->prepare("INSERT IGNORE INTO onboarding_tasks (task_name, department_id, is_mandatory) VALUES (?, ?, ?)");
-                    $task_stmt->execute([$task['task_name'], $app_data['department_id'], $task['is_mandatory']]);
+                try {
+                    $conn->beginTransaction();
                     
-                    // Get the task_id (whether it was just inserted or already existed)
-                    $task_id_stmt = $conn->prepare("SELECT task_id FROM onboarding_tasks WHERE task_name = ? AND (department_id = ? OR department_id IS NULL)");
-                    $task_id_stmt->execute([$task['task_name'], $app_data['department_id']]);
-                    $task_id = $task_id_stmt->fetchColumn();
+                    $application_id = $_POST['application_id'];
                     
-                    // Create the task progress record
-                    $progress_stmt = $conn->prepare("INSERT INTO onboarding_task_progress (onboarding_id, task_id, status) VALUES (?, ?, 'Pending')");
-                    $progress_stmt->execute([$onboarding_id, $task_id]);
+                    // Get application and job details
+                    $app_stmt = $conn->prepare("SELECT ja.candidate_id, jo.department_id FROM job_applications ja JOIN job_openings jo ON ja.job_opening_id = jo.job_opening_id WHERE ja.application_id = ?");
+                    $app_stmt->execute([$application_id]);
+                    $app_data = $app_stmt->fetch(PDO::FETCH_ASSOC);
+                    
+                    if (!$app_data) {
+                        throw new Exception("Application not found");
+                    }
+                    
+                    // Update application status to Reference Check
+                    $stmt = $conn->prepare("UPDATE job_applications SET status = 'Reference Check' WHERE application_id = ?");
+                    $stmt->execute([$application_id]);
+                    
+                    // Create onboarding record with Reference Check status
+                    $start_date = date('Y-m-d');
+                    $completion_date = date('Y-m-d', strtotime('+7 days')); // 1 week to complete reference checks
+                    
+                    $onboarding_stmt = $conn->prepare("INSERT INTO employee_onboarding (employee_id, start_date, expected_completion_date, status) VALUES (?, ?, ?, 'Pending Reference Check')");
+                    $onboarding_stmt->execute([$application_id, $start_date, $completion_date]);
+                    $onboarding_id = $conn->lastInsertId();
+                    
+                    // Create reference check tasks
+                    $ref_check_tasks = array(
+                        array('task_name' => 'Contact Previous Employer', 'is_mandatory' => 1),
+                        array('task_name' => 'Verify Employment History', 'is_mandatory' => 1),
+                        array('task_name' => 'Check Professional References', 'is_mandatory' => 1)
+                    );
+                    
+                    foreach ($ref_check_tasks as $task) {
+                        // First insert the task if it doesn't exist
+                        $task_stmt = $conn->prepare("INSERT IGNORE INTO onboarding_tasks (task_name, department_id, is_mandatory) VALUES (?, ?, ?)");
+                        $task_stmt->execute([$task['task_name'], $app_data['department_id'], $task['is_mandatory']]);
+                        
+                        // Get the task_id (whether it was just inserted or already existed)
+                        $task_id_stmt = $conn->prepare("SELECT task_id FROM onboarding_tasks WHERE task_name = ? AND (department_id = ? OR department_id IS NULL)");
+                        $task_id_stmt->execute([$task['task_name'], $app_data['department_id']]);
+                        $task_id = $task_id_stmt->fetchColumn();
+                        
+                        if (!$task_id) {
+                            throw new Exception("Failed to get task ID");
+                        }
+                        
+                        // Create the task progress record
+                        $progress_stmt = $conn->prepare("INSERT INTO onboarding_task_progress (onboarding_id, task_id, status) VALUES (?, ?, 'Pending')");
+                        $progress_stmt->execute([$onboarding_id, $task_id]);
+                    }
+                    
+                    $conn->commit();
+                    $success_message = "✅ Candidate moved to reference check phase with " . count($ref_check_tasks) . " verification tasks created!";
+                } catch (Exception $e) {
+                    $conn->rollBack();
+                    $success_message = "❌ Error: " . $e->getMessage();
                 }
-                
-                $success_message = "✅ Candidate moved to reference check phase with " . count($ref_check_tasks) . " verification tasks created!";
                 break;
                 
             case 'reject_candidate':
