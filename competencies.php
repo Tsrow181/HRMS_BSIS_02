@@ -29,7 +29,7 @@ require_once 'dp.php';
     .container-fluid { padding: 0; }
     .row { margin: 0; }
     .container {
-        max-width: 1150px;
+        max-width: 85%;
         margin-left: 265px;
     }
     table {
@@ -55,8 +55,9 @@ require_once 'dp.php';
     <?php include 'sidebar.php'; ?>
 
     <div class="container">
-      <br><br><br>
+      <br><br><br><br><br>
       <h1>Competencies</h1>
+      <br>
       <button id="addBtn" class="btn btn-primary mb-3"><i class="fas fa-plus"></i> Add Competency</button>
 
       <!-- Filter -->
@@ -155,7 +156,7 @@ require_once 'dp.php';
           </div>
         </div>
         <div class="modal-footer">
-          <button type="submit" class="btn btn-primary">Update</button>
+          <button type="submit" class="btn btn-primary">Save</i></button>
           <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
         </div>
       </form>
@@ -179,10 +180,12 @@ function loadRoles() {
     .then(data => {
       let select = document.getElementById('jobRoleSelect');
       select.innerHTML = '<option value="">-- Select Role --</option>';
+      if (!Array.isArray(data)) return;
       data.forEach(r => {
         select.innerHTML += `<option value="${r.job_role_id}">${r.title}</option>`;
       });
-    });
+    })
+    .catch(err => console.error('Error loading roles:', err));
 }
 
 // Add competency
@@ -201,7 +204,8 @@ document.getElementById('competencyForm').addEventListener('submit', function(e)
       } else {
         alert("Error: " + data.message);
       }
-    });
+    })
+    .catch(err => console.error('Add competency error:', err));
 });
 
 // Load competencies
@@ -212,7 +216,6 @@ function loadCompetencies(roleId = "", department = "", searchRole = "") {
   if (department) params.push('department=' + encodeURIComponent(department));
   if (searchRole) params.push('search_role=' + encodeURIComponent(searchRole));
   if (params.length > 0) url += '?' + params.join('&');
->>>>>>> c318430 (Updated HRMS modules and added new scripts)
 
   fetch(url)
     .then(res => res.json())
@@ -233,29 +236,27 @@ function loadCompetencies(roleId = "", department = "", searchRole = "") {
             <td>${c.role ?? ''}</td>
             <td>${c.department ?? ''}</td>
             <td>
-              <button class="btn btn-sm btn-warning" onclick="editCompetency(${c.competency_id})">Edit</button>
-              <button class="btn btn-sm btn-danger" onclick="deleteCompetency(${c.competency_id})">Delete</button>
+              <button class="btn btn-sm btn-warning" onclick="editCompetency(${c.competency_id})"><i class="fas fa-edit"></i></button>
+              <button class="btn btn-sm btn-danger" onclick="deleteCompetency(${c.competency_id})"><i class="fas fa-trash"></i></button>
             </td>
           </tr>`;
       });
-    });
+    })
+    .catch(err => console.error('Error loading competencies:', err));
 }
 
-// Edit competency (Bootstrap 5)
+// Edit competency
 function editCompetency(id) {
   fetch(`get_competencies.php?id=${id}`)
     .then(res => res.json())
     .then(c => {
-      // Fill form fields
       document.getElementById('editCompetencyId').value = c.competency_id;
       document.getElementById('editCompetencyName').value = c.name || '';
       document.getElementById('editCompetencyDesc').value = c.description || '';
 
-      // Show modal immediately
       const editModal = new bootstrap.Modal(document.getElementById('editCompetencyModal'));
       editModal.show();
 
-      // Load roles
       fetch('get_roles.php')
         .then(res => res.json())
         .then(data => {
@@ -265,57 +266,46 @@ function editCompetency(id) {
             let selected = (String(r.job_role_id) === String(c.job_role_id)) ? "selected" : "";
             select.innerHTML += `<option value="${r.job_role_id}" ${selected}>${r.title}</option>`;
           });
-        })
-        .catch(err => console.error('get_roles error:', err));
+        });
     })
     .catch(err => {
       console.error('get_competency error:', err);
       alert('Failed to load competency details.');
     });
 }
+
 // Update competency
 document.getElementById('editCompetencyForm').addEventListener('submit', function(e) {
   e.preventDefault();
-
   const form = this;
   const submitBtn = form.querySelector('button[type="submit"]');
   const modalEl = document.getElementById('editCompetencyModal');
   const modalInstance = bootstrap.Modal.getInstance(modalEl);
 
-  // Disable button while saving
   submitBtn.disabled = true;
   submitBtn.textContent = "Updating...";
 
-  let formData = new FormData(form);
-
   fetch('update_competency.php', {
     method: 'POST',
-    body: formData
+    body: new FormData(form)
   })
   .then(res => res.json())
   .then(data => {
     if (data.success) {
-      // ✅ Success
       alert("Updated successfully!");
       if (modalInstance) modalInstance.hide();
-      loadCompetencies(); // Refresh list
+      loadCompetencies();
       form.reset();
     } else {
-      // ❌ Server returned error
       alert("Error: " + (data.message || "Update failed"));
     }
   })
-  .catch(err => {
-    console.error("Update error:", err);
-    alert("An unexpected error occurred while updating.");
-  })
+  .catch(err => console.error("Update error:", err))
   .finally(() => {
-    // Re-enable button
     submitBtn.disabled = false;
     submitBtn.textContent = "Update";
   });
 });
-
 
 // Delete competency
 function deleteCompetency(id) {
@@ -344,10 +334,30 @@ function loadRoleFilter() {
     .then(data => {
       let select = document.getElementById('filterRole');
       select.innerHTML = '<option value="">-- All Roles --</option>';
+      if (!Array.isArray(data)) return;
       data.forEach(r => {
         select.innerHTML += `<option value="${r.job_role_id}">${r.title}</option>`;
       });
-    });
+    })
+    .catch(err => console.error('Error loading roles:', err));
+}
+
+// Load departments into Filter dropdown
+function loadDepartmentFilter() {
+  fetch('get_departments.php')
+    .then(res => res.json())
+    .then(data => {
+      let select = document.getElementById('filterDepartment');
+      select.innerHTML = '<option value="">-- All Departments --</option>';
+      if (data.error || data.message) {
+        console.warn(data.error || data.message);
+        return;
+      }
+      data.forEach(d => {
+        select.innerHTML += `<option value="${d.department}">${d.department}</option>`;
+      });
+    })
+    .catch(err => console.error('Error loading departments:', err));
 }
 
 // Filter change
@@ -375,7 +385,9 @@ document.getElementById('searchRole').addEventListener('input', function() {
 document.addEventListener("DOMContentLoaded", () => {
   loadCompetencies();
   loadRoleFilter();
+  loadDepartmentFilter();
 });
+
 </script>
 
 

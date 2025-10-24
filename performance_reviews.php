@@ -1,54 +1,21 @@
 <?php
 session_start();
 
-// Redirect to login if not authenticated
+// Require authentication
 if (!isset($_SESSION['loggedin']) || $_SESSION['loggedin'] !== true) {
     header('Location: login.php');
     exit;
 }
 
-// Include database connection
-require_once 'db.php';
-
-// Get user role
-$user_role = $_SESSION['role'] ?? 'employee';
-$user_id = $_SESSION['user_id'] ?? 0;
-
-// Function to get performance review details
-function getPerformanceReviewDetails($review_id) {
-    global $conn;
-    $stmt = $conn->prepare("SELECT pr.*, e.first_name, e.last_name, prc.cycle_name FROM performance_reviews pr JOIN employees e ON pr.employee_id = e.employee_id JOIN performance_review_cycles prc ON pr.cycle_id = prc.cycle_id WHERE pr.review_id = ?");
-    $stmt->execute([$review_id]);
-    return $stmt->fetch(PDO::FETCH_ASSOC);
-}
-
-// Fetch pending reviews
-$pending_reviews = [];
-if ($user_role == 'manager' || $user_role == 'hr') {
-    $stmt = $conn->prepare("SELECT pr.*, e.first_name, e.last_name, prc.cycle_name FROM performance_reviews pr JOIN employees e ON pr.employee_id = e.employee_id JOIN performance_review_cycles prc ON pr.cycle_id = prc.cycle_id WHERE pr.status = 'pending'");
-    $stmt->execute();
-} else {
-    $stmt = $conn->prepare("SELECT pr.*, prc.cycle_name FROM performance_reviews pr JOIN performance_review_cycles prc ON pr.cycle_id = prc.cycle_id WHERE pr.employee_id = ? AND pr.status = 'pending'");
-    $stmt->execute([$user_id]);
-}
-$pending_reviews = $stmt->fetchAll(PDO::FETCH_ASSOC);
-
-// Fetch completed reviews
-$completed_reviews = [];
-if ($user_role == 'manager' || $user_role == 'hr') {
-    $stmt = $conn->prepare("SELECT pr.*, e.first_name, e.last_name, prc.cycle_name FROM performance_reviews pr JOIN employees e ON pr.employee_id = e.employee_id JOIN performance_review_cycles prc ON pr.cycle_id = prc.cycle_id WHERE pr.status = 'completed'");
-    $stmt->execute();
-} else {
-    $stmt = $conn->prepare("SELECT pr.*, prc.cycle_name FROM performance_reviews pr JOIN performance_review_cycles prc ON pr.cycle_id = prc.cycle_id WHERE pr.employee_id = ? AND pr.status = 'completed'");
-    $stmt->execute([$user_id]);
-}
-$completed_reviews = $stmt->fetchAll(PDO::FETCH_ASSOC);
+require_once 'dp.php'; // database connection
 ?>
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <title>Performance Reviews</title>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>HR Dashboard - Performance Reviews</title>
+
   <!-- Bootstrap 5 -->
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.1/css/all.min.css">
@@ -67,9 +34,10 @@ $completed_reviews = $stmt->fetchAll(PDO::FETCH_ASSOC);
       .stat-card h3 { font-size: 18px; }
     }
   </style>
->>>>>>> c318430 (Updated HRMS modules and added new scripts)
 </head>
 <body>
+  <div class="container-fluid"><?php include 'navigation.php'; ?></div>
+  <div class="row"><?php include 'sidebar.php'; ?></div>
 
   <div class="container">
     <div class="d-flex justify-content-between align-items-center">
@@ -99,9 +67,43 @@ $completed_reviews = $stmt->fetchAll(PDO::FETCH_ASSOC);
         <button id="finalizeBtn" class="btn btn-success" disabled><i class="fas fa-check"></i> Finalize Cycle</button>
       </div>
     </div>
-        <!-- Main Content -->
-        <div class="container">
-            <h1 class="section-title">Performance Reviews</h1>
+
+    <!-- Stats -->
+    <div class="row mt-4" id="statsRow">
+      <div class="col-md-3">
+        <div class="card stat-card">
+          <div class="card-body text-center">
+            <small class="text-muted">Average Rating</small>
+            <h3 id="avgRating">-</h3>
+          </div>
+        </div>
+      </div>
+      <div class="col-md-3">
+        <div class="card stat-card">
+          <div class="card-body text-center">
+            <small class="text-muted">Completed Reviews</small>
+            <h3 id="completedPct">-</h3>
+          </div>
+        </div>
+      </div>
+      <div class="col-md-3">
+        <div class="card stat-card">
+          <div class="card-body text-center">
+            <small class="text-muted">Pending Reviews</small>
+            <h3 id="pendingCount">-</h3>
+          </div>
+        </div>
+      </div>
+      <div class="col-md-3">
+        <div class="card stat-card">
+          <div class="card-body text-center">
+            <small class="text-muted">Employees Reviewed</small>
+            <h3 id="employeesReviewed">-</h3>
+          </div>
+        </div>
+      </div>
+    </div>
+
     <!-- Review Status Selector -->
     <div class="d-flex justify-content-end mt-3 align-items-center">
       <label class="form-label me-2">Review Status</label>
@@ -132,76 +134,73 @@ $completed_reviews = $stmt->fetchAll(PDO::FETCH_ASSOC);
       </table>
     </div>
 
+    <!-- Pagination -->
+    <nav><ul class="pagination" id="reviewsPagination"></ul></nav>
+  </div>
 
-            <div class="tab-content" id="reviewTabsContent">
-                <!-- Pending Reviews Tab -->
-                <div class="tab-pane fade show active" id="pending" role="tabpanel" aria-labelledby="pending-tab">
-                    <div class="table-responsive">
-                        <table class="table table-striped table-bordered">
-                            <thead class="table-dark">
-                                <tr>
-                                    <th>Employee</th>
-                                    <th>Cycle</th>
-                                    <th>Status</th>
-                                    <th>Actions</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                <?php if (!empty($pending_reviews)): ?>
-                                    <?php foreach ($pending_reviews as $review): ?>
-                                        <tr>
-                                            <td><?php echo htmlspecialchars(($user_role == 'manager' || $user_role == 'hr') ? $review['first_name'] . ' ' . $review['last_name'] : 'You'); ?></td>
-                                            <td><?php echo htmlspecialchars($review['cycle_name']); ?></td>
-                                            <td><?php echo htmlspecialchars($review['status']); ?></td>
-                                            <td>
-                                                <button class="btn btn-sm btn-primary">View</button>
-                                            </td>
-                                        </tr>
-                                    <?php endforeach; ?>
-                                <?php else: ?>
-                                    <tr>
-                                        <td colspan="4" class="text-center text-muted">No pending reviews</td>
-                                    </tr>
-                                <?php endif; ?>
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
+  <!-- Details Modal -->
+  <div class="modal fade" id="detailModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title">Employee Review Details</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+        </div>
+        <div class="modal-body">
+          <div id="detailHeader" class="mb-3">
+            <h5 id="detailEmployee"></h5>
+            <small id="detailMeta" class="text-muted"></small>
+          </div>
 
-                <!-- Completed Reviews Tab -->
-                <div class="tab-pane fade" id="completed" role="tabpanel" aria-labelledby="completed-tab">
-                    <div class="table-responsive">
-                        <table class="table table-striped table-bordered">
-                            <thead class="table-dark">
-                                <tr>
-                                    <th>Employee</th>
-                                    <th>Cycle</th>
-                                    <th>Status</th>
-                                    <th>Actions</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                <?php if (!empty($completed_reviews)): ?>
-                                    <?php foreach ($completed_reviews as $review): ?>
-                                        <tr>
-                                            <td><?php echo htmlspecialchars(($user_role == 'manager' || $user_role == 'hr') ? $review['first_name'] . ' ' . $review['last_name'] : 'You'); ?></td>
-                                            <td><?php echo htmlspecialchars($review['cycle_name']); ?></td>
-                                            <td><?php echo htmlspecialchars($review['status']); ?></td>
-                                            <td>
-                                                <button class="btn btn-sm btn-info">View Details</button>
-                                            </td>
-                                        </tr>
-                                    <?php endforeach; ?>
-                                <?php else: ?>
-                                    <tr>
-                                        <td colspan="4" class="text-center text-muted">No completed reviews</td>
-                                    </tr>
-                                <?php endif; ?>
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
+          <div class="table-responsive">
+            <table class="table table-sm table-striped">
+              <thead>
+                <tr><th>Competency</th><th>Rating</th><th>Comments</th></tr>
+              </thead>
+              <tbody id="detailCompetencies"></tbody>
+            </table>
+          </div>
+
+          <div class="mt-3">
+            <label class="form-label">Manager Comments</label>
+            <div id="detailManagerComments" class="border p-2">-</div>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button id="editEvalBtn" type="button" class="btn btn-warning">Edit Evaluation</button>
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Edit Evaluation Modal -->
+  <div class="modal fade" id="editModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title">Edit Employee Evaluation</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+        </div>
+        <div class="modal-body">
+          <div id="editHeader" class="mb-3">
+            <h5 id="editEmployee"></h5>
+            <small id="editMeta" class="text-muted"></small>
+          </div>
+
+          <form id="editForm">
+            <div id="editCompetencies" class="mb-3">
+              <!-- Competencies will be populated here -->
             </div>
+          </form>
+        </div>
+        <div class="modal-footer">
+          <button id="saveEditBtn" type="button" class="btn btn-success">Save Changes</button>
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+        </div>
+      </div>
+    </div>
+  </div>
 
 <script>
 const rowsPerPage = 10;
@@ -768,8 +767,6 @@ function markAsComplete(employeeId) {
 </script>
 
 <!-- Bootstrap JS -->
->>>>>>> c318430 (Updated HRMS modules and added new scripts)
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
-
 </body>
 </html>

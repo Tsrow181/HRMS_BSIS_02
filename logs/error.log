@@ -1382,3 +1382,5 @@
 2025-10-23 18:19:49 Error: [2] Undefined array key "employee_code" - C:\Program Files\xampp\htdocs\HRMS_BSIS_02\leave_balances.php:168
 2025-10-23 18:19:49 Error: [8192] htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated - C:\Program Files\xampp\htdocs\HRMS_BSIS_02\leave_balances.php:168
 >>>>>>> 48f0fd909401d87fc7e82ce488dfd81cd0dfc6fa
+2025-10-24 15:44:52 Error: [2] Undefined property: PDOStatement::$num_rows - C:\xampp\htdocs\HRMS_BSIS_02\development_plans.php:462
+2025-10-24 15:44:56 Error: [2] Undefined property: PDOStatement::$num_rows - C:\xampp\htdocs\HRMS_BSIS_02\development_activities.php:374

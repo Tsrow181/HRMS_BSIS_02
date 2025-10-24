@@ -41,14 +41,10 @@ $query = "SELECT c.competency_id, c.name, c.description, r.title AS role, r.depa
 if (!empty($params)) {
     $stmt = $conn->prepare($query);
     $stmt->bind_param($types, ...$params);
->>>>>>> c318430 (Updated HRMS modules and added new scripts)
     $stmt->execute();
     $result = $stmt->get_result();
 } else {
-    $result = $conn->query("SELECT c.competency_id, c.name, c.description, r.title AS role
-                            FROM competencies c
-                            LEFT JOIN job_roles r ON c.job_role_id = r.job_role_id
-                            ORDER BY c.created_at DESC");
+    $result = $conn->query($query);
 }
 
 $data = [];
