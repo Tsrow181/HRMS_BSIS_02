@@ -1,3 +1,33 @@
+
+-- phpMyAdmin SQL Dump
+-- version 5.2.1
+-- https://www.phpmyadmin.net/
+--
+-- Host: 127.0.0.1
+-- Generation Time: Oct 22, 2025 at 11:20 AM
+-- Server version: 10.4.32-MariaDB
+-- PHP Version: 8.0.30
+
+SET SQL_MODE = "NO_AUTO_VALUE_ON_ZERO";
+START TRANSACTION;
+SET time_zone = "+00:00";
+
+
+/*!40101 SET @OLD_CHARACTER_SET_CLIENT=@@CHARACTER_SET_CLIENT */;
+/*!40101 SET @OLD_CHARACTER_SET_RESULTS=@@CHARACTER_SET_RESULTS */;
+/*!40101 SET @OLD_COLLATION_CONNECTION=@@COLLATION_CONNECTION */;
+/*!40101 SET NAMES utf8mb4 */;
+
+--
+-- Database: `hr_system`
+--
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `attendance`
+--
+
 CREATE TABLE `attendance` (
   `attendance_id` int(11) NOT NULL AUTO_INCREMENT,
   `employee_id` int(11) NOT NULL,
@@ -192,6 +222,130 @@ CREATE TABLE `competencies` (
   PRIMARY KEY (`competency_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
+--
+-- Dumping data for table `competencies`
+--
+
+INSERT INTO `competencies` (`competency_id`, `job_role_id`, `name`, `description`, `category`, `created_at`, `updated_at`) VALUES
+(1, 1, 'Leadership', 'Provides vision and direction for the municipality.', 'Core', '2025-10-22 07:45:57', '2025-10-22 07:45:57'),
+(2, 1, 'Strategic Planning', 'Develops and implements long-term municipal goals.', 'Technical', '2025-10-22 07:45:57', '2025-10-22 07:45:57'),
+(3, 1, 'Public Relations', 'Represents the municipality in community and government affairs.', 'Behavioral', '2025-10-22 07:45:57', '2025-10-22 07:45:57'),
+(4, 2, 'Legislative Management', 'Oversees the drafting and passage of local ordinances.', 'Technical', '2025-10-22 07:45:57', '2025-10-22 07:45:57'),
+(5, 2, 'Conflict Resolution', 'Mediates disputes within the council and community.', 'Behavioral', '2025-10-22 07:45:57', '2025-10-22 07:45:57'),
+(6, 2, 'Public Communication', 'Communicates effectively with citizens and stakeholders.', 'Behavioral', '2025-10-22 07:45:57', '2025-10-22 07:45:57'),
+(7, 3, 'Policy Formulation', 'Creates and supports local policies and ordinances.', 'Technical', '2025-10-22 07:45:57', '2025-10-22 07:45:57'),
+(8, 3, 'Community Outreach', 'Engages with the public to understand community needs.', 'Behavioral', '2025-10-22 07:45:57', '2025-10-22 07:45:57'),
+(9, 3, 'Decision Making', 'Makes informed choices to benefit the local community.', 'Core', '2025-10-22 07:45:57', '2025-10-22 07:45:57'),
+(10, 4, 'Revenue Collection', 'Ensures efficient and transparent collection of taxes and fees.', 'Technical', '2025-10-22 07:45:57', '2025-10-22 07:45:57'),
+(11, 4, 'Financial Reporting', 'Prepares accurate financial statements.', 'Technical', '2025-10-22 07:45:57', '2025-10-22 07:45:57'),
+(12, 4, 'Accountability', 'Maintains transparency in handling municipal funds.', 'Core', '2025-10-22 07:45:57', '2025-10-22 07:45:57'),
+(13, 5, 'Budget Preparation', 'Prepares annual municipal budget in coordination with departments.', 'Technical', '2025-10-22 07:45:57', '2025-10-22 07:45:57'),
+(14, 5, 'Fiscal Analysis', 'Analyzes financial data to ensure balanced budgeting.', 'Technical', '2025-10-22 07:45:57', '2025-10-22 07:45:57'),
+(15, 5, 'Resource Allocation', 'Distributes resources effectively to meet objectives.', 'Core', '2025-10-22 07:45:57', '2025-10-22 07:45:57'),
+(16, 6, 'Financial Auditing', 'Conducts internal financial reviews for accuracy.', 'Technical', '2025-10-22 07:45:57', '2025-10-22 07:45:57'),
+(17, 6, 'Compliance Monitoring', 'Ensures all transactions follow accounting standards.', 'Technical', '2025-10-22 07:45:57', '2025-10-22 07:45:57'),
+(18, 6, 'Attention to Detail', 'Maintains precision in recording transactions.', 'Behavioral', '2025-10-22 07:45:57', '2025-10-22 07:45:57'),
+(19, 7, 'Urban Planning', 'Designs and implements sustainable development projects.', 'Technical', '2025-10-22 07:45:57', '2025-10-22 07:45:57'),
+(20, 7, 'Project Evaluation', 'Monitors and assesses progress of municipal plans.', 'Technical', '2025-10-22 07:45:57', '2025-10-22 07:45:57'),
+(21, 7, 'Analytical Thinking', 'Uses data-driven analysis for development decisions.', 'Behavioral', '2025-10-22 07:45:57', '2025-10-22 07:45:57'),
+(22, 8, 'Infrastructure Design', 'Creates engineering plans for municipal projects.', 'Technical', '2025-10-22 07:45:57', '2025-10-22 07:45:57'),
+(23, 8, 'Construction Oversight', 'Supervises construction works for quality and safety.', 'Technical', '2025-10-22 07:45:57', '2025-10-22 07:45:57'),
+(24, 8, 'Problem Solving', 'Resolves engineering and logistical challenges effectively.', 'Behavioral', '2025-10-22 07:45:57', '2025-10-22 07:45:57'),
+(25, 9, 'Records Management', 'Manages vital records such as births, deaths, and marriages.', 'Administrative', '2025-10-22 07:45:57', '2025-10-22 07:45:57'),
+(26, 9, 'Data Accuracy', 'Ensures completeness and correctness of civil documents.', 'Technical', '2025-10-22 07:45:57', '2025-10-22 07:45:57'),
+(27, 9, 'Customer Service', 'Provides courteous and efficient service to citizens.', 'Behavioral', '2025-10-22 07:45:57', '2025-10-22 07:45:57'),
+(28, 10, 'Public Health Management', 'Oversees local health programs and facilities.', 'Core', '2025-10-22 07:45:57', '2025-10-22 07:45:57'),
+(29, 10, 'Epidemiology', 'Monitors and responds to health issues within the municipality.', 'Technical', '2025-10-22 07:45:57', '2025-10-22 07:45:57'),
+(30, 10, 'Team Leadership', 'Leads and mentors municipal health staff.', 'Behavioral', '2025-10-22 07:45:57', '2025-10-22 07:45:57'),
+(31, 11, 'Case Management', 'Handles cases involving vulnerable individuals and families.', 'Technical', '2025-10-22 07:45:57', '2025-10-22 07:45:57'),
+(32, 11, 'Program Implementation', 'Executes social welfare programs efficiently.', 'Technical', '2025-10-22 07:45:57', '2025-10-22 07:45:57'),
+(33, 11, 'Empathy', 'Demonstrates compassion in dealing with community members.', 'Behavioral', '2025-10-22 07:45:57', '2025-10-22 07:45:57'),
+(34, 12, 'Crop Production Management', 'Promotes modern and sustainable farming techniques.', 'Technical', '2025-10-22 07:45:57', '2025-10-22 07:45:57'),
+(35, 12, 'Farmer Training', 'Conducts training and workshops for farmers.', 'Technical', '2025-10-22 07:45:57', '2025-10-22 07:45:57'),
+(36, 12, 'Environmental Awareness', 'Encourages eco-friendly agricultural practices.', 'Behavioral', '2025-10-22 07:45:57', '2025-10-22 07:45:57'),
+(37, 13, 'Property Valuation', 'Determines fair property assessments.', 'Technical', '2025-10-22 07:45:57', '2025-10-22 07:45:57'),
+(38, 13, 'Data Verification', 'Ensures accurate real property data.', 'Technical', '2025-10-22 07:45:57', '2025-10-22 07:45:57'),
+(39, 13, 'Integrity', 'Upholds honesty in property assessments.', 'Core', '2025-10-22 07:45:57', '2025-10-22 07:45:57'),
+(40, 14, 'Recruitment and Selection', 'Manages hiring processes to attract qualified candidates.', 'Technical', '2025-10-22 07:45:57', '2025-10-22 07:45:57'),
+(41, 14, 'Performance Evaluation', 'Implements employee appraisal systems.', 'Technical', '2025-10-22 07:45:57', '2025-10-22 07:45:57'),
+(42, 14, 'Employee Relations', 'Builds a positive and inclusive workplace culture.', 'Behavioral', '2025-10-22 07:45:57', '2025-10-22 07:45:57'),
+(43, 15, 'Disaster Preparedness', 'Develops and conducts disaster response plans.', 'Technical', '2025-10-22 07:45:57', '2025-10-22 07:45:57'),
+(44, 15, 'Emergency Coordination', 'Leads emergency response teams during disasters.', 'Technical', '2025-10-22 07:45:57', '2025-10-22 07:45:57'),
+(45, 15, 'Risk Assessment', 'Identifies and mitigates potential hazards.', 'Core', '2025-10-22 07:45:57', '2025-10-22 07:45:57'),
+(46, 16, 'Asset Management', 'Oversees the maintenance of municipal properties.', 'Technical', '2025-10-22 07:45:57', '2025-10-22 07:45:57'),
+(47, 16, 'Procurement Planning', 'Ensures proper acquisition of goods and services.', 'Technical', '2025-10-22 07:45:57', '2025-10-22 07:45:57'),
+(48, 16, 'Efficiency', 'Optimizes municipal logistics and operations.', 'Behavioral', '2025-10-22 07:45:57', '2025-10-22 07:45:57'),
+(49, 17, 'Patient Care', 'Provides compassionate and professional nursing services.', 'Technical', '2025-10-22 07:45:57', '2025-10-22 07:45:57'),
+(50, 17, 'Health Education', 'Promotes wellness and preventive healthcare.', 'Technical', '2025-10-22 07:45:57', '2025-10-22 07:45:57'),
+(51, 17, 'Teamwork', 'Collaborates with other healthcare professionals effectively.', 'Behavioral', '2025-10-22 07:45:57', '2025-10-22 07:45:57'),
+(52, 18, 'Maternal Care', 'Provides prenatal, delivery, and postnatal care.', 'Technical', '2025-10-22 07:45:57', '2025-10-22 07:45:57'),
+(53, 18, 'Community Health', 'Educates mothers on health and hygiene practices.', 'Behavioral', '2025-10-22 07:45:57', '2025-10-22 07:45:57'),
+(54, 18, 'Emergency Response', 'Responds effectively to maternal emergencies.', 'Technical', '2025-10-22 07:45:57', '2025-10-22 07:45:57'),
+(55, 19, 'Health Inspection', 'Inspects sanitation facilities and waste management systems.', 'Technical', '2025-10-22 07:45:57', '2025-10-22 07:45:57'),
+(56, 19, 'Public Safety Compliance', 'Ensures establishments follow sanitation laws.', 'Technical', '2025-10-22 07:45:57', '2025-10-22 07:45:57'),
+(57, 19, 'Observation Skills', 'Identifies and corrects potential public health hazards.', 'Behavioral', '2025-10-22 07:45:57', '2025-10-22 07:45:57'),
+(58, 20, 'Counseling', 'Provides emotional and practical support to clients.', 'Technical', '2025-10-22 07:45:57', '2025-10-22 07:45:57'),
+(59, 20, 'Case Documentation', 'Maintains accurate client records.', 'Administrative', '2025-10-22 07:45:57', '2025-10-22 07:45:57'),
+(60, 20, 'Interpersonal Skills', 'Builds trust with individuals and families.', 'Behavioral', '2025-10-22 07:45:57', '2025-10-22 07:45:57'),
+(61, 21, 'Soil Management', 'Analyzes soil quality and recommends treatments.', 'Technical', '2025-10-22 07:45:57', '2025-10-22 07:45:57'),
+(62, 21, 'Field Monitoring', 'Assists in implementing agricultural projects.', 'Technical', '2025-10-22 07:45:57', '2025-10-22 07:45:57'),
+(63, 21, 'Communication', 'Advises farmers on best agricultural practices.', 'Behavioral', '2025-10-22 07:45:57', '2025-10-22 07:45:57'),
+(64, 22, 'Structural Design', 'Creates and verifies engineering blueprints.', 'Technical', '2025-10-22 07:45:57', '2025-10-22 07:45:57'),
+(65, 22, 'Safety Compliance', 'Ensures all construction projects meet safety standards.', 'Technical', '2025-10-22 07:45:57', '2025-10-22 07:45:57'),
+(66, 22, 'Critical Thinking', 'Analyzes problems and provides effective engineering solutions.', 'Behavioral', '2025-10-22 07:45:57', '2025-10-22 07:45:57'),
+(67, 23, 'Technical Drafting', 'Prepares precise CAD drawings for projects.', 'Technical', '2025-10-22 07:45:57', '2025-10-22 07:45:57'),
+(68, 23, 'Attention to Detail', 'Maintains accuracy in design documentation.', 'Behavioral', '2025-10-22 07:45:57', '2025-10-22 07:45:57'),
+(69, 23, 'Collaboration', 'Works closely with engineers and architects.', 'Behavioral', '2025-10-22 07:45:57', '2025-10-22 07:45:57'),
+(70, 24, 'Building Code Enforcement', 'Ensures structures comply with safety regulations.', 'Technical', '2025-10-22 07:45:57', '2025-10-22 07:45:57'),
+(71, 24, 'Inspection Reporting', 'Prepares detailed inspection reports.', 'Technical', '2025-10-22 07:45:57', '2025-10-22 07:45:57'),
+(72, 24, 'Integrity', 'Maintains impartiality during inspections.', 'Core', '2025-10-22 07:45:57', '2025-10-22 07:45:57'),
+(73, 25, 'Budget Evaluation', 'Analyzes and reviews budget requests for compliance.', 'Technical', '2025-10-22 07:45:57', '2025-10-22 07:45:57'),
+(74, 25, 'Financial Forecasting', 'Predicts financial trends to guide budgeting decisions.', 'Technical', '2025-10-22 07:45:57', '2025-10-22 07:45:57'),
+(75, 25, 'Analytical Thinking', 'Interprets complex financial data accurately.', 'Behavioral', '2025-10-22 07:45:57', '2025-10-22 07:45:57'),
+(76, 26, 'Bookkeeping', 'Maintains accurate financial records and ledgers.', 'Technical', '2025-10-22 07:50:22', '2025-10-22 07:50:22'),
+(77, 26, 'Data Accuracy', 'Ensures precision when recording financial transactions.', 'Behavioral', '2025-10-22 07:50:22', '2025-10-22 07:50:22'),
+(78, 26, 'Financial Reporting', 'Prepares monthly and annual financial reports.', 'Technical', '2025-10-22 07:50:22', '2025-10-22 07:50:22'),
+(79, 27, 'Research and Data Analysis', 'Collects and interprets data for planning purposes.', 'Technical', '2025-10-22 07:50:22', '2025-10-22 07:50:22'),
+(80, 27, 'Project Documentation', 'Prepares planning documents and proposals.', 'Administrative', '2025-10-22 07:50:22', '2025-10-22 07:50:22'),
+(81, 27, 'Collaboration', 'Works effectively with the planning coordinator and other departments.', 'Behavioral', '2025-10-22 07:50:22', '2025-10-22 07:50:22'),
+(82, 28, 'Clerical Support', 'Assists with filing, record keeping, and basic office tasks.', 'Administrative', '2025-10-22 07:50:22', '2025-10-22 07:50:22'),
+(83, 28, 'Time Management', 'Completes assigned tasks promptly and efficiently.', 'Behavioral', '2025-10-22 07:50:22', '2025-10-22 07:50:22'),
+(84, 28, 'Office Organization', 'Keeps documents and materials organized for easy retrieval.', 'Behavioral', '2025-10-22 07:50:22', '2025-10-22 07:50:22'),
+(85, 29, 'Document Management', 'Files and retrieves official documents systematically.', 'Administrative', '2025-10-22 07:50:22', '2025-10-22 07:50:22'),
+(86, 29, 'Communication Skills', 'Coordinates effectively with internal and external clients.', 'Behavioral', '2025-10-22 07:50:22', '2025-10-22 07:50:22'),
+(87, 29, 'Attention to Detail', 'Ensures accuracy in records and correspondence.', 'Behavioral', '2025-10-22 07:50:22', '2025-10-22 07:50:22'),
+(88, 30, 'Cash Handling', 'Processes payments and receipts accurately and securely.', 'Technical', '2025-10-22 07:50:22', '2025-10-22 07:50:22'),
+(89, 30, 'Customer Service', 'Provides courteous service when handling transactions.', 'Behavioral', '2025-10-22 07:50:22', '2025-10-22 07:50:22'),
+(90, 30, 'Account Reconciliation', 'Balances daily cash collections and deposits.', 'Technical', '2025-10-22 07:50:22', '2025-10-22 07:50:22'),
+(91, 31, 'Revenue Collection', 'Collects payments from citizens and businesses efficiently.', 'Technical', '2025-10-22 07:50:22', '2025-10-22 07:50:22'),
+(92, 31, 'Record Accuracy', 'Maintains accurate records of collections and receipts.', 'Administrative', '2025-10-22 07:50:22', '2025-10-22 07:50:22'),
+(93, 31, 'Integrity', 'Handles municipal funds responsibly and ethically.', 'Core', '2025-10-22 07:50:22', '2025-10-22 07:50:22'),
+(94, 32, 'Inventory Management', 'Maintains records of all municipal assets.', 'Technical', '2025-10-22 07:50:22', '2025-10-22 07:50:22'),
+(95, 32, 'Asset Security', 'Ensures safekeeping of government property and supplies.', 'Core', '2025-10-22 07:50:22', '2025-10-22 07:50:22'),
+(96, 32, 'Reporting', 'Prepares reports on equipment condition and usage.', 'Administrative', '2025-10-22 07:50:22', '2025-10-22 07:50:22'),
+(97, 33, 'Facility Maintenance', 'Performs repairs and upkeep of municipal buildings.', 'Technical', '2025-10-22 07:50:22', '2025-10-22 07:50:22'),
+(98, 33, 'Safety Compliance', 'Follows safety standards when performing maintenance work.', 'Core', '2025-10-22 07:50:22', '2025-10-22 07:50:22'),
+(99, 33, 'Teamwork', 'Works cooperatively with maintenance and engineering teams.', 'Behavioral', '2025-10-22 07:50:22', '2025-10-22 07:50:22'),
+(100, 34, 'Cleaning and Sanitation', 'Maintains cleanliness of municipal facilities.', 'Technical', '2025-10-22 07:50:22', '2025-10-22 07:50:22'),
+(101, 34, 'Waste Management', 'Properly handles waste disposal and recycling.', 'Technical', '2025-10-22 07:50:22', '2025-10-22 07:50:22'),
+(102, 34, 'Dependability', 'Performs assigned duties reliably and on time.', 'Behavioral', '2025-10-22 07:50:22', '2025-10-22 07:50:22'),
+(103, 35, 'Vehicle Operation', 'Operates municipal vehicles safely and responsibly.', 'Technical', '2025-10-22 07:50:22', '2025-10-22 07:50:22'),
+(104, 35, 'Vehicle Maintenance', 'Conducts basic checks and ensures vehicles are in good condition.', 'Technical', '2025-10-22 07:50:22', '2025-10-22 07:50:22'),
+(105, 35, 'Punctuality', 'Adheres to schedules and assigned routes consistently.', 'Behavioral', '2025-10-22 07:50:22', '2025-10-22 07:50:22'),
+(106, 36, 'Security Monitoring', 'Guards municipal premises and monitors access points.', 'Technical', '2025-10-22 07:50:22', '2025-10-22 07:50:22'),
+(107, 36, 'Crisis Response', 'Responds quickly and appropriately to emergencies.', 'Core', '2025-10-22 07:50:22', '2025-10-22 07:50:22'),
+(108, 36, 'Discipline', 'Demonstrates professionalism and vigilance on duty.', 'Behavioral', '2025-10-22 07:50:22', '2025-10-22 07:50:22'),
+(109, 37, 'Research Assistance', 'Assists in gathering information for legislative measures.', 'Technical', '2025-10-22 07:50:22', '2025-10-22 07:50:22'),
+(110, 37, 'Documentation', 'Prepares and organizes legislative documents and minutes.', 'Administrative', '2025-10-22 07:50:22', '2025-10-22 07:50:22'),
+(111, 37, 'Confidentiality', 'Maintains discretion when handling official legislative matters.', 'Core', '2025-10-22 07:50:22', '2025-10-22 07:50:22');
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `departments`
+--
+
+>>>>>>> c318430 (Updated HRMS modules and added new scripts)
 CREATE TABLE `departments` (
   `department_id` int(11) NOT NULL AUTO_INCREMENT,
   `department_name` varchar(100) NOT NULL,
@@ -352,6 +506,24 @@ CREATE TABLE `employee_competencies` (
   CONSTRAINT `employee_competencies_ibfk_1` FOREIGN KEY (`employee_id`) REFERENCES `employee_profiles` (`employee_id`) ON DELETE CASCADE,
   CONSTRAINT `employee_competencies_ibfk_2` FOREIGN KEY (`competency_id`) REFERENCES `competencies` (`competency_id`) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- Dumping data for table `employee_competencies`
+--
+
+INSERT INTO `employee_competencies` (`employee_id`, `competency_id`, `cycle_id`, `rating`, `assessment_date`, `comments`, `created_at`, `updated_at`) VALUES
+(2, 22, 3, 4, '2025-10-22', 'impressive', '2025-10-22 08:13:30', '2025-10-22 08:13:30'),
+(2, 23, 3, 3, '2025-10-22', 'nice', '2025-10-22 08:13:30', '2025-10-22 08:13:30'),
+(2, 24, 3, 5, '2025-10-22', 'excellent', '2025-10-22 08:13:30', '2025-10-22 08:13:30'),
+(11, 76, 3, 3, '2025-10-22', 'nice', '2025-10-22 08:58:29', '2025-10-22 08:58:29'),
+(11, 77, 3, 3, '2025-10-22', 'amazing', '2025-10-22 08:58:29', '2025-10-22 08:58:29'),
+(11, 78, 3, 4, '2025-10-22', 'excellent', '2025-10-22 08:58:29', '2025-10-22 08:58:29');
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `employee_onboarding`
+--
 
 CREATE TABLE `employee_onboarding` (
   `onboarding_id` int(11) NOT NULL AUTO_INCREMENT,
@@ -1439,3 +1611,1257 @@ INSERT INTO users (user_id,username,password,email,role,employee_id,is_active,la
 ('17','rosario.gonzales','emp123','rosario.gonzales@municipality.gov.ph','employee','15','1','','2025-09-09 10:00:16','2025-09-09 10:00:16'),
 ('18','test_employee','$2y$10$W5/YtNRxGPU7Uvi3eafjNOtQrTcTc0BJsPrwvqPTpOVBAN8igfmyK','john.doe@municipality.gov.ph','employee','16','1','','2025-10-21 18:10:29','2025-10-21 18:10:29');
 
+--
+-- Dumping data for table `users`
+--
+
+INSERT INTO `users` (`user_id`, `username`, `password`, `email`, `role`, `employee_id`, `is_active`, `last_login`, `created_at`, `updated_at`) VALUES
+(1, 'admin', 'admin123', 'admin@municipality.gov.ph', 'admin', NULL, 1, NULL, '2025-09-09 02:00:16', '2025-09-09 02:00:16'),
+(2, 'hr_manager', 'hr123', 'hr@municipality.gov.ph', 'hr', NULL, 1, NULL, '2025-09-09 02:00:16', '2025-09-09 02:00:16'),
+(3, 'maria.santos', 'emp123', 'maria.santos@municipality.gov.ph', 'employee', 1, 1, NULL, '2025-09-09 02:00:16', '2025-09-09 02:00:16'),
+(4, 'roberto.cruz', 'emp123', 'roberto.cruz@municipality.gov.ph', 'employee', 2, 1, NULL, '2025-09-09 02:00:16', '2025-09-09 02:00:16'),
+(5, 'jennifer.reyes', 'emp123', 'jennifer.reyes@municipality.gov.ph', 'employee', 3, 1, NULL, '2025-09-09 02:00:16', '2025-09-09 02:00:16'),
+(6, 'antonio.garcia', 'emp123', 'antonio.garcia@municipality.gov.ph', 'employee', 4, 1, NULL, '2025-09-09 02:00:16', '2025-09-09 02:00:16'),
+(7, 'lisa.mendoza', 'emp123', 'lisa.mendoza@municipality.gov.ph', 'employee', 5, 1, NULL, '2025-09-09 02:00:16', '2025-09-09 02:00:16'),
+(8, 'michael.torres', 'emp123', 'michael.torres@municipality.gov.ph', 'employee', 6, 1, NULL, '2025-09-09 02:00:16', '2025-09-09 02:00:16'),
+(9, 'carmen.delacruz', 'emp123', 'carmen.delacruz@municipality.gov.ph', 'employee', 7, 1, NULL, '2025-09-09 02:00:16', '2025-09-09 02:00:16'),
+(10, 'ricardo.villanueva', 'emp123', 'ricardo.villanueva@municipality.gov.ph', 'employee', 8, 1, NULL, '2025-09-09 02:00:16', '2025-09-09 02:00:16'),
+(11, 'sandra.pascual', 'emp123', 'sandra.pascual@municipality.gov.ph', 'employee', 9, 1, NULL, '2025-09-09 02:00:16', '2025-09-09 02:00:16'),
+(12, 'jose.ramos', 'emp123', 'jose.ramos@municipality.gov.ph', 'employee', 10, 1, NULL, '2025-09-09 02:00:16', '2025-09-09 02:00:16'),
+(13, 'ana.morales', 'emp123', 'ana.morales@municipality.gov.ph', 'employee', 11, 1, NULL, '2025-09-09 02:00:16', '2025-09-09 02:00:16'),
+(14, 'pablo.fernandez', 'emp123', 'pablo.fernandez@municipality.gov.ph', 'employee', 12, 1, NULL, '2025-09-09 02:00:16', '2025-09-09 02:00:16'),
+(15, 'grace.lopez', 'emp123', 'grace.lopez@municipality.gov.ph', 'employee', 13, 1, NULL, '2025-09-09 02:00:16', '2025-09-09 02:00:16'),
+(16, 'eduardo.hernandez', 'emp123', 'eduardo.hernandez@municipality.gov.ph', 'employee', 14, 1, NULL, '2025-09-09 02:00:16', '2025-09-09 02:00:16'),
+(17, 'rosario.gonzales', 'emp123', 'rosario.gonzales@municipality.gov.ph', 'employee', 15, 1, NULL, '2025-09-09 02:00:16', '2025-09-09 02:00:16');
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `user_roles`
+--
+
+CREATE TABLE `user_roles` (
+  `role_id` int(11) NOT NULL,
+  `role_name` varchar(50) NOT NULL,
+  `description` text DEFAULT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- Dumping data for table `user_roles`
+--
+
+INSERT INTO `user_roles` (`role_id`, `role_name`, `description`) VALUES
+(1, 'admin', 'Administrator role with full system access.'),
+(2, 'hr', 'Human Resources role with access to employee and payroll management.'),
+(3, 'employee', 'Standard employee role with limited access to personal information and timesheets.');
+
+--
+-- Indexes for dumped tables
+--
+
+--
+-- Indexes for table `attendance`
+--
+ALTER TABLE `attendance`
+  ADD PRIMARY KEY (`attendance_id`),
+  ADD KEY `employee_id` (`employee_id`);
+
+--
+-- Indexes for table `attendance_summary`
+--
+ALTER TABLE `attendance_summary`
+  ADD PRIMARY KEY (`summary_id`),
+  ADD UNIQUE KEY `employee_id` (`employee_id`,`month`,`year`);
+
+--
+-- Indexes for table `benefits_plans`
+--
+ALTER TABLE `benefits_plans`
+  ADD PRIMARY KEY (`benefit_plan_id`);
+
+--
+-- Indexes for table `bonus_payments`
+--
+ALTER TABLE `bonus_payments`
+  ADD PRIMARY KEY (`bonus_payment_id`),
+  ADD KEY `employee_id` (`employee_id`),
+  ADD KEY `payroll_cycle_id` (`payroll_cycle_id`);
+
+--
+-- Indexes for table `candidates`
+--
+ALTER TABLE `candidates`
+  ADD PRIMARY KEY (`candidate_id`),
+  ADD UNIQUE KEY `email` (`email`);
+
+--
+-- Indexes for table `career_paths`
+--
+ALTER TABLE `career_paths`
+  ADD PRIMARY KEY (`path_id`),
+  ADD KEY `department_id` (`department_id`);
+
+--
+-- Indexes for table `career_path_stages`
+--
+ALTER TABLE `career_path_stages`
+  ADD PRIMARY KEY (`stage_id`),
+  ADD KEY `path_id` (`path_id`),
+  ADD KEY `job_role_id` (`job_role_id`);
+
+--
+-- Indexes for table `compensation_packages`
+--
+ALTER TABLE `compensation_packages`
+  ADD PRIMARY KEY (`compensation_package_id`),
+  ADD KEY `employee_id` (`employee_id`);
+
+--
+-- Indexes for table `competencies`
+--
+ALTER TABLE `competencies`
+  ADD PRIMARY KEY (`competency_id`),
+  ADD KEY `job_role_id_fk` (`job_role_id`);
+
+--
+-- Indexes for table `departments`
+--
+ALTER TABLE `departments`
+  ADD PRIMARY KEY (`department_id`);
+
+--
+-- Indexes for table `development_activities`
+--
+ALTER TABLE `development_activities`
+  ADD PRIMARY KEY (`activity_id`),
+  ADD KEY `plan_id` (`plan_id`);
+
+--
+-- Indexes for table `development_plans`
+--
+ALTER TABLE `development_plans`
+  ADD PRIMARY KEY (`plan_id`),
+  ADD KEY `employee_id` (`employee_id`);
+
+--
+-- Indexes for table `document_management`
+--
+ALTER TABLE `document_management`
+  ADD PRIMARY KEY (`document_id`),
+  ADD KEY `employee_id` (`employee_id`);
+
+--
+-- Indexes for table `employee_benefits`
+--
+ALTER TABLE `employee_benefits`
+  ADD PRIMARY KEY (`benefit_id`),
+  ADD KEY `employee_id` (`employee_id`),
+  ADD KEY `benefit_plan_id` (`benefit_plan_id`);
+
+--
+-- Indexes for table `employee_career_paths`
+--
+ALTER TABLE `employee_career_paths`
+  ADD PRIMARY KEY (`employee_path_id`),
+  ADD KEY `employee_id` (`employee_id`),
+  ADD KEY `path_id` (`path_id`),
+  ADD KEY `current_stage_id` (`current_stage_id`);
+
+--
+-- Indexes for table `employee_competencies`
+--
+ALTER TABLE `employee_competencies`
+  ADD PRIMARY KEY (`employee_id`,`competency_id`,`assessment_date`),
+  ADD KEY `competency_id` (`competency_id`),
+  ADD KEY `cycle_id_fk` (`cycle_id`);
+
+--
+-- Indexes for table `employee_onboarding`
+--
+ALTER TABLE `employee_onboarding`
+  ADD PRIMARY KEY (`onboarding_id`),
+  ADD KEY `employee_id` (`employee_id`);
+
+--
+-- Indexes for table `employee_onboarding_tasks`
+--
+ALTER TABLE `employee_onboarding_tasks`
+  ADD PRIMARY KEY (`employee_task_id`),
+  ADD KEY `onboarding_id` (`onboarding_id`),
+  ADD KEY `task_id` (`task_id`);
+
+--
+-- Indexes for table `employee_profiles`
+--
+ALTER TABLE `employee_profiles`
+  ADD PRIMARY KEY (`employee_id`),
+  ADD UNIQUE KEY `employee_number` (`employee_number`),
+  ADD UNIQUE KEY `personal_info_id` (`personal_info_id`),
+  ADD UNIQUE KEY `work_email` (`work_email`),
+  ADD KEY `job_role_id` (`job_role_id`);
+
+--
+-- Indexes for table `employee_resources`
+--
+ALTER TABLE `employee_resources`
+  ADD PRIMARY KEY (`employee_resource_id`),
+  ADD KEY `employee_id` (`employee_id`),
+  ADD KEY `resource_id` (`resource_id`);
+
+--
+-- Indexes for table `employee_shifts`
+--
+ALTER TABLE `employee_shifts`
+  ADD PRIMARY KEY (`employee_shift_id`),
+  ADD KEY `employee_id` (`employee_id`),
+  ADD KEY `shift_id` (`shift_id`);
+
+--
+-- Indexes for table `employee_skills`
+--
+ALTER TABLE `employee_skills`
+  ADD PRIMARY KEY (`employee_skill_id`),
+  ADD KEY `employee_id` (`employee_id`),
+  ADD KEY `skill_id` (`skill_id`);
+
+--
+-- Indexes for table `employment_history`
+--
+ALTER TABLE `employment_history`
+  ADD PRIMARY KEY (`history_id`),
+  ADD KEY `employee_id` (`employee_id`),
+  ADD KEY `department_id` (`department_id`),
+  ADD KEY `reporting_manager_id` (`reporting_manager_id`);
+
+--
+-- Indexes for table `exits`
+--
+ALTER TABLE `exits`
+  ADD PRIMARY KEY (`exit_id`),
+  ADD KEY `employee_id` (`employee_id`);
+
+--
+-- Indexes for table `exit_checklist`
+--
+ALTER TABLE `exit_checklist`
+  ADD PRIMARY KEY (`checklist_id`),
+  ADD KEY `exit_id` (`exit_id`);
+
+--
+-- Indexes for table `exit_documents`
+--
+ALTER TABLE `exit_documents`
+  ADD PRIMARY KEY (`document_id`),
+  ADD KEY `exit_id` (`exit_id`),
+  ADD KEY `employee_id` (`employee_id`);
+
+--
+-- Indexes for table `exit_interviews`
+--
+ALTER TABLE `exit_interviews`
+  ADD PRIMARY KEY (`interview_id`),
+  ADD KEY `exit_id` (`exit_id`),
+  ADD KEY `employee_id` (`employee_id`);
+
+--
+-- Indexes for table `goals`
+--
+ALTER TABLE `goals`
+  ADD PRIMARY KEY (`goal_id`),
+  ADD KEY `employee_id` (`employee_id`);
+
+--
+-- Indexes for table `goal_updates`
+--
+ALTER TABLE `goal_updates`
+  ADD PRIMARY KEY (`update_id`),
+  ADD KEY `goal_id` (`goal_id`);
+
+--
+-- Indexes for table `interviews`
+--
+ALTER TABLE `interviews`
+  ADD PRIMARY KEY (`interview_id`),
+  ADD KEY `application_id` (`application_id`),
+  ADD KEY `stage_id` (`stage_id`);
+
+--
+-- Indexes for table `interview_stages`
+--
+ALTER TABLE `interview_stages`
+  ADD PRIMARY KEY (`stage_id`),
+  ADD KEY `job_opening_id` (`job_opening_id`);
+
+--
+-- Indexes for table `job_applications`
+--
+ALTER TABLE `job_applications`
+  ADD PRIMARY KEY (`application_id`),
+  ADD KEY `job_opening_id` (`job_opening_id`),
+  ADD KEY `candidate_id` (`candidate_id`);
+
+--
+-- Indexes for table `job_offers`
+--
+ALTER TABLE `job_offers`
+  ADD PRIMARY KEY (`offer_id`),
+  ADD KEY `application_id` (`application_id`),
+  ADD KEY `job_opening_id` (`job_opening_id`),
+  ADD KEY `candidate_id` (`candidate_id`);
+
+--
+-- Indexes for table `job_openings`
+--
+ALTER TABLE `job_openings`
+  ADD PRIMARY KEY (`job_opening_id`),
+  ADD KEY `job_role_id` (`job_role_id`),
+  ADD KEY `department_id` (`department_id`);
+
+--
+-- Indexes for table `job_roles`
+--
+ALTER TABLE `job_roles`
+  ADD PRIMARY KEY (`job_role_id`);
+
+--
+-- Indexes for table `knowledge_transfers`
+--
+ALTER TABLE `knowledge_transfers`
+  ADD PRIMARY KEY (`transfer_id`),
+  ADD KEY `exit_id` (`exit_id`),
+  ADD KEY `employee_id` (`employee_id`);
+
+--
+-- Indexes for table `learning_resources`
+--
+ALTER TABLE `learning_resources`
+  ADD PRIMARY KEY (`resource_id`);
+
+--
+-- Indexes for table `leave_balances`
+--
+ALTER TABLE `leave_balances`
+  ADD PRIMARY KEY (`balance_id`),
+  ADD KEY `employee_id` (`employee_id`),
+  ADD KEY `leave_type_id` (`leave_type_id`);
+
+--
+-- Indexes for table `leave_requests`
+--
+ALTER TABLE `leave_requests`
+  ADD PRIMARY KEY (`leave_id`),
+  ADD KEY `employee_id` (`employee_id`),
+  ADD KEY `leave_type_id` (`leave_type_id`);
+
+--
+-- Indexes for table `leave_types`
+--
+ALTER TABLE `leave_types`
+  ADD PRIMARY KEY (`leave_type_id`);
+
+--
+-- Indexes for table `onboarding_tasks`
+--
+ALTER TABLE `onboarding_tasks`
+  ADD PRIMARY KEY (`task_id`),
+  ADD KEY `department_id` (`department_id`);
+
+--
+-- Indexes for table `payment_disbursements`
+--
+ALTER TABLE `payment_disbursements`
+  ADD PRIMARY KEY (`payment_disbursement_id`),
+  ADD KEY `payroll_transaction_id` (`payroll_transaction_id`),
+  ADD KEY `employee_id` (`employee_id`);
+
+--
+-- Indexes for table `payroll_cycles`
+--
+ALTER TABLE `payroll_cycles`
+  ADD PRIMARY KEY (`payroll_cycle_id`);
+
+--
+-- Indexes for table `payroll_transactions`
+--
+ALTER TABLE `payroll_transactions`
+  ADD PRIMARY KEY (`payroll_transaction_id`),
+  ADD KEY `employee_id` (`employee_id`),
+  ADD KEY `payroll_cycle_id` (`payroll_cycle_id`);
+
+--
+-- Indexes for table `payslips`
+--
+ALTER TABLE `payslips`
+  ADD PRIMARY KEY (`payslip_id`),
+  ADD KEY `payroll_transaction_id` (`payroll_transaction_id`),
+  ADD KEY `employee_id` (`employee_id`);
+
+--
+-- Indexes for table `performance_metrics`
+--
+ALTER TABLE `performance_metrics`
+  ADD PRIMARY KEY (`metric_id`),
+  ADD KEY `employee_id` (`employee_id`);
+
+--
+-- Indexes for table `performance_reviews`
+--
+ALTER TABLE `performance_reviews`
+  ADD PRIMARY KEY (`review_id`),
+  ADD KEY `employee_id` (`employee_id`),
+  ADD KEY `cycle_id` (`cycle_id`);
+
+--
+-- Indexes for table `performance_review_cycles`
+--
+ALTER TABLE `performance_review_cycles`
+  ADD PRIMARY KEY (`cycle_id`);
+
+--
+-- Indexes for table `personal_information`
+--
+ALTER TABLE `personal_information`
+  ADD PRIMARY KEY (`personal_info_id`);
+
+--
+-- Indexes for table `post_exit_surveys`
+--
+ALTER TABLE `post_exit_surveys`
+  ADD PRIMARY KEY (`survey_id`),
+  ADD KEY `employee_id` (`employee_id`),
+  ADD KEY `exit_id` (`exit_id`);
+
+--
+-- Indexes for table `public_holidays`
+--
+ALTER TABLE `public_holidays`
+  ADD PRIMARY KEY (`holiday_id`),
+  ADD UNIQUE KEY `holiday_date` (`holiday_date`);
+
+--
+-- Indexes for table `recruitment_analytics`
+--
+ALTER TABLE `recruitment_analytics`
+  ADD PRIMARY KEY (`analytics_id`),
+  ADD KEY `job_opening_id` (`job_opening_id`);
+
+--
+-- Indexes for table `salary_structures`
+--
+ALTER TABLE `salary_structures`
+  ADD PRIMARY KEY (`salary_structure_id`),
+  ADD KEY `employee_id` (`employee_id`);
+
+--
+-- Indexes for table `settlements`
+--
+ALTER TABLE `settlements`
+  ADD PRIMARY KEY (`settlement_id`),
+  ADD KEY `exit_id` (`exit_id`),
+  ADD KEY `employee_id` (`employee_id`);
+
+--
+-- Indexes for table `shifts`
+--
+ALTER TABLE `shifts`
+  ADD PRIMARY KEY (`shift_id`);
+
+--
+-- Indexes for table `skill_matrix`
+--
+ALTER TABLE `skill_matrix`
+  ADD PRIMARY KEY (`skill_id`);
+
+--
+-- Indexes for table `statutory_deductions`
+--
+ALTER TABLE `statutory_deductions`
+  ADD PRIMARY KEY (`statutory_deduction_id`),
+  ADD KEY `employee_id` (`employee_id`);
+
+--
+-- Indexes for table `tax_deductions`
+--
+ALTER TABLE `tax_deductions`
+  ADD PRIMARY KEY (`tax_deduction_id`),
+  ADD KEY `employee_id` (`employee_id`);
+
+--
+-- Indexes for table `trainers`
+--
+ALTER TABLE `trainers`
+  ADD PRIMARY KEY (`trainer_id`);
+
+--
+-- Indexes for table `training_courses`
+--
+ALTER TABLE `training_courses`
+  ADD PRIMARY KEY (`course_id`);
+
+--
+-- Indexes for table `training_enrollments`
+--
+ALTER TABLE `training_enrollments`
+  ADD PRIMARY KEY (`enrollment_id`),
+  ADD KEY `session_id` (`session_id`),
+  ADD KEY `employee_id` (`employee_id`);
+
+--
+-- Indexes for table `training_needs_assessment`
+--
+ALTER TABLE `training_needs_assessment`
+  ADD PRIMARY KEY (`assessment_id`),
+  ADD KEY `employee_id` (`employee_id`);
+
+--
+-- Indexes for table `training_sessions`
+--
+ALTER TABLE `training_sessions`
+  ADD PRIMARY KEY (`session_id`),
+  ADD KEY `course_id` (`course_id`),
+  ADD KEY `trainer_id` (`trainer_id`);
+
+--
+-- Indexes for table `users`
+--
+ALTER TABLE `users`
+  ADD PRIMARY KEY (`user_id`),
+  ADD UNIQUE KEY `username` (`username`),
+  ADD UNIQUE KEY `email` (`email`),
+  ADD KEY `employee_id` (`employee_id`);
+
+--
+-- Indexes for table `user_roles`
+--
+ALTER TABLE `user_roles`
+  ADD PRIMARY KEY (`role_id`);
+
+--
+-- AUTO_INCREMENT for dumped tables
+--
+
+--
+-- AUTO_INCREMENT for table `attendance`
+--
+ALTER TABLE `attendance`
+  MODIFY `attendance_id` int(11) NOT NULL AUTO_INCREMENT;
+
+--
+-- AUTO_INCREMENT for table `attendance_summary`
+--
+ALTER TABLE `attendance_summary`
+  MODIFY `summary_id` int(11) NOT NULL AUTO_INCREMENT;
+
+--
+-- AUTO_INCREMENT for table `benefits_plans`
+--
+ALTER TABLE `benefits_plans`
+  MODIFY `benefit_plan_id` int(11) NOT NULL AUTO_INCREMENT;
+
+--
+-- AUTO_INCREMENT for table `bonus_payments`
+--
+ALTER TABLE `bonus_payments`
+  MODIFY `bonus_payment_id` int(11) NOT NULL AUTO_INCREMENT;
+
+--
+-- AUTO_INCREMENT for table `candidates`
+--
+ALTER TABLE `candidates`
+  MODIFY `candidate_id` int(11) NOT NULL AUTO_INCREMENT;
+
+--
+-- AUTO_INCREMENT for table `career_paths`
+--
+ALTER TABLE `career_paths`
+  MODIFY `path_id` int(11) NOT NULL AUTO_INCREMENT;
+
+--
+-- AUTO_INCREMENT for table `career_path_stages`
+--
+ALTER TABLE `career_path_stages`
+  MODIFY `stage_id` int(11) NOT NULL AUTO_INCREMENT;
+
+--
+-- AUTO_INCREMENT for table `compensation_packages`
+--
+ALTER TABLE `compensation_packages`
+  MODIFY `compensation_package_id` int(11) NOT NULL AUTO_INCREMENT;
+
+--
+-- AUTO_INCREMENT for table `competencies`
+--
+ALTER TABLE `competencies`
+  MODIFY `competency_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=112;
+
+--
+-- AUTO_INCREMENT for table `departments`
+--
+ALTER TABLE `departments`
+  MODIFY `department_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=16;
+
+--
+-- AUTO_INCREMENT for table `development_activities`
+--
+ALTER TABLE `development_activities`
+  MODIFY `activity_id` int(11) NOT NULL AUTO_INCREMENT;
+
+--
+-- AUTO_INCREMENT for table `development_plans`
+--
+ALTER TABLE `development_plans`
+  MODIFY `plan_id` int(11) NOT NULL AUTO_INCREMENT;
+
+--
+-- AUTO_INCREMENT for table `document_management`
+--
+ALTER TABLE `document_management`
+  MODIFY `document_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=33;
+
+--
+-- AUTO_INCREMENT for table `employee_benefits`
+--
+ALTER TABLE `employee_benefits`
+  MODIFY `benefit_id` int(11) NOT NULL AUTO_INCREMENT;
+
+--
+-- AUTO_INCREMENT for table `employee_career_paths`
+--
+ALTER TABLE `employee_career_paths`
+  MODIFY `employee_path_id` int(11) NOT NULL AUTO_INCREMENT;
+
+--
+-- AUTO_INCREMENT for table `employee_onboarding`
+--
+ALTER TABLE `employee_onboarding`
+  MODIFY `onboarding_id` int(11) NOT NULL AUTO_INCREMENT;
+
+--
+-- AUTO_INCREMENT for table `employee_onboarding_tasks`
+--
+ALTER TABLE `employee_onboarding_tasks`
+  MODIFY `employee_task_id` int(11) NOT NULL AUTO_INCREMENT;
+
+--
+-- AUTO_INCREMENT for table `employee_profiles`
+--
+ALTER TABLE `employee_profiles`
+  MODIFY `employee_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=16;
+
+--
+-- AUTO_INCREMENT for table `employee_resources`
+--
+ALTER TABLE `employee_resources`
+  MODIFY `employee_resource_id` int(11) NOT NULL AUTO_INCREMENT;
+
+--
+-- AUTO_INCREMENT for table `employee_shifts`
+--
+ALTER TABLE `employee_shifts`
+  MODIFY `employee_shift_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=9;
+
+--
+-- AUTO_INCREMENT for table `employee_skills`
+--
+ALTER TABLE `employee_skills`
+  MODIFY `employee_skill_id` int(11) NOT NULL AUTO_INCREMENT;
+
+--
+-- AUTO_INCREMENT for table `employment_history`
+--
+ALTER TABLE `employment_history`
+  MODIFY `history_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=16;
+
+--
+-- AUTO_INCREMENT for table `exits`
+--
+ALTER TABLE `exits`
+  MODIFY `exit_id` int(11) NOT NULL AUTO_INCREMENT;
+
+--
+-- AUTO_INCREMENT for table `exit_checklist`
+--
+ALTER TABLE `exit_checklist`
+  MODIFY `checklist_id` int(11) NOT NULL AUTO_INCREMENT;
+
+--
+-- AUTO_INCREMENT for table `exit_documents`
+--
+ALTER TABLE `exit_documents`
+  MODIFY `document_id` int(11) NOT NULL AUTO_INCREMENT;
+
+--
+-- AUTO_INCREMENT for table `exit_interviews`
+--
+ALTER TABLE `exit_interviews`
+  MODIFY `interview_id` int(11) NOT NULL AUTO_INCREMENT;
+
+--
+-- AUTO_INCREMENT for table `goals`
+--
+ALTER TABLE `goals`
+  MODIFY `goal_id` int(11) NOT NULL AUTO_INCREMENT;
+
+--
+-- AUTO_INCREMENT for table `goal_updates`
+--
+ALTER TABLE `goal_updates`
+  MODIFY `update_id` int(11) NOT NULL AUTO_INCREMENT;
+
+--
+-- AUTO_INCREMENT for table `interviews`
+--
+ALTER TABLE `interviews`
+  MODIFY `interview_id` int(11) NOT NULL AUTO_INCREMENT;
+
+--
+-- AUTO_INCREMENT for table `interview_stages`
+--
+ALTER TABLE `interview_stages`
+  MODIFY `stage_id` int(11) NOT NULL AUTO_INCREMENT;
+
+--
+-- AUTO_INCREMENT for table `job_applications`
+--
+ALTER TABLE `job_applications`
+  MODIFY `application_id` int(11) NOT NULL AUTO_INCREMENT;
+
+--
+-- AUTO_INCREMENT for table `job_offers`
+--
+ALTER TABLE `job_offers`
+  MODIFY `offer_id` int(11) NOT NULL AUTO_INCREMENT;
+
+--
+-- AUTO_INCREMENT for table `job_openings`
+--
+ALTER TABLE `job_openings`
+  MODIFY `job_opening_id` int(11) NOT NULL AUTO_INCREMENT;
+
+--
+-- AUTO_INCREMENT for table `job_roles`
+--
+ALTER TABLE `job_roles`
+  MODIFY `job_role_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=38;
+
+--
+-- AUTO_INCREMENT for table `knowledge_transfers`
+--
+ALTER TABLE `knowledge_transfers`
+  MODIFY `transfer_id` int(11) NOT NULL AUTO_INCREMENT;
+
+--
+-- AUTO_INCREMENT for table `learning_resources`
+--
+ALTER TABLE `learning_resources`
+  MODIFY `resource_id` int(11) NOT NULL AUTO_INCREMENT;
+
+--
+-- AUTO_INCREMENT for table `leave_balances`
+--
+ALTER TABLE `leave_balances`
+  MODIFY `balance_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=33;
+
+--
+-- AUTO_INCREMENT for table `leave_requests`
+--
+ALTER TABLE `leave_requests`
+  MODIFY `leave_id` int(11) NOT NULL AUTO_INCREMENT;
+
+--
+-- AUTO_INCREMENT for table `leave_types`
+--
+ALTER TABLE `leave_types`
+  MODIFY `leave_type_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=6;
+
+--
+-- AUTO_INCREMENT for table `onboarding_tasks`
+--
+ALTER TABLE `onboarding_tasks`
+  MODIFY `task_id` int(11) NOT NULL AUTO_INCREMENT;
+
+--
+-- AUTO_INCREMENT for table `payment_disbursements`
+--
+ALTER TABLE `payment_disbursements`
+  MODIFY `payment_disbursement_id` int(11) NOT NULL AUTO_INCREMENT;
+
+--
+-- AUTO_INCREMENT for table `payroll_cycles`
+--
+ALTER TABLE `payroll_cycles`
+  MODIFY `payroll_cycle_id` int(11) NOT NULL AUTO_INCREMENT;
+
+--
+-- AUTO_INCREMENT for table `payroll_transactions`
+--
+ALTER TABLE `payroll_transactions`
+  MODIFY `payroll_transaction_id` int(11) NOT NULL AUTO_INCREMENT;
+
+--
+-- AUTO_INCREMENT for table `payslips`
+--
+ALTER TABLE `payslips`
+  MODIFY `payslip_id` int(11) NOT NULL AUTO_INCREMENT;
+
+--
+-- AUTO_INCREMENT for table `performance_metrics`
+--
+ALTER TABLE `performance_metrics`
+  MODIFY `metric_id` int(11) NOT NULL AUTO_INCREMENT;
+
+--
+-- AUTO_INCREMENT for table `performance_reviews`
+--
+ALTER TABLE `performance_reviews`
+  MODIFY `review_id` int(11) NOT NULL AUTO_INCREMENT;
+
+--
+-- AUTO_INCREMENT for table `performance_review_cycles`
+--
+ALTER TABLE `performance_review_cycles`
+  MODIFY `cycle_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=4;
+
+--
+-- AUTO_INCREMENT for table `personal_information`
+--
+ALTER TABLE `personal_information`
+  MODIFY `personal_info_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=16;
+
+--
+-- AUTO_INCREMENT for table `post_exit_surveys`
+--
+ALTER TABLE `post_exit_surveys`
+  MODIFY `survey_id` int(11) NOT NULL AUTO_INCREMENT;
+
+--
+-- AUTO_INCREMENT for table `public_holidays`
+--
+ALTER TABLE `public_holidays`
+  MODIFY `holiday_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=22;
+
+--
+-- AUTO_INCREMENT for table `recruitment_analytics`
+--
+ALTER TABLE `recruitment_analytics`
+  MODIFY `analytics_id` int(11) NOT NULL AUTO_INCREMENT;
+
+--
+-- AUTO_INCREMENT for table `salary_structures`
+--
+ALTER TABLE `salary_structures`
+  MODIFY `salary_structure_id` int(11) NOT NULL AUTO_INCREMENT;
+
+--
+-- AUTO_INCREMENT for table `settlements`
+--
+ALTER TABLE `settlements`
+  MODIFY `settlement_id` int(11) NOT NULL AUTO_INCREMENT;
+
+--
+-- AUTO_INCREMENT for table `shifts`
+--
+ALTER TABLE `shifts`
+  MODIFY `shift_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=9;
+
+--
+-- AUTO_INCREMENT for table `skill_matrix`
+--
+ALTER TABLE `skill_matrix`
+  MODIFY `skill_id` int(11) NOT NULL AUTO_INCREMENT;
+
+--
+-- AUTO_INCREMENT for table `statutory_deductions`
+--
+ALTER TABLE `statutory_deductions`
+  MODIFY `statutory_deduction_id` int(11) NOT NULL AUTO_INCREMENT;
+
+--
+-- AUTO_INCREMENT for table `tax_deductions`
+--
+ALTER TABLE `tax_deductions`
+  MODIFY `tax_deduction_id` int(11) NOT NULL AUTO_INCREMENT;
+
+--
+-- AUTO_INCREMENT for table `trainers`
+--
+ALTER TABLE `trainers`
+  MODIFY `trainer_id` int(11) NOT NULL AUTO_INCREMENT;
+
+--
+-- AUTO_INCREMENT for table `training_courses`
+--
+ALTER TABLE `training_courses`
+  MODIFY `course_id` int(11) NOT NULL AUTO_INCREMENT;
+
+--
+-- AUTO_INCREMENT for table `training_enrollments`
+--
+ALTER TABLE `training_enrollments`
+  MODIFY `enrollment_id` int(11) NOT NULL AUTO_INCREMENT;
+
+--
+-- AUTO_INCREMENT for table `training_needs_assessment`
+--
+ALTER TABLE `training_needs_assessment`
+  MODIFY `assessment_id` int(11) NOT NULL AUTO_INCREMENT;
+
+--
+-- AUTO_INCREMENT for table `training_sessions`
+--
+ALTER TABLE `training_sessions`
+  MODIFY `session_id` int(11) NOT NULL AUTO_INCREMENT;
+
+--
+-- AUTO_INCREMENT for table `users`
+--
+ALTER TABLE `users`
+  MODIFY `user_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=18;
+
+--
+-- AUTO_INCREMENT for table `user_roles`
+--
+ALTER TABLE `user_roles`
+  MODIFY `role_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=4;
+
+--
+-- Constraints for dumped tables
+--
+
+--
+-- Constraints for table `attendance`
+--
+ALTER TABLE `attendance`
+  ADD CONSTRAINT `attendance_ibfk_1` FOREIGN KEY (`employee_id`) REFERENCES `employee_profiles` (`employee_id`) ON DELETE CASCADE;
+
+--
+-- Constraints for table `attendance_summary`
+--
+ALTER TABLE `attendance_summary`
+  ADD CONSTRAINT `attendance_summary_ibfk_1` FOREIGN KEY (`employee_id`) REFERENCES `employee_profiles` (`employee_id`) ON DELETE CASCADE;
+
+--
+-- Constraints for table `bonus_payments`
+--
+ALTER TABLE `bonus_payments`
+  ADD CONSTRAINT `bonus_payments_ibfk_1` FOREIGN KEY (`employee_id`) REFERENCES `employee_profiles` (`employee_id`) ON DELETE CASCADE,
+  ADD CONSTRAINT `bonus_payments_ibfk_2` FOREIGN KEY (`payroll_cycle_id`) REFERENCES `payroll_cycles` (`payroll_cycle_id`) ON DELETE SET NULL;
+
+--
+-- Constraints for table `career_paths`
+--
+ALTER TABLE `career_paths`
+  ADD CONSTRAINT `career_paths_ibfk_1` FOREIGN KEY (`department_id`) REFERENCES `departments` (`department_id`) ON DELETE SET NULL;
+
+--
+-- Constraints for table `career_path_stages`
+--
+ALTER TABLE `career_path_stages`
+  ADD CONSTRAINT `career_path_stages_ibfk_1` FOREIGN KEY (`path_id`) REFERENCES `career_paths` (`path_id`) ON DELETE CASCADE,
+  ADD CONSTRAINT `career_path_stages_ibfk_2` FOREIGN KEY (`job_role_id`) REFERENCES `job_roles` (`job_role_id`) ON DELETE CASCADE;
+
+--
+-- Constraints for table `compensation_packages`
+--
+ALTER TABLE `compensation_packages`
+  ADD CONSTRAINT `compensation_packages_ibfk_1` FOREIGN KEY (`employee_id`) REFERENCES `employee_profiles` (`employee_id`) ON DELETE CASCADE;
+
+--
+-- Constraints for table `competencies`
+--
+ALTER TABLE `competencies`
+  ADD CONSTRAINT `job_role_id_fk` FOREIGN KEY (`job_role_id`) REFERENCES `job_roles` (`job_role_id`) ON DELETE CASCADE;
+
+--
+-- Constraints for table `development_activities`
+--
+ALTER TABLE `development_activities`
+  ADD CONSTRAINT `development_activities_ibfk_1` FOREIGN KEY (`plan_id`) REFERENCES `development_plans` (`plan_id`) ON DELETE CASCADE;
+
+--
+-- Constraints for table `development_plans`
+--
+ALTER TABLE `development_plans`
+  ADD CONSTRAINT `development_plans_ibfk_1` FOREIGN KEY (`employee_id`) REFERENCES `employee_profiles` (`employee_id`) ON DELETE CASCADE;
+
+--
+-- Constraints for table `document_management`
+--
+ALTER TABLE `document_management`
+  ADD CONSTRAINT `document_management_ibfk_1` FOREIGN KEY (`employee_id`) REFERENCES `employee_profiles` (`employee_id`) ON DELETE CASCADE;
+
+--
+-- Constraints for table `employee_benefits`
+--
+ALTER TABLE `employee_benefits`
+  ADD CONSTRAINT `employee_benefits_ibfk_1` FOREIGN KEY (`employee_id`) REFERENCES `employee_profiles` (`employee_id`) ON DELETE CASCADE,
+  ADD CONSTRAINT `employee_benefits_ibfk_2` FOREIGN KEY (`benefit_plan_id`) REFERENCES `benefits_plans` (`benefit_plan_id`) ON DELETE CASCADE;
+
+--
+-- Constraints for table `employee_career_paths`
+--
+ALTER TABLE `employee_career_paths`
+  ADD CONSTRAINT `employee_career_paths_ibfk_1` FOREIGN KEY (`employee_id`) REFERENCES `employee_profiles` (`employee_id`) ON DELETE CASCADE,
+  ADD CONSTRAINT `employee_career_paths_ibfk_2` FOREIGN KEY (`path_id`) REFERENCES `career_paths` (`path_id`) ON DELETE CASCADE,
+  ADD CONSTRAINT `employee_career_paths_ibfk_3` FOREIGN KEY (`current_stage_id`) REFERENCES `career_path_stages` (`stage_id`) ON DELETE CASCADE;
+
+--
+-- Constraints for table `employee_competencies`
+--
+ALTER TABLE `employee_competencies`
+  ADD CONSTRAINT `cycle_id_fk` FOREIGN KEY (`cycle_id`) REFERENCES `performance_review_cycles` (`cycle_id`) ON DELETE CASCADE,
+  ADD CONSTRAINT `employee_competencies_ibfk_1` FOREIGN KEY (`employee_id`) REFERENCES `employee_profiles` (`employee_id`) ON DELETE CASCADE,
+  ADD CONSTRAINT `employee_competencies_ibfk_2` FOREIGN KEY (`competency_id`) REFERENCES `competencies` (`competency_id`) ON DELETE CASCADE;
+
+--
+-- Constraints for table `employee_onboarding`
+--
+ALTER TABLE `employee_onboarding`
+  ADD CONSTRAINT `employee_onboarding_ibfk_1` FOREIGN KEY (`employee_id`) REFERENCES `employee_profiles` (`employee_id`) ON DELETE CASCADE;
+
+--
+-- Constraints for table `employee_onboarding_tasks`
+--
+ALTER TABLE `employee_onboarding_tasks`
+  ADD CONSTRAINT `employee_onboarding_tasks_ibfk_1` FOREIGN KEY (`onboarding_id`) REFERENCES `employee_onboarding` (`onboarding_id`) ON DELETE CASCADE,
+  ADD CONSTRAINT `employee_onboarding_tasks_ibfk_2` FOREIGN KEY (`task_id`) REFERENCES `onboarding_tasks` (`task_id`) ON DELETE CASCADE;
+
+--
+-- Constraints for table `employee_profiles`
+--
+ALTER TABLE `employee_profiles`
+  ADD CONSTRAINT `employee_profiles_ibfk_1` FOREIGN KEY (`personal_info_id`) REFERENCES `personal_information` (`personal_info_id`) ON DELETE SET NULL,
+  ADD CONSTRAINT `employee_profiles_ibfk_2` FOREIGN KEY (`job_role_id`) REFERENCES `job_roles` (`job_role_id`) ON DELETE SET NULL;
+
+--
+-- Constraints for table `employee_resources`
+--
+ALTER TABLE `employee_resources`
+  ADD CONSTRAINT `employee_resources_ibfk_1` FOREIGN KEY (`employee_id`) REFERENCES `employee_profiles` (`employee_id`) ON DELETE CASCADE,
+  ADD CONSTRAINT `employee_resources_ibfk_2` FOREIGN KEY (`resource_id`) REFERENCES `learning_resources` (`resource_id`) ON DELETE CASCADE;
+
+--
+-- Constraints for table `employee_shifts`
+--
+ALTER TABLE `employee_shifts`
+  ADD CONSTRAINT `employee_shifts_ibfk_1` FOREIGN KEY (`employee_id`) REFERENCES `employee_profiles` (`employee_id`) ON DELETE CASCADE,
+  ADD CONSTRAINT `employee_shifts_ibfk_2` FOREIGN KEY (`shift_id`) REFERENCES `shifts` (`shift_id`) ON DELETE CASCADE;
+
+--
+-- Constraints for table `employee_skills`
+--
+ALTER TABLE `employee_skills`
+  ADD CONSTRAINT `employee_skills_ibfk_1` FOREIGN KEY (`employee_id`) REFERENCES `employee_profiles` (`employee_id`) ON DELETE CASCADE,
+  ADD CONSTRAINT `employee_skills_ibfk_2` FOREIGN KEY (`skill_id`) REFERENCES `skill_matrix` (`skill_id`) ON DELETE CASCADE;
+
+--
+-- Constraints for table `employment_history`
+--
+ALTER TABLE `employment_history`
+  ADD CONSTRAINT `employment_history_ibfk_1` FOREIGN KEY (`employee_id`) REFERENCES `employee_profiles` (`employee_id`) ON DELETE CASCADE,
+  ADD CONSTRAINT `employment_history_ibfk_2` FOREIGN KEY (`department_id`) REFERENCES `departments` (`department_id`) ON DELETE SET NULL,
+  ADD CONSTRAINT `employment_history_ibfk_3` FOREIGN KEY (`reporting_manager_id`) REFERENCES `employee_profiles` (`employee_id`) ON DELETE SET NULL;
+
+--
+-- Constraints for table `exits`
+--
+ALTER TABLE `exits`
+  ADD CONSTRAINT `exits_ibfk_1` FOREIGN KEY (`employee_id`) REFERENCES `employee_profiles` (`employee_id`) ON DELETE CASCADE;
+
+--
+-- Constraints for table `exit_checklist`
+--
+ALTER TABLE `exit_checklist`
+  ADD CONSTRAINT `exit_checklist_ibfk_1` FOREIGN KEY (`exit_id`) REFERENCES `exits` (`exit_id`) ON DELETE CASCADE;
+
+--
+-- Constraints for table `exit_documents`
+--
+ALTER TABLE `exit_documents`
+  ADD CONSTRAINT `exit_documents_ibfk_1` FOREIGN KEY (`exit_id`) REFERENCES `exits` (`exit_id`) ON DELETE CASCADE,
+  ADD CONSTRAINT `exit_documents_ibfk_2` FOREIGN KEY (`employee_id`) REFERENCES `employee_profiles` (`employee_id`) ON DELETE CASCADE;
+
+--
+-- Constraints for table `exit_interviews`
+--
+ALTER TABLE `exit_interviews`
+  ADD CONSTRAINT `exit_interviews_ibfk_1` FOREIGN KEY (`exit_id`) REFERENCES `exits` (`exit_id`) ON DELETE CASCADE,
+  ADD CONSTRAINT `exit_interviews_ibfk_2` FOREIGN KEY (`employee_id`) REFERENCES `employee_profiles` (`employee_id`) ON DELETE CASCADE;
+
+--
+-- Constraints for table `goals`
+--
+ALTER TABLE `goals`
+  ADD CONSTRAINT `goals_ibfk_1` FOREIGN KEY (`employee_id`) REFERENCES `employee_profiles` (`employee_id`) ON DELETE CASCADE;
+
+--
+-- Constraints for table `goal_updates`
+--
+ALTER TABLE `goal_updates`
+  ADD CONSTRAINT `goal_updates_ibfk_1` FOREIGN KEY (`goal_id`) REFERENCES `goals` (`goal_id`) ON DELETE CASCADE;
+
+--
+-- Constraints for table `interviews`
+--
+ALTER TABLE `interviews`
+  ADD CONSTRAINT `interviews_ibfk_1` FOREIGN KEY (`application_id`) REFERENCES `job_applications` (`application_id`) ON DELETE CASCADE,
+  ADD CONSTRAINT `interviews_ibfk_2` FOREIGN KEY (`stage_id`) REFERENCES `interview_stages` (`stage_id`) ON DELETE CASCADE;
+
+--
+-- Constraints for table `interview_stages`
+--
+ALTER TABLE `interview_stages`
+  ADD CONSTRAINT `interview_stages_ibfk_1` FOREIGN KEY (`job_opening_id`) REFERENCES `job_openings` (`job_opening_id`) ON DELETE CASCADE;
+
+--
+-- Constraints for table `job_applications`
+--
+ALTER TABLE `job_applications`
+  ADD CONSTRAINT `job_applications_ibfk_1` FOREIGN KEY (`job_opening_id`) REFERENCES `job_openings` (`job_opening_id`) ON DELETE CASCADE,
+  ADD CONSTRAINT `job_applications_ibfk_2` FOREIGN KEY (`candidate_id`) REFERENCES `candidates` (`candidate_id`) ON DELETE CASCADE;
+
+--
+-- Constraints for table `job_offers`
+--
+ALTER TABLE `job_offers`
+  ADD CONSTRAINT `job_offers_ibfk_1` FOREIGN KEY (`application_id`) REFERENCES `job_applications` (`application_id`) ON DELETE CASCADE,
+  ADD CONSTRAINT `job_offers_ibfk_2` FOREIGN KEY (`job_opening_id`) REFERENCES `job_openings` (`job_opening_id`) ON DELETE CASCADE,
+  ADD CONSTRAINT `job_offers_ibfk_3` FOREIGN KEY (`candidate_id`) REFERENCES `candidates` (`candidate_id`) ON DELETE CASCADE;
+
+--
+-- Constraints for table `job_openings`
+--
+ALTER TABLE `job_openings`
+  ADD CONSTRAINT `job_openings_ibfk_1` FOREIGN KEY (`job_role_id`) REFERENCES `job_roles` (`job_role_id`) ON DELETE CASCADE,
+  ADD CONSTRAINT `job_openings_ibfk_2` FOREIGN KEY (`department_id`) REFERENCES `departments` (`department_id`) ON DELETE CASCADE;
+
+--
+-- Constraints for table `knowledge_transfers`
+--
+ALTER TABLE `knowledge_transfers`
+  ADD CONSTRAINT `knowledge_transfers_ibfk_1` FOREIGN KEY (`exit_id`) REFERENCES `exits` (`exit_id`) ON DELETE CASCADE,
+  ADD CONSTRAINT `knowledge_transfers_ibfk_2` FOREIGN KEY (`employee_id`) REFERENCES `employee_profiles` (`employee_id`) ON DELETE CASCADE;
+
+--
+-- Constraints for table `leave_balances`
+--
+ALTER TABLE `leave_balances`
+  ADD CONSTRAINT `leave_balances_ibfk_1` FOREIGN KEY (`employee_id`) REFERENCES `employee_profiles` (`employee_id`) ON DELETE CASCADE,
+  ADD CONSTRAINT `leave_balances_ibfk_2` FOREIGN KEY (`leave_type_id`) REFERENCES `leave_types` (`leave_type_id`) ON DELETE CASCADE;
+
+--
+-- Constraints for table `leave_requests`
+--
+ALTER TABLE `leave_requests`
+  ADD CONSTRAINT `leave_requests_ibfk_1` FOREIGN KEY (`employee_id`) REFERENCES `employee_profiles` (`employee_id`) ON DELETE CASCADE,
+  ADD CONSTRAINT `leave_requests_ibfk_2` FOREIGN KEY (`leave_type_id`) REFERENCES `leave_types` (`leave_type_id`) ON DELETE CASCADE;
+
+--
+-- Constraints for table `onboarding_tasks`
+--
+ALTER TABLE `onboarding_tasks`
+  ADD CONSTRAINT `onboarding_tasks_ibfk_1` FOREIGN KEY (`department_id`) REFERENCES `departments` (`department_id`) ON DELETE SET NULL;
+
+--
+-- Constraints for table `payment_disbursements`
+--
+ALTER TABLE `payment_disbursements`
+  ADD CONSTRAINT `payment_disbursements_ibfk_1` FOREIGN KEY (`payroll_transaction_id`) REFERENCES `payroll_transactions` (`payroll_transaction_id`) ON DELETE CASCADE,
+  ADD CONSTRAINT `payment_disbursements_ibfk_2` FOREIGN KEY (`employee_id`) REFERENCES `employee_profiles` (`employee_id`) ON DELETE CASCADE;
+
+--
+-- Constraints for table `payroll_transactions`
+--
+ALTER TABLE `payroll_transactions`
+  ADD CONSTRAINT `payroll_transactions_ibfk_1` FOREIGN KEY (`employee_id`) REFERENCES `employee_profiles` (`employee_id`) ON DELETE CASCADE,
+  ADD CONSTRAINT `payroll_transactions_ibfk_2` FOREIGN KEY (`payroll_cycle_id`) REFERENCES `payroll_cycles` (`payroll_cycle_id`) ON DELETE CASCADE;
+
+--
+-- Constraints for table `payslips`
+--
+ALTER TABLE `payslips`
+  ADD CONSTRAINT `payslips_ibfk_1` FOREIGN KEY (`payroll_transaction_id`) REFERENCES `payroll_transactions` (`payroll_transaction_id`) ON DELETE CASCADE,
+  ADD CONSTRAINT `payslips_ibfk_2` FOREIGN KEY (`employee_id`) REFERENCES `employee_profiles` (`employee_id`) ON DELETE CASCADE;
+
+--
+-- Constraints for table `performance_metrics`
+--
+ALTER TABLE `performance_metrics`
+  ADD CONSTRAINT `performance_metrics_ibfk_1` FOREIGN KEY (`employee_id`) REFERENCES `employee_profiles` (`employee_id`) ON DELETE CASCADE;
+
+--
+-- Constraints for table `performance_reviews`
+--
+ALTER TABLE `performance_reviews`
+  ADD CONSTRAINT `performance_reviews_ibfk_1` FOREIGN KEY (`employee_id`) REFERENCES `employee_profiles` (`employee_id`) ON DELETE CASCADE,
+  ADD CONSTRAINT `performance_reviews_ibfk_2` FOREIGN KEY (`cycle_id`) REFERENCES `performance_review_cycles` (`cycle_id`) ON DELETE CASCADE;
+
+--
+-- Constraints for table `post_exit_surveys`
+--
+ALTER TABLE `post_exit_surveys`
+  ADD CONSTRAINT `post_exit_surveys_ibfk_1` FOREIGN KEY (`employee_id`) REFERENCES `employee_profiles` (`employee_id`) ON DELETE CASCADE,
+  ADD CONSTRAINT `post_exit_surveys_ibfk_2` FOREIGN KEY (`exit_id`) REFERENCES `exits` (`exit_id`) ON DELETE CASCADE;
+
+--
+-- Constraints for table `recruitment_analytics`
+--
+ALTER TABLE `recruitment_analytics`
+  ADD CONSTRAINT `recruitment_analytics_ibfk_1` FOREIGN KEY (`job_opening_id`) REFERENCES `job_openings` (`job_opening_id`) ON DELETE CASCADE;
+
+--
+-- Constraints for table `salary_structures`
+--
+ALTER TABLE `salary_structures`
+  ADD CONSTRAINT `salary_structures_ibfk_1` FOREIGN KEY (`employee_id`) REFERENCES `employee_profiles` (`employee_id`) ON DELETE CASCADE;
+
+--
+-- Constraints for table `settlements`
+--
+ALTER TABLE `settlements`
+  ADD CONSTRAINT `settlements_ibfk_1` FOREIGN KEY (`exit_id`) REFERENCES `exits` (`exit_id`) ON DELETE CASCADE,
+  ADD CONSTRAINT `settlements_ibfk_2` FOREIGN KEY (`employee_id`) REFERENCES `employee_profiles` (`employee_id`) ON DELETE CASCADE;
+
+--
+-- Constraints for table `statutory_deductions`
+--
+ALTER TABLE `statutory_deductions`
+  ADD CONSTRAINT `statutory_deductions_ibfk_1` FOREIGN KEY (`employee_id`) REFERENCES `employee_profiles` (`employee_id`) ON DELETE CASCADE;
+
+--
+-- Constraints for table `tax_deductions`
+--
+ALTER TABLE `tax_deductions`
+  ADD CONSTRAINT `tax_deductions_ibfk_1` FOREIGN KEY (`employee_id`) REFERENCES `employee_profiles` (`employee_id`) ON DELETE CASCADE;
+
+--
+-- Constraints for table `training_enrollments`
+--
+ALTER TABLE `training_enrollments`
+  ADD CONSTRAINT `training_enrollments_ibfk_1` FOREIGN KEY (`session_id`) REFERENCES `training_sessions` (`session_id`) ON DELETE CASCADE,
+  ADD CONSTRAINT `training_enrollments_ibfk_2` FOREIGN KEY (`employee_id`) REFERENCES `employee_profiles` (`employee_id`) ON DELETE CASCADE;
+
+--
+-- Constraints for table `training_needs_assessment`
+--
+ALTER TABLE `training_needs_assessment`
+  ADD CONSTRAINT `training_needs_assessment_ibfk_1` FOREIGN KEY (`employee_id`) REFERENCES `employee_profiles` (`employee_id`) ON DELETE CASCADE;
+
+--
+-- Constraints for table `training_sessions`
+--
+ALTER TABLE `training_sessions`
+  ADD CONSTRAINT `training_sessions_ibfk_1` FOREIGN KEY (`course_id`) REFERENCES `training_courses` (`course_id`) ON DELETE CASCADE,
+  ADD CONSTRAINT `training_sessions_ibfk_2` FOREIGN KEY (`trainer_id`) REFERENCES `trainers` (`trainer_id`) ON DELETE CASCADE;
+
+--
+-- Constraints for table `users`
+--
+ALTER TABLE `users`
+  ADD CONSTRAINT `users_ibfk_1` FOREIGN KEY (`employee_id`) REFERENCES `employee_profiles` (`employee_id`) ON DELETE SET NULL;
+COMMIT;
+
+/*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;
+/*!40101 SET CHARACTER_SET_RESULTS=@OLD_CHARACTER_SET_RESULTS */;
+/*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
+>>>>>>> c318430 (Updated HRMS modules and added new scripts)

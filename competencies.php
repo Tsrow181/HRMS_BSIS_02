@@ -42,6 +42,9 @@ require_once 'dp.php';
         padding: 8px;
         text-align: left;
     }
+    #competencyTable tbody tr:hover {
+        background-color: #f5f5f5 !important;
+    }
   </style>
 </head>
 <body>
@@ -58,21 +61,32 @@ require_once 'dp.php';
 
       <!-- Filter -->
       <div class="row mb-3">
-        <div class="col-md-4">
+        <div class="col-md-3">
           <label for="filterRole" class="form-label">Filter by Job Role</label>
           <select id="filterRole" class="form-select">
             <option value="">-- All Roles --</option>
           </select>
         </div>
+        <div class="col-md-3">
+          <label for="filterDepartment" class="form-label">Filter by Department</label>
+          <select id="filterDepartment" class="form-select">
+            <option value="">-- All Departments --</option>
+          </select>
+        </div>
+        <div class="col-md-3">
+          <label for="searchRole" class="form-label">Search Role</label>
+          <input type="text" id="searchRole" class="form-control" placeholder="Type to search roles...">
+        </div>
       </div>
 
       <!-- Competency Table -->
-      <table class="table table-bordered" id="competencyTable">
+      <table class="table table-bordered table-hover" id="competencyTable">
         <thead>
           <tr>
             <th>Competency</th>
             <th>Description</th>
             <th>Job Role</th>
+            <th>Department</th>
             <th>Actions</th>
           </tr>
         </thead>
@@ -191,21 +205,33 @@ document.getElementById('competencyForm').addEventListener('submit', function(e)
 });
 
 // Load competencies
-function loadCompetencies(roleId = "") {
+function loadCompetencies(roleId = "", department = "", searchRole = "") {
   let url = 'load_competencies.php';
-  if (roleId) url += '?role_id=' + roleId;
+  let params = [];
+  if (roleId) params.push('role_id=' + roleId);
+  if (department) params.push('department=' + encodeURIComponent(department));
+  if (searchRole) params.push('search_role=' + encodeURIComponent(searchRole));
+  if (params.length > 0) url += '?' + params.join('&');
+>>>>>>> c318430 (Updated HRMS modules and added new scripts)
 
   fetch(url)
     .then(res => res.json())
     .then(data => {
       let tbody = document.querySelector("#competencyTable tbody");
       tbody.innerHTML = "";
+
+      if (!Array.isArray(data)) {
+        tbody.innerHTML = `<tr><td colspan="5" class="text-center">No data found.</td></tr>`;
+        return;
+      }
+
       data.forEach(c => {
         tbody.innerHTML += `
           <tr>
             <td>${c.name}</td>
             <td>${c.description ?? ''}</td>
             <td>${c.role ?? ''}</td>
+            <td>${c.department ?? ''}</td>
             <td>
               <button class="btn btn-sm btn-warning" onclick="editCompetency(${c.competency_id})">Edit</button>
               <button class="btn btn-sm btn-danger" onclick="deleteCompetency(${c.competency_id})">Delete</button>
@@ -326,7 +352,23 @@ function loadRoleFilter() {
 
 // Filter change
 document.getElementById('filterRole').addEventListener('change', function() {
-  loadCompetencies(this.value);
+  const department = document.getElementById('filterDepartment').value;
+  const searchRole = document.getElementById('searchRole').value;
+  loadCompetencies(this.value, department, searchRole);
+});
+
+// Department filter change
+document.getElementById('filterDepartment').addEventListener('change', function() {
+  const roleId = document.getElementById('filterRole').value;
+  const searchRole = document.getElementById('searchRole').value;
+  loadCompetencies(roleId, this.value, searchRole);
+});
+
+// Search role input change
+document.getElementById('searchRole').addEventListener('input', function() {
+  const roleId = document.getElementById('filterRole').value;
+  const department = document.getElementById('filterDepartment').value;
+  loadCompetencies(roleId, department, this.value);
 });
 
 // Init
