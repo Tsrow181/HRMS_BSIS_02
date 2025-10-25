@@ -14,13 +14,19 @@ if (!isset($_SESSION['loggedin']) || $_SESSION['loggedin'] !== true) {
 require_once 'db.php';
 
 // Database connection
-$pdo = connectToDatabase();
+$host = 'localhost';
+$dbname = 'hr_system';
+$username = 'root';
+$password = '';
 
+try {
+    $pdo = new PDO("mysql:host=$host;dbname=$dbname", $username, $password);
+    $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
+} catch(PDOException $e) {
+    die("Connection failed: " . $e->getMessage());
+}
 
 // Handle form submissions
-$message = '';
-$messageType = '';
-
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     if (isset($_POST['action'])) {
         switch ($_POST['action']) {
@@ -36,11 +42,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                         $_POST['satisfaction_rating'],
                         $_POST['submitted_date']
                     ]);
-                    $message = "Post-exit survey added successfully!";
-                    $messageType = "success";
+                    $_SESSION['message'] = "Post-exit survey added successfully!";
+                    $_SESSION['messageType'] = "success";
+                    header("Location: " . $_SERVER['PHP_SELF']);
+                    exit;
                 } catch (PDOException $e) {
-                    $message = "Error adding survey: " . $e->getMessage();
-                    $messageType = "error";
+                    $_SESSION['message'] = "Error adding survey: " . $e->getMessage();
+                    $_SESSION['messageType'] = "error";
+                    header("Location: " . $_SERVER['PHP_SELF']);
+                    exit;
                 }
                 break;
             
@@ -57,11 +67,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                         $_POST['submitted_date'],
                         $_POST['survey_id']
                     ]);
-                    $message = "Post-exit survey updated successfully!";
-                    $messageType = "success";
+                    $_SESSION['message'] = "Post-exit survey updated successfully!";
+                    $_SESSION['messageType'] = "success";
+                    header("Location: " . $_SERVER['PHP_SELF']);
+                    exit;
                 } catch (PDOException $e) {
-                    $message = "Error updating survey: " . $e->getMessage();
-                    $messageType = "error";
+                    $_SESSION['message'] = "Error updating survey: " . $e->getMessage();
+                    $_SESSION['messageType'] = "error";
+                    header("Location: " . $_SERVER['PHP_SELF']);
+                    exit;
                 }
                 break;
             
@@ -70,15 +84,30 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 try {
                     $stmt = $pdo->prepare("DELETE FROM post_exit_surveys WHERE survey_id=?");
                     $stmt->execute([$_POST['survey_id']]);
-                    $message = "Post-exit survey deleted successfully!";
-                    $messageType = "success";
+                    $_SESSION['message'] = "Post-exit survey deleted successfully!";
+                    $_SESSION['messageType'] = "success";
+                    header("Location: " . $_SERVER['PHP_SELF']);
+                    exit;
                 } catch (PDOException $e) {
-                    $message = "Error deleting survey: " . $e->getMessage();
-                    $messageType = "error";
+                    $_SESSION['message'] = "Error deleting survey: " . $e->getMessage();
+                    $_SESSION['messageType'] = "error";
+                    header("Location: " . $_SERVER['PHP_SELF']);
+                    exit;
                 }
                 break;
         }
     }
+}
+
+// Get message from session if exists
+$message = '';
+$messageType = '';
+if (isset($_SESSION['message'])) {
+    $message = $_SESSION['message'];
+    $messageType = $_SESSION['messageType'];
+    // Clear the message after displaying
+    unset($_SESSION['message']);
+    unset($_SESSION['messageType']);
 }
 
 // Fetch surveys with related data
@@ -660,16 +689,16 @@ $exits = $stmt->fetchAll(PDO::FETCH_ASSOC);
                     <div class="form-group">
                         <label for="satisfaction_rating">Satisfaction Rating</label>
                         <div class="rating-input" id="ratingStars">
-                            <input type="radio" name="satisfaction_rating" id="star5" value="5">
-                            <label for="star5" data-rating="5">⭐</label>
-                            <input type="radio" name="satisfaction_rating" id="star4" value="4">
-                            <label for="star4" data-rating="4">⭐</label>
-                            <input type="radio" name="satisfaction_rating" id="star3" value="3">
-                            <label for="star3" data-rating="3">⭐</label>
-                            <input type="radio" name="satisfaction_rating" id="star2" value="2">
-                            <label for="star2" data-rating="2">⭐</label>
                             <input type="radio" name="satisfaction_rating" id="star1" value="1">
                             <label for="star1" data-rating="1">⭐</label>
+                            <input type="radio" name="satisfaction_rating" id="star2" value="2">
+                            <label for="star2" data-rating="2">⭐</label>
+                            <input type="radio" name="satisfaction_rating" id="star3" value="3">
+                            <label for="star3" data-rating="3">⭐</label>
+                            <input type="radio" name="satisfaction_rating" id="star4" value="4">
+                            <label for="star4" data-rating="4">⭐</label>
+                            <input type="radio" name="satisfaction_rating" id="star5" value="5">
+                            <label for="star5" data-rating="5">⭐</label>
                         </div>
                         <small style="color: #666;">Click on a star to rate (1-5 stars)</small>
                     </div>
