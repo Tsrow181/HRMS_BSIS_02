@@ -175,7 +175,7 @@ function getShifts() {
 function getEmployeeShifts() {
     global $conn;
     try {
-<<<<<<< HEAD
+
         $sql = "SELECT ep.employee_id,
                        CASE
                            WHEN EXISTS (
@@ -188,10 +188,6 @@ function getEmployeeShifts() {
                        END as status,
                        pi.first_name, pi.last_name, d.department_name,
                        es.employee_shift_id, es.shift_id, es.assigned_date, es.is_overtime,
-=======
-        $sql = "SELECT ep.employee_id, pi.first_name, pi.last_name, d.department_name,
-                       es.employee_shift_id, es.shift_id, es.assigned_date, es.is_overtime, es.status,
->>>>>>> 48f0fd909401d87fc7e82ce488dfd81cd0dfc6fa
                        s.shift_name
                 FROM employee_profiles ep
                 JOIN personal_information pi ON ep.personal_info_id = pi.personal_info_id
