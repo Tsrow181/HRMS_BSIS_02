@@ -14,7 +14,17 @@ if (!isset($_SESSION['loggedin']) || $_SESSION['loggedin'] !== true) {
 require_once 'db.php';
 
 // Database connection
-$pdo = connectToDatabase();
+$host = 'localhost';
+$dbname = 'hr_system';
+$username = 'root';
+$password = '';
+
+try {
+    $pdo = new PDO("mysql:host=$host;dbname=$dbname", $username, $password);
+    $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
+} catch(PDOException $e) {
+    die("Connection failed: " . $e->getMessage());
+}
 
 // Handle form submissions
 $message = '';
@@ -690,7 +700,7 @@ $departments = [
                             </thead>
                             <tbody id="checklistTableBody">
                                 <?php foreach ($checklistItems as $item): ?>
-                                <tr class="priority-medium">
+                                <tr class="priority-medium" data-checklist-id="<?= $item['checklist_id'] ?>">
                                     <td>
                                         <div>
                                             <strong><?= htmlspecialchars($item['employee_name']) ?></strong><br>
@@ -868,6 +878,25 @@ $departments = [
         </div>
     </div>
 
+    <!-- Delete Confirmation Modal -->
+    <div id="deleteModal" class="modal">
+        <div class="modal-content" style="max-width: 400px;">
+            <div class="modal-header" style="background: linear-gradient(135deg, #dc3545 0%, #c82333 100%);">
+                <h2>Confirm Delete</h2>
+                <span class="close" onclick="closeDeleteModal()">&times;</span>
+            </div>
+            <div class="modal-body">
+                <p style="text-align: center; font-size: 1.1em; margin-bottom: 20px;">
+                    Are you sure you want to delete this checklist item?
+                </p>
+                <div style="text-align: center;">
+                    <button class="btn btn-danger" id="confirmDelete" style="margin-right: 10px;">Yes</button>
+                    <button class="btn btn-secondary" onclick="closeDeleteModal()">No</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <script>
         // Global variables
         let checklistData = <?= json_encode($checklistItems) ?>;
@@ -937,7 +966,14 @@ $departments = [
         }
 
         function deleteChecklistItem(checklistId) {
-            if (confirm('Are you sure you want to delete this checklist item? This action cannot be undone.')) {
+            // Show delete confirmation modal
+            const deleteModal = document.getElementById('deleteModal');
+            deleteModal.style.display = 'block';
+            
+            // Handle delete confirmation
+            document.getElementById('confirmDelete').onclick = function() {
+                const row = document.querySelector(`tr[data-checklist-id="${checklistId}"]`);
+                
                 const form = document.createElement('form');
                 form.method = 'POST';
                 form.innerHTML = `
@@ -945,119 +981,37 @@ $departments = [
                     <input type="hidden" name="checklist_id" value="${checklistId}">
                 `;
                 document.body.appendChild(form);
+                
+                // Submit form
                 form.submit();
-            }
-        }
-
-        function quickUpdateStatus(checklistId, newStatus) {
-            if (confirm(`Are you sure you want to mark this item as "${newStatus}"?`)) {
-                const form = document.createElement('form');
-                form.method = 'POST';
-                const completedDate = newStatus === 'Completed' ? new Date().toISOString().split('T')[0] : '';
                 
-                form.innerHTML = `
-                    <input type="hidden" name="action" value="update">
-                    <input type="hidden" name="checklist_id" value="${checklistId}">
-                    <input type="hidden" name="status" value="${newStatus}">
-                    <input type="hidden" name="completed_date" value="${completedDate}">
-                `;
-                
-                // Get current item data to preserve other fields
-                const item = checklistData.find(item => item.checklist_id == checklistId);
-                if (item) {
-                    form.innerHTML += `
-                        <input type="hidden" name="exit_id" value="${item.exit_id || ''}">
-                        <input type="hidden" name="item_name" value="${item.item_name || ''}">
-                        <input type="hidden" name="description" value="${item.description || ''}">
-                        <input type="hidden" name="responsible_department" value="${item.responsible_department || ''}">
-                        <input type="hidden" name="notes" value="${item.notes || ''}">
-                    `;
+                // Remove the row from the table immediately
+                if (row) {
+                    row.remove();
                 }
                 
-                document.body.appendChild(form);
-                form.submit();
-            }
+                // Close the modal
+                closeDeleteModal();
+            };
         }
 
-        // Bulk update functionality
-        function openBulkUpdateModal() {
-            const modal = document.getElementById('bulkUpdateModal');
-            const container = document.getElementById('bulkUpdateItems');
-            
-            // Clear existing content
-            container.innerHTML = '';
-            
-            // Group items by exit for better organization
-            const groupedItems = {};
-            checklistData.forEach(item => {
-                if (!groupedItems[item.exit_id]) {
-                    groupedItems[item.exit_id] = [];
-                }
-                groupedItems[item.exit_id].push(item);
-            });
-            
-            Object.values(groupedItems).forEach(exitItems => {
-                if (exitItems.length > 0) {
-                    const exitInfo = exitItems[0];
-                    
-                    // Add exit header
-                    const exitHeader = document.createElement('div');
-                    exitHeader.style.cssText = 'background: var(--azure-blue-lighter); padding: 10px; border-radius: 8px; margin-bottom: 15px; font-weight: bold; color: var(--azure-blue-dark);';
-                    exitHeader.innerHTML = `${exitInfo.employee_name} (#${exitInfo.employee_number}) - ${exitInfo.exit_type}`;
-                    container.appendChild(exitHeader);
-                    
-                    exitItems.forEach(item => {
-                        const itemDiv = document.createElement('div');
-                        itemDiv.className = 'checklist-item';
-                        itemDiv.innerHTML = `
-                            <h5>${item.item_name}</h5>
-                            <p><strong>Department:</strong> ${item.responsible_department}</p>
-                            ${item.description ? `<p><small>${item.description}</small></p>` : ''}
-                            <div class="form-row">
-                                <div class="form-col">
-                                    <label>Status</label>
-                                    <select name="checklist_items[${item.checklist_id}][status]" class="form-control">
-                                        <option value="Pending" ${item.status === 'Pending' ? 'selected' : ''}>Pending</option>
-                                        <option value="Completed" ${item.status === 'Completed' ? 'selected' : ''}>Completed</option>
-                                        <option value="Not Applicable" ${item.status === 'Not Applicable' ? 'selected' : ''}>Not Applicable</option>
-                                    </select>
-                                </div>
-                                <div class="form-col">
-                                    <label>Completed Date</label>
-                                    <input type="date" name="checklist_items[${item.checklist_id}][completed_date]" 
-                                           value="${item.completed_date || ''}" class="form-control">
-                                </div>
-                            </div>
-                            <div class="form-group" style="margin-top: 15px;">
-                                <label>Notes</label>
-                                <textarea name="checklist_items[${item.checklist_id}][notes]" 
-                                         class="form-control" rows="2">${item.notes || ''}</textarea>
-                            </div>
-                        `;
-                        container.appendChild(itemDiv);
-                    });
-                }
-            });
-            
-            modal.style.display = 'block';
-            document.body.style.overflow = 'hidden';
+        function closeDeleteModal() {
+            const deleteModal = document.getElementById('deleteModal');
+            deleteModal.style.display = 'none';
         }
 
-        function closeBulkUpdateModal() {
-            const modal = document.getElementById('bulkUpdateModal');
-            modal.style.display = 'none';
-            document.body.style.overflow = 'auto';
-        }
-
-        // Close modals when clicking outside
+        // Update window onclick handler
         window.onclick = function(event) {
             const checklistModal = document.getElementById('checklistModal');
             const bulkModal = document.getElementById('bulkUpdateModal');
+            const deleteModal = document.getElementById('deleteModal');
             
             if (event.target === checklistModal) {
                 closeModal();
             } else if (event.target === bulkModal) {
                 closeBulkUpdateModal();
+            } else if (event.target === deleteModal) {
+                closeDeleteModal();
             }
         }
 
@@ -1134,6 +1088,7 @@ $departments = [
                 if (e.key === 'Escape') {
                     closeModal();
                     closeBulkUpdateModal();
+                    closeDeleteModal();
                 }
             });
         });
