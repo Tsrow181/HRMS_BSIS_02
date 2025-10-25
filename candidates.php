@@ -15,16 +15,115 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     if (isset($_POST['action'])) {
         switch ($_POST['action']) {
             case 'approve_candidate':
-                $application_id = $_POST['application_id'];
-                
-                $app_stmt = $conn->prepare("SELECT candidate_id FROM job_applications WHERE application_id = ?");
-                $app_stmt->execute([$application_id]);
-                $app_data = $app_stmt->fetch(PDO::FETCH_ASSOC);
-                
-                $stmt = $conn->prepare("UPDATE job_applications SET status = 'Reference Check' WHERE application_id = ?");
-                $stmt->execute([$application_id]);
-                
-                $success_message = "✅ Candidate approved and moved to reference check!";
+                try {
+                    $conn->beginTransaction();
+                    
+                    $application_id = $_POST['application_id'];
+                    
+                    // Get application and candidate details
+                    $app_stmt = $conn->prepare("SELECT ja.candidate_id, jo.department_id, jo.job_role_id, c.* 
+                                              FROM job_applications ja 
+                                              JOIN job_openings jo ON ja.job_opening_id = jo.job_opening_id 
+                                              JOIN candidates c ON ja.candidate_id = c.candidate_id 
+                                              WHERE ja.application_id = ?");
+                    $app_stmt->execute([$application_id]);
+                    $app_data = $app_stmt->fetch(PDO::FETCH_ASSOC);
+                    
+                    if (!$app_data) {
+                        throw new Exception("Application not found");
+                    }
+                    
+                    // First create personal information record
+                    $personal_stmt = $conn->prepare("INSERT INTO personal_information 
+                        (first_name, last_name, date_of_birth, gender, marital_status, nationality, 
+                         tax_id, social_security_number, phone_number, emergency_contact_name, 
+                         emergency_contact_relationship, emergency_contact_phone) 
+                        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
+                    
+                    $personal_stmt->execute([
+                        $app_data['first_name'],
+                        $app_data['last_name'],
+                        $app_data['date_of_birth'] ?? date('Y-m-d'),
+                        $app_data['gender'] ?? 'Prefer not to say',
+                        $app_data['marital_status'] ?? 'Single',
+                        $app_data['nationality'] ?? 'Filipino',
+                        $app_data['tax_id'] ?? null,
+                        $app_data['ssn'] ?? null,
+                        $app_data['phone'],
+                        $app_data['emergency_contact'] ?? null,
+                        $app_data['emergency_relation'] ?? null,
+                        $app_data['emergency_phone'] ?? null
+                    ]);
+                    
+                    $personal_info_id = $conn->lastInsertId();
+                    
+                    // Create employee profile with the personal info ID
+                    $emp_number = 'EMP' . str_pad($app_data['candidate_id'], 4, '0', STR_PAD_LEFT);
+                    $emp_stmt = $conn->prepare("INSERT INTO employee_profiles 
+                        (employee_number, personal_info_id, job_role_id, hire_date, employment_status,
+                         current_salary, work_email, work_phone, location, remote_work) 
+                        VALUES (?, ?, ?, CURDATE(), 'Full-time', ?, ?, ?, ?, false)");
+                    
+                    $emp_stmt->execute([
+                        $emp_number,
+                        $personal_info_id,
+                        $app_data['job_role_id'],
+                        $app_data['expected_salary'] ?? 0,
+                        $app_data['email'],
+                        $app_data['phone'],
+                        $app_data['preferred_location'] ?? 'Main Office'
+                    ]);
+                    $employee_id = $conn->lastInsertId();
+                    
+                    // Link candidate documents to the new employee
+                    require_once 'link_candidate_documents.php';
+                    linkCandidateDocuments($app_data['candidate_id'], $employee_id, $conn);
+                    
+                    // Update application status to Reference Check
+                    $stmt = $conn->prepare("UPDATE job_applications SET status = 'Reference Check' WHERE application_id = ?");
+                    $stmt->execute([$application_id]);
+                    
+                    // Create onboarding record with Reference Check status
+                    $start_date = date('Y-m-d');
+                    $completion_date = date('Y-m-d', strtotime('+7 days')); // 1 week to complete reference checks
+                    
+                    $onboarding_stmt = $conn->prepare("INSERT INTO employee_onboarding (employee_id, start_date, expected_completion_date, status) VALUES (?, ?, ?, 'Pending Reference Check')");
+                    $onboarding_stmt->execute([$employee_id, $start_date, $completion_date]);
+                    $onboarding_id = $conn->lastInsertId();
+                    
+                    // Create reference check tasks
+                    $ref_check_tasks = array(
+                        array('task_name' => 'Contact Previous Employer', 'description' => 'Verify employment details with previous employer'),
+                        array('task_name' => 'Verify Employment History', 'description' => 'Check dates and positions held'),
+                        array('task_name' => 'Check Professional References', 'description' => 'Contact and verify professional references')
+                    );
+                    
+                    foreach ($ref_check_tasks as $task) {
+                        // First insert the task if it doesn't exist
+                        $task_stmt = $conn->prepare("INSERT IGNORE INTO onboarding_tasks (task_name, department_id, is_mandatory) VALUES (?, ?, ?)");
+                        $task_stmt->execute([$task['task_name'], $app_data['department_id'], $task['is_mandatory']]);
+                        
+                        // Get the task_id (whether it was just inserted or already existed)
+                        $task_id_stmt = $conn->prepare("SELECT task_id FROM onboarding_tasks WHERE task_name = ? AND (department_id = ? OR department_id IS NULL)");
+                        $task_id_stmt->execute([$task['task_name'], $app_data['department_id']]);
+                        $task_id = $task_id_stmt->fetchColumn();
+                        
+                        if (!$task_id) {
+                            throw new Exception("Failed to get task ID");
+                        }
+                        
+                        // Create the task in employee_onboarding_tasks
+                        $due_date = date('Y-m-d', strtotime('+7 days'));
+                        $task_assign_stmt = $conn->prepare("INSERT INTO employee_onboarding_tasks (onboarding_id, task_id, due_date, status) VALUES (?, ?, ?, 'Not Started')");
+                        $task_assign_stmt->execute([$onboarding_id, $task_id, $due_date]);
+                    }
+                    
+                    $conn->commit();
+                    $success_message = "✅ Candidate moved to reference check phase with " . count($ref_check_tasks) . " verification tasks created!";
+                } catch (Exception $e) {
+                    $conn->rollBack();
+                    $success_message = "❌ Error: " . $e->getMessage();
+                }
                 break;
                 
             case 'reject_candidate':
@@ -37,8 +136,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 $stmt = $conn->prepare("UPDATE job_applications SET status = 'Rejected' WHERE application_id = ?");
                 $stmt->execute([$application_id]);
                 
-                $stmt = $conn->prepare("UPDATE candidates SET source = 'Rejected' WHERE candidate_id = ?");
-                $stmt->execute([$app_data['candidate_id']]);
+
                 
                 $success_message = "❌ Candidate rejected!";
                 break;
@@ -59,24 +157,23 @@ $stats = $conn->query($stats_query)->fetch(PDO::FETCH_ASSOC);
 
 // Get stage performance data
 $stage_performance = $conn->query("SELECT 
-    c.source as stage_name,
+    ja.status as stage_name,
     COUNT(*) as candidate_count,
     AVG(DATEDIFF(CURDATE(), ja.application_date)) as avg_days
-    FROM candidates c 
-    JOIN job_applications ja ON c.candidate_id = ja.candidate_id
-    WHERE ja.status = 'Assessment' AND c.source != 'Assessment'
-    GROUP BY c.source
+    FROM job_applications ja 
+    WHERE ja.status IN ('Applied', 'Screening', 'Interview', 'Assessment')
+    GROUP BY ja.status
     ORDER BY candidate_count DESC")->fetchAll(PDO::FETCH_ASSOC);
 
-// Build candidates query with filters (exclude Reference Check - they go to onboarding)
+// Build candidates query with filters (show all active statuses)
 $candidates_query = "SELECT c.*, ja.application_id, ja.application_date, ja.status, 
-                     jo.title as job_title, d.department_name, d.department_id, c.source as current_stage,
+                     jo.title as job_title, d.department_name, d.department_id,
                      DATEDIFF(CURDATE(), ja.application_date) as days_in_process
                      FROM candidates c 
                      JOIN job_applications ja ON c.candidate_id = ja.candidate_id
                      JOIN job_openings jo ON ja.job_opening_id = jo.job_opening_id
                      JOIN departments d ON jo.department_id = d.department_id
-                     WHERE ja.status NOT IN ('Reference Check', 'Hired', 'Rejected')";
+                     WHERE ja.status NOT IN ('Hired', 'Rejected')";
 
 $params = [];
 if ($filter_job) {
@@ -132,8 +229,47 @@ $recent_activities = $conn->query("SELECT c.first_name, c.last_name, ja.status, 
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.1/css/all.min.css">
     <link rel="stylesheet" href="styles.css?v=rose">
+    <style>
+        .loading-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(255, 255, 255, 0.9);
+            z-index: 9999;
+        }
+        .loading-content {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            text-align: center;
+        }
+        .loading-spinner {
+            width: 50px;
+            height: 50px;
+            margin-bottom: 10px;
+        }
+        .loading-text {
+            font-size: 18px;
+            color: #333;
+        }
+    </style>
 </head>
 <body>
+    <!-- Loading Overlay -->
+    <div class="loading-overlay" id="loadingOverlay">
+        <div class="loading-content">
+            <div class="spinner-border text-primary loading-spinner" role="status">
+                <span class="sr-only">Loading...</span>
+            </div>
+            <div class="loading-text">Processing candidate information...</div>
+            <div class="loading-progress small text-muted mt-2" id="loadingProgress">Creating employee profile...</div>
+        </div>
+    </div>
+    
     <div class="container-fluid">
         <?php include 'navigation.php'; ?>
         <div class="row">
@@ -287,7 +423,8 @@ $recent_activities = $conn->query("SELECT c.first_name, c.last_name, ja.status, 
                                     <option value="Screening" <?php echo $filter_status == 'Screening' ? 'selected' : ''; ?>>Screening</option>
                                     <option value="Interview" <?php echo $filter_status == 'Interview' ? 'selected' : ''; ?>>Interview</option>
                                     <option value="Assessment" <?php echo $filter_status == 'Assessment' ? 'selected' : ''; ?>>Assessment</option>
-                                    <option value="Completed All Stages" <?php echo $filter_status == 'Completed All Stages' ? 'selected' : ''; ?>>Completed All Stages</option>
+                                    <option value="Reference Check" <?php echo $filter_status == 'Reference Check' ? 'selected' : ''; ?>>Reference Check</option>
+                                    <option value="Offer" <?php echo $filter_status == 'Offer' ? 'selected' : ''; ?>>Offer</option>
                                     <option value="Hired" <?php echo $filter_status == 'Hired' ? 'selected' : ''; ?>>Hired</option>
                                     <option value="Rejected" <?php echo $filter_status == 'Rejected' ? 'selected' : ''; ?>>Rejected</option>
                                 </select>
@@ -365,8 +502,10 @@ $recent_activities = $conn->query("SELECT c.first_name, c.last_name, ja.status, 
                                                             echo '<span class="badge badge-info">🔍 Under Review</span>';
                                                         } elseif ($candidate['status'] == 'Applied') {
                                                             echo '<span class="badge badge-warning">📝 New Application</span>';
-                                                        } elseif ($candidate['current_stage'] == 'Completed All Stages') {
-                                                            echo '<span class="badge badge-warning">🏆 Completed All Stages</span>';
+                                                        } elseif ($candidate['status'] == 'Reference Check') {
+                                                            echo '<span class="badge badge-info">� Reference Check</span>';
+                                                        } elseif ($candidate['status'] == 'Offer') {
+                                                            echo '<span class="badge badge-success">💼 Job Offer Sent</span>';
                                                         } elseif ($candidate['status'] == 'Hired') {
                                                             echo '<span class="badge badge-success">✅ Hired</span>';
                                                         } elseif ($candidate['status'] == 'Rejected') {
@@ -377,15 +516,23 @@ $recent_activities = $conn->query("SELECT c.first_name, c.last_name, ja.status, 
                                                         ?>
                                                     </td>
                                                     <td>
-                                                        <?php if ($candidate['status'] == 'Assessment' || ($candidate['status'] == 'Screening' && $candidate['current_stage'] != 'Approved')): ?>
-                                                            <span class="badge badge-primary"><?php echo htmlspecialchars($candidate['current_stage']); ?></span>
+                                                        <?php 
+                                                        // Get current interview stage
+                                                        $current_stage_query = $conn->prepare("SELECT ist.stage_name, i.status as interview_status 
+                                                                                               FROM interviews i 
+                                                                                               JOIN interview_stages ist ON i.stage_id = ist.stage_id 
+                                                                                               WHERE i.application_id = ? 
+                                                                                               ORDER BY ist.stage_order DESC LIMIT 1");
+                                                        $current_stage_query->execute([$candidate['application_id']]);
+                                                        $current_stage = $current_stage_query->fetch(PDO::FETCH_ASSOC);
+                                                        
+                                                        if ($candidate['status'] == 'Interview' && $current_stage): 
+                                                        ?>
+                                                            <span class="badge badge-primary"><?php echo htmlspecialchars($current_stage['stage_name']); ?></span>
+                                                        <?php elseif ($candidate['status'] == 'Assessment'): ?>
+                                                            <span class="badge badge-success">Assessment</span>
                                                         <?php elseif ($candidate['status'] == 'Screening'): ?>
-                                                            <?php 
-                                                            $first_stage_query = $conn->prepare("SELECT stage_name FROM interview_stages WHERE job_opening_id = (SELECT job_opening_id FROM job_applications WHERE application_id = ?) ORDER BY stage_order LIMIT 1");
-                                                            $first_stage_query->execute([$candidate['application_id']]);
-                                                            $first_stage = $first_stage_query->fetch(PDO::FETCH_ASSOC);
-                                                            ?>
-                                                            <span class="badge badge-info"><?php echo $first_stage ? htmlspecialchars($first_stage['stage_name']) : 'Initial'; ?></span>
+                                                            <span class="badge badge-info">Initial Review</span>
                                                         <?php else: ?>
                                                             <span class="text-muted">-</span>
                                                         <?php endif; ?>
@@ -401,14 +548,46 @@ $recent_activities = $conn->query("SELECT c.first_name, c.last_name, ja.status, 
                                                             <i class="fas fa-eye"></i>
                                                         </button>
                                                         
-                                                        <?php if ($candidate['current_stage'] == 'Completed All Stages'): ?>
-                                                            <form method="POST" style="display:inline;" class="ml-1">
+                                                        <?php if ($candidate['status'] == 'Assessment'): ?>
+                                                            <form method="POST" style="display:inline;" class="ml-1" onsubmit="return showLoadingScreen(this)">
                                                                 <input type="hidden" name="action" value="approve_candidate">
                                                                 <input type="hidden" name="application_id" value="<?php echo $candidate['application_id']; ?>">
-                                                                <button type="submit" class="btn btn-success btn-sm" onclick="return confirm('Approve this candidate for hiring?')">
+                                                                <button type="submit" class="btn btn-success btn-sm">
                                                                     <i class="fas fa-check"></i>
                                                                 </button>
                                                             </form>
+                                                            
+                                                            <script>
+                                                            function showLoadingScreen(form) {
+                                                                if (!confirm('Approve this candidate for hiring?')) {
+                                                                    return false;
+                                                                }
+                                                                
+                                                                document.getElementById('loadingOverlay').style.display = 'block';
+                                                                
+                                                                // Simulate progress updates
+                                                                const progress = document.getElementById('loadingProgress');
+                                                                const steps = [
+                                                                    'Creating personal information record...',
+                                                                    'Generating employee profile...',
+                                                                    'Setting up onboarding tasks...',
+                                                                    'Linking documents...',
+                                                                    'Finalizing process...'
+                                                                ];
+                                                                
+                                                                let i = 0;
+                                                                const interval = setInterval(() => {
+                                                                    if (i < steps.length) {
+                                                                        progress.textContent = steps[i];
+                                                                        i++;
+                                                                    } else {
+                                                                        clearInterval(interval);
+                                                                    }
+                                                                }, 1000);
+                                                                
+                                                                return true;
+                                                            }
+                                                            </script>
                                                             <form method="POST" style="display:inline;" class="ml-1">
                                                                 <input type="hidden" name="action" value="reject_candidate">
                                                                 <input type="hidden" name="application_id" value="<?php echo $candidate['application_id']; ?>">
@@ -482,8 +661,10 @@ $recent_activities = $conn->query("SELECT c.first_name, c.last_name, ja.status, 
                                                     echo '<span class="badge badge-info">🔍 Under Initial Review</span>';
                                                 } elseif ($candidate['status'] == 'Applied') {
                                                     echo '<span class="badge badge-warning">📝 New Application</span>';
-                                                } elseif ($candidate['current_stage'] == 'Completed All Stages') {
-                                                    echo '<span class="badge badge-warning">🏆 Ready for HR Approval</span>';
+                                                } elseif ($candidate['status'] == 'Reference Check') {
+                                                    echo '<span class="badge badge-info">� Reference Check In Progress</span>';
+                                                } elseif ($candidate['status'] == 'Offer') {
+                                                    echo '<span class="badge badge-success">💼 Job Offer Extended</span>';
                                                 } elseif ($candidate['status'] == 'Hired') {
                                                     echo '<span class="badge badge-success">✅ Successfully Hired</span>';
                                                 } elseif ($candidate['status'] == 'Rejected') {
@@ -494,16 +675,23 @@ $recent_activities = $conn->query("SELECT c.first_name, c.last_name, ja.status, 
                                                 ?>
                                             </p>
                                             <p><strong>Current Stage:</strong> 
-                                                <?php if ($candidate['status'] == 'Assessment' || ($candidate['status'] == 'Screening' && $candidate['current_stage'] != 'Approved')): ?>
-                                                    <span class="badge badge-primary"><?php echo htmlspecialchars($candidate['current_stage']); ?></span>
+                                                <?php 
+                                                // Get current interview stage for modal
+                                                $current_stage_query = $conn->prepare("SELECT ist.stage_name, i.status as interview_status 
+                                                                                       FROM interviews i 
+                                                                                       JOIN interview_stages ist ON i.stage_id = ist.stage_id 
+                                                                                       WHERE i.application_id = ? 
+                                                                                       ORDER BY ist.stage_order DESC LIMIT 1");
+                                                $current_stage_query->execute([$candidate['application_id']]);
+                                                $current_stage = $current_stage_query->fetch(PDO::FETCH_ASSOC);
+                                                
+                                                if ($candidate['status'] == 'Interview' && $current_stage): 
+                                                ?>
+                                                    <span class="badge badge-primary"><?php echo htmlspecialchars($current_stage['stage_name']); ?></span>
+                                                <?php elseif ($candidate['status'] == 'Assessment'): ?>
+                                                    <span class="badge badge-success">Assessment Phase</span>
                                                 <?php elseif ($candidate['status'] == 'Screening'): ?>
-                                                    <?php 
-                                                    // Get first interview stage for this job
-                                                    $first_stage_query = $conn->prepare("SELECT stage_name FROM interview_stages WHERE job_opening_id = (SELECT job_opening_id FROM job_applications WHERE application_id = ?) ORDER BY stage_order LIMIT 1");
-                                                    $first_stage_query->execute([$candidate['application_id']]);
-                                                    $first_stage = $first_stage_query->fetch(PDO::FETCH_ASSOC);
-                                                    ?>
-                                                    <span class="badge badge-info"><?php echo $first_stage ? htmlspecialchars($first_stage['stage_name']) : 'Initial Screening'; ?></span>
+                                                    <span class="badge badge-info">Initial Screening</span>
                                                 <?php else: ?>
                                                     <span class="text-muted">Not in interview stages</span>
                                                 <?php endif; ?>
@@ -589,7 +777,7 @@ $recent_activities = $conn->query("SELECT c.first_name, c.last_name, ja.status, 
                                     </div>
                                 </div>
                                 <div class="modal-footer">
-                                    <?php if ($candidate['current_stage'] == 'Completed All Stages'): ?>
+                                    <?php if ($candidate['status'] == 'Assessment'): ?>
                                         <form method="POST" style="display:inline;">
                                             <input type="hidden" name="action" value="approve_candidate">
                                             <input type="hidden" name="application_id" value="<?php echo $candidate['application_id']; ?>">

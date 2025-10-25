@@ -376,49 +376,57 @@ $sidebar_stats = getSidebarStats();
                             <i class="fas fa-briefcase"></i> Job Openings
                         </a>
                     </li>
+
                     <li class="nav-item">
-                        <a class="nav-link <?php echo isActiveMenu('candidates.php'); ?>" href="candidates.php">
-                            <i class="fas fa-user"></i> Candidates
+                        <a class="nav-link" href="public_jobs.php" target="_blank">
+                            <i class="fas fa-external-link-alt"></i> Public Job Portal
                         </a>
                     </li>
+                    
                     <li class="nav-item">
                         <a class="nav-link <?php echo isActiveMenu('job_applications.php'); ?>" href="job_applications.php">
                             <i class="fas fa-file-alt"></i> Job Applications
                         </a>
                     </li>
+
                     <li class="nav-item">
                         <a class="nav-link <?php echo isActiveMenu('interview_stages.php'); ?>" href="interview_stages.php">
                             <i class="fas fa-tasks"></i> Interview Stages
                         </a>
                     </li>
+
                     <li class="nav-item">
                         <a class="nav-link <?php echo isActiveMenu('interviews.php'); ?>" href="interviews.php">
                             <i class="fas fa-comments"></i> Interviews
                         </a>
                     </li>
+
                     <li class="nav-item">
-                        <a class="nav-link <?php echo isActiveMenu('job_offers.php'); ?>" href="job_offers.php">
-                            <i class="fas fa-file-contract"></i> Job Offers
+                        <a class="nav-link <?php echo isActiveMenu('candidates.php'); ?>" href="candidates.php">
+                            <i class="fas fa-user"></i> Candidates
                         </a>
                     </li>
-                    <li class="nav-item">
-                        <a class="nav-link <?php echo isActiveMenu('recruitment_analytics.php'); ?>" href="recruitment_analytics.php">
-                            <i class="fas fa-chart-pie"></i> Recruitment Analytics
-                        </a>
-                    </li>
+                    
                     <li class="nav-item">
                         <a class="nav-link <?php echo isActiveMenu('onboarding_tasks.php'); ?>" href="onboarding_tasks.php">
                             <i class="fas fa-tasks"></i> Onboarding Tasks
                         </a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link <?php echo isActiveMenu('employee_onboarding.php'); ?>" href="employee_onboarding.php">
-                            <i class="fas fa-user-plus"></i> Employee Onboarding
+                        <a class="nav-link <?php echo isActiveMenu('onboarding.php'); ?>" href="onboarding.php">
+                            <i class="fas fa-user-plus"></i> Onboarding Management
                         </a>
                     </li>
+
                     <li class="nav-item">
-                        <a class="nav-link <?php echo isActiveMenu('employee_onboarding_tasks.php'); ?>" href="employee_onboarding_tasks.php">
-                            <i class="fas fa-tasks"></i> Employee Onboarding Tasks
+                        <a class="nav-link <?php echo isActiveMenu('recruitment_analytics.php'); ?>" href="recruitment_analytics.php">
+                            <i class="fas fa-chart-pie"></i> Recruitment Analytics
+                        </a>
+                    </li>
+
+                    <li class="nav-item">
+                        <a class="nav-link <?php echo isActiveMenu('job_offers.php'); ?>" href="job_offers.php">
+                            <i class="fas fa-file-contract"></i> Job Offers
                         </a>
                     </li>
                 </ul>
