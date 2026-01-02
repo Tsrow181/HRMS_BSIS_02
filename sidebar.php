@@ -524,11 +524,15 @@ $sidebar_stats = getSidebarStats();
         </ul>
     </div>
 </li>
-
-        
         <li class="nav-item">
             <a class="nav-link <?php echo isActiveMenu('settings.php'); ?>" href="settings.php">
                 <i class="fas fa-cog"></i> Settings
+            </a>
+        </li>
+        
+        <li class="nav-item">
+            <a class="nav-link <?php echo isActiveMenu('archive_storage.php'); ?>" href="archive_storage.php">
+                <i class="fas fa-archive"></i> Archive Storage
             </a>
         </li>
         
