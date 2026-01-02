@@ -35,10 +35,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         try {
             // Update employee profile
             $stmt = $pdo->prepare("UPDATE employee_profiles SET 
-                current_salary=?, work_email=?, work_phone=?, location=?, remote_work=? 
+                work_email=?, work_phone=?, location=?, remote_work=? 
                 WHERE employee_id=?");
             $stmt->execute([
-                $_POST['current_salary'],
                 $_POST['work_email'],
                 $_POST['work_phone'],
                 $_POST['location'],
@@ -470,10 +469,6 @@ $jobRoles = $stmt->fetchAll(PDO::FETCH_ASSOC);
                                 <div class="detail-value"><?= date('F d, Y', strtotime($currentEmployee['hire_date'])) ?></div>
                             </div>
                             <div class="detail-row">
-                                <div class="detail-label">Current Salary:</div>
-                                <div class="detail-value">₱<?= number_format($currentEmployee['current_salary'], 2) ?></div>
-                            </div>
-                            <div class="detail-row">
                                 <div class="detail-label">Work Location:</div>
                                 <div class="detail-value"><?= htmlspecialchars($currentEmployee['location'] ?: 'Not specified') ?></div>
                             </div>
@@ -624,14 +619,6 @@ $jobRoles = $stmt->fetchAll(PDO::FETCH_ASSOC);
                     <div class="detail-section">
                         <h3>🏢 Employment Information</h3>
                         <div class="form-row">
-                            <div class="form-col">
-                                <div class="form-group">
-                                    <label for="current_salary">Current Salary (₱)</label>
-                                    <input type="number" id="current_salary" name="current_salary" class="form-control readonly-field" 
-                                           value="<?= $currentEmployee['current_salary'] ?>" step="0.01" readonly>
-                                    <small style="color: #666;">Contact HR to request salary changes</small>
-                                </div>
-                            </div>
                             <div class="form-col">
                                 <div class="form-group">
                                     <label for="location">Work Location</label>
