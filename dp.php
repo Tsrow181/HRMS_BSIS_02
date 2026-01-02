@@ -531,4 +531,311 @@ function getEmployeeHireDate($employeeId) {
         return null;
     }
 }
+
+// Comprehensive AI Search Function - Searches across all HR modules
+function searchEmployeeComprehensive($searchTerm) {
+    global $conn;
+    $results = [
+        'employee' => [],
+        'payroll' => [],
+        'performance' => [],
+        'leave' => [],
+        'exit' => [],
+        'recruitment' => [],
+        'training' => [],
+        'employment_history' => [],
+        'documents' => []
+    ];
+    
+    try {
+        // Use case-insensitive search with multiple patterns
+        $searchPattern = '%' . $searchTerm . '%';
+        $searchPatternLower = '%' . strtolower($searchTerm) . '%';
+        
+        // 1. Search Employee Profiles and Personal Information
+        $sql = "SELECT DISTINCT 
+                    ep.employee_id,
+                    ep.employee_number,
+                    ep.hire_date,
+                    ep.employment_status,
+                    ep.current_salary,
+                    ep.work_email,
+                    ep.work_phone,
+                    pi.first_name,
+                    pi.last_name,
+                    pi.phone_number,
+                    pi.date_of_birth,
+                    jr.title as job_title,
+                    jr.department as department_name
+                FROM employee_profiles ep
+                JOIN personal_information pi ON ep.personal_info_id = pi.personal_info_id
+                LEFT JOIN job_roles jr ON ep.job_role_id = jr.job_role_id
+                WHERE LOWER(pi.first_name) LIKE ? 
+                   OR LOWER(pi.last_name) LIKE ? 
+                   OR LOWER(CONCAT(pi.first_name, ' ', pi.last_name)) LIKE ?
+                   OR LOWER(ep.employee_number) LIKE ?
+                   OR LOWER(ep.work_email) LIKE ?
+                   OR LOWER(pi.phone_number) LIKE ?
+                ORDER BY pi.first_name, pi.last_name
+                LIMIT 50";
+        
+        $stmt = $conn->prepare($sql);
+        $stmt->execute([$searchPatternLower, $searchPatternLower, $searchPatternLower, $searchPatternLower, $searchPatternLower, $searchPatternLower]);
+        $results['employee'] = $stmt->fetchAll(PDO::FETCH_ASSOC);
+        
+        // Log for debugging
+        error_log("Search '$searchTerm': Found " . count($results['employee']) . " employees");
+        
+        // Get employee IDs for further searches
+        $employeeIds = array_column($results['employee'], 'employee_id');
+        
+        if (!empty($employeeIds)) {
+            $placeholders = str_repeat('?,', count($employeeIds) - 1) . '?';
+            
+            // 2. Search Payroll Data
+            $sql = "SELECT 
+                        pt.payroll_transaction_id,
+                        pt.employee_id,
+                        pt.payroll_cycle_id,
+                        pt.gross_pay as base_salary,
+                        (pt.tax_deductions + pt.statutory_deductions + pt.other_deductions) as deductions,
+                        pt.net_pay,
+                        pt.status,
+                        pt.created_at,
+                        pt.processed_date,
+                        pc.cycle_name,
+                        pi.first_name,
+                        pi.last_name
+                    FROM payroll_transactions pt
+                    JOIN employee_profiles ep ON pt.employee_id = ep.employee_id
+                    JOIN personal_information pi ON ep.personal_info_id = pi.personal_info_id
+                    LEFT JOIN payroll_cycles pc ON pt.payroll_cycle_id = pc.payroll_cycle_id
+                    WHERE pt.employee_id IN ($placeholders)
+                    ORDER BY pt.created_at DESC
+                    LIMIT 50";
+            
+            $stmt = $conn->prepare($sql);
+            $stmt->execute($employeeIds);
+            $results['payroll'] = $stmt->fetchAll(PDO::FETCH_ASSOC);
+            error_log("Payroll results: " . count($results['payroll']));
+            
+            // 3. Search Performance Reviews
+            $sql = "SELECT 
+                        pr.review_id,
+                        pr.employee_id,
+                        pr.cycle_id as review_cycle_id,
+                        pr.overall_rating,
+                        pr.status,
+                        pr.review_date,
+                        pr.comments,
+                        pr.strengths,
+                        pr.areas_of_improvement,
+                        prc.cycle_name,
+                        pi.first_name,
+                        pi.last_name
+                    FROM performance_reviews pr
+                    JOIN employee_profiles ep ON pr.employee_id = ep.employee_id
+                    JOIN personal_information pi ON ep.personal_info_id = pi.personal_info_id
+                    LEFT JOIN performance_review_cycles prc ON pr.cycle_id = prc.cycle_id
+                    WHERE pr.employee_id IN ($placeholders)
+                    ORDER BY pr.review_date DESC
+                    LIMIT 50";
+            
+            $stmt = $conn->prepare($sql);
+            $stmt->execute($employeeIds);
+            $results['performance'] = $stmt->fetchAll(PDO::FETCH_ASSOC);
+            error_log("Performance results: " . count($results['performance']));
+            
+            // 4. Search Leave Records
+            $sql = "SELECT 
+                        lr.leave_id as leave_request_id,
+                        lr.employee_id,
+                        lr.leave_type_id,
+                        lr.start_date,
+                        lr.end_date,
+                        lr.total_days as days_requested,
+                        lr.reason,
+                        lr.status,
+                        lr.applied_on as created_at,
+                        lr.approved_on,
+                        lt.leave_type_name,
+                        pi.first_name,
+                        pi.last_name
+                    FROM leave_requests lr
+                    JOIN employee_profiles ep ON lr.employee_id = ep.employee_id
+                    JOIN personal_information pi ON ep.personal_info_id = pi.personal_info_id
+                    LEFT JOIN leave_types lt ON lr.leave_type_id = lt.leave_type_id
+                    WHERE lr.employee_id IN ($placeholders)
+                    ORDER BY lr.applied_on DESC
+                    LIMIT 50";
+            
+            $stmt = $conn->prepare($sql);
+            $stmt->execute($employeeIds);
+            $results['leave'] = $stmt->fetchAll(PDO::FETCH_ASSOC);
+            error_log("Leave results: " . count($results['leave']));
+            
+            // 5. Search Exit Management
+            $sql = "SELECT 
+                        e.exit_id,
+                        e.employee_id,
+                        e.exit_type,
+                        e.exit_reason,
+                        e.notice_date,
+                        e.exit_date,
+                        e.status,
+                        e.created_at,
+                        pi.first_name,
+                        pi.last_name
+                    FROM exits e
+                    JOIN employee_profiles ep ON e.employee_id = ep.employee_id
+                    JOIN personal_information pi ON ep.personal_info_id = pi.personal_info_id
+                    WHERE e.employee_id IN ($placeholders)
+                    ORDER BY e.created_at DESC
+                    LIMIT 50";
+            
+            $stmt = $conn->prepare($sql);
+            $stmt->execute($employeeIds);
+            $results['exit'] = $stmt->fetchAll(PDO::FETCH_ASSOC);
+            
+            // 6. Search Training Enrollments
+            $sql = "SELECT 
+                        te.enrollment_id,
+                        te.employee_id,
+                        te.session_id,
+                        te.enrollment_date,
+                        te.status,
+                        te.completion_date,
+                        ts.session_name,
+                        ts.start_date,
+                        ts.end_date,
+                        tc.course_name,
+                        pi.first_name,
+                        pi.last_name
+                    FROM training_enrollments te
+                    JOIN employee_profiles ep ON te.employee_id = ep.employee_id
+                    JOIN personal_information pi ON ep.personal_info_id = pi.personal_info_id
+                    LEFT JOIN training_sessions ts ON te.session_id = ts.session_id
+                    LEFT JOIN training_courses tc ON ts.course_id = tc.course_id
+                    WHERE te.employee_id IN ($placeholders)
+                    ORDER BY te.enrollment_date DESC
+                    LIMIT 50";
+            
+            $stmt = $conn->prepare($sql);
+            $stmt->execute($employeeIds);
+            $results['training'] = $stmt->fetchAll(PDO::FETCH_ASSOC);
+            error_log("Training results: " . count($results['training']));
+            
+            // 7. Search Employment History
+            $sql = "SELECT 
+                        eh.history_id,
+                        eh.employee_id,
+                        eh.job_title,
+                        eh.department_id,
+                        eh.employment_type,
+                        eh.start_date,
+                        eh.end_date,
+                        eh.employment_status,
+                        eh.reporting_manager_id,
+                        eh.location,
+                        eh.base_salary,
+                        eh.allowances,
+                        eh.bonuses,
+                        eh.salary_adjustments,
+                        eh.reason_for_change,
+                        eh.promotions_transfers,
+                        eh.created_at,
+                        d.department_name,
+                        pi.first_name,
+                        pi.last_name,
+                        manager.first_name as manager_first,
+                        manager.last_name as manager_last
+                    FROM employment_history eh
+                    JOIN employee_profiles ep ON eh.employee_id = ep.employee_id
+                    JOIN personal_information pi ON ep.personal_info_id = pi.personal_info_id
+                    LEFT JOIN departments d ON eh.department_id = d.department_id
+                    LEFT JOIN employee_profiles ep_manager ON eh.reporting_manager_id = ep_manager.employee_id
+                    LEFT JOIN personal_information manager ON ep_manager.personal_info_id = manager.personal_info_id
+                    WHERE eh.employee_id IN ($placeholders)
+                    ORDER BY eh.start_date DESC
+                    LIMIT 50";
+            
+            $stmt = $conn->prepare($sql);
+            $stmt->execute($employeeIds);
+            $results['employment_history'] = $stmt->fetchAll(PDO::FETCH_ASSOC);
+            error_log("Employment history results: " . count($results['employment_history']));
+            
+            // 8. Search Document Management
+            $sql = "SELECT 
+                        dm.document_id,
+                        dm.employee_id,
+                        dm.document_type,
+                        dm.document_name,
+                        dm.file_path,
+                        dm.upload_date,
+                        dm.expiry_date,
+                        dm.document_status,
+                        dm.notes,
+                        dm.created_at,
+                        pi.first_name,
+                        pi.last_name
+                    FROM document_management dm
+                    JOIN employee_profiles ep ON dm.employee_id = ep.employee_id
+                    JOIN personal_information pi ON ep.personal_info_id = pi.personal_info_id
+                    WHERE dm.employee_id IN ($placeholders)
+                    ORDER BY dm.created_at DESC
+                    LIMIT 50";
+            
+            $stmt = $conn->prepare($sql);
+            $stmt->execute($employeeIds);
+            $results['documents'] = $stmt->fetchAll(PDO::FETCH_ASSOC);
+            error_log("Documents results: " . count($results['documents']));
+        } else {
+            error_log("No employee IDs found for search: '$searchTerm'");
+        }
+        
+        // 9. Search Recruitment (if employee was a candidate) - Independent search
+        $sql = "SELECT 
+                    ja.application_id,
+                    ja.candidate_id,
+                    ja.job_opening_id,
+                    ja.application_date,
+                    ja.status,
+                    ja.interview_date,
+                    c.first_name,
+                    c.last_name,
+                    c.email,
+                    jo.title as job_title
+                FROM job_applications ja
+                JOIN candidates c ON ja.candidate_id = c.candidate_id
+                LEFT JOIN job_openings jo ON ja.job_opening_id = jo.job_opening_id
+                WHERE (LOWER(c.first_name) LIKE ? 
+                   OR LOWER(c.last_name) LIKE ? 
+                   OR LOWER(CONCAT(c.first_name, ' ', c.last_name)) LIKE ?
+                   OR LOWER(c.email) LIKE ?)
+                ORDER BY ja.application_date DESC
+                LIMIT 50";
+        
+        $stmt = $conn->prepare($sql);
+        $stmt->execute([$searchPatternLower, $searchPatternLower, $searchPatternLower, $searchPatternLower]);
+        $results['recruitment'] = $stmt->fetchAll(PDO::FETCH_ASSOC);
+        error_log("Recruitment results: " . count($results['recruitment']));
+        
+        // Log summary
+        error_log("Search summary for '$searchTerm': Employee=" . count($results['employee']) . 
+                  ", Payroll=" . count($results['payroll']) . 
+                  ", Performance=" . count($results['performance']) . 
+                  ", Leave=" . count($results['leave']) . 
+                  ", Exit=" . count($results['exit']) . 
+                  ", Training=" . count($results['training']) . 
+                  ", Employment History=" . count($results['employment_history']) . 
+                  ", Documents=" . count($results['documents']) . 
+                  ", Recruitment=" . count($results['recruitment']));
+        
+        return $results;
+        
+    } catch (PDOException $e) {
+        error_log("searchEmployeeComprehensive error: " . $e->getMessage());
+        return $results;
+    }
+}
 ?>
