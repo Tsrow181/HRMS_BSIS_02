@@ -36,14 +36,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             case 'add':
                 // Add new employee
                 try {
-                    $stmt = $pdo->prepare("INSERT INTO employee_profiles (personal_info_id, job_role_id, employee_number, hire_date, employment_status, current_salary, work_email, work_phone, location, remote_work) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
+                    $stmt = $pdo->prepare("INSERT INTO employee_profiles (personal_info_id, job_role_id, employee_number, hire_date, employment_status, work_email, work_phone, location, remote_work) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)");
                     $stmt->execute([
                         $_POST['personal_info_id'],
                         $_POST['job_role_id'],
                         $_POST['employee_number'],
                         $_POST['hire_date'],
                         $_POST['employment_status'],
-                        $_POST['current_salary'],
                         $_POST['work_email'],
                         $_POST['work_phone'],
                         $_POST['location'],
@@ -60,14 +59,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             case 'update':
                 // Update employee
                 try {
-                    $stmt = $pdo->prepare("UPDATE employee_profiles SET personal_info_id=?, job_role_id=?, employee_number=?, hire_date=?, employment_status=?, current_salary=?, work_email=?, work_phone=?, location=?, remote_work=? WHERE employee_id=?");
+                    $stmt = $pdo->prepare("UPDATE employee_profiles SET personal_info_id=?, job_role_id=?, employee_number=?, hire_date=?, employment_status=?, work_email=?, work_phone=?, location=?, remote_work=? WHERE employee_id=?");
                     $stmt->execute([
                         $_POST['personal_info_id'],
                         $_POST['job_role_id'],
                         $_POST['employee_number'],
                         $_POST['hire_date'],
                         $_POST['employment_status'],
-                        $_POST['current_salary'],
                         $_POST['work_email'],
                         $_POST['work_phone'],
                         $_POST['location'],
@@ -83,14 +81,71 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 break;
             
             case 'delete':
-                // Delete employee
+                // Archive employee profile instead of permanent delete
                 try {
-                    $stmt = $pdo->prepare("DELETE FROM employee_profiles WHERE employee_id=?");
-                    $stmt->execute([$_POST['employee_id']]);
-                    $message = "Employee profile deleted successfully!";
-                    $messageType = "success";
+                    $pdo->beginTransaction();
+                    
+                    // Fetch the complete employee record to be archived
+                    $fetchStmt = $pdo->prepare("SELECT * FROM employee_profiles WHERE employee_id = ?");
+                    $fetchStmt->execute([$_POST['employee_id']]);
+                    $recordToArchive = $fetchStmt->fetch(PDO::FETCH_ASSOC);
+                    
+                    if ($recordToArchive) {
+                        // Get current user ID from session
+                        $archived_by = isset($_SESSION['user_id']) ? $_SESSION['user_id'] : null;
+                        
+                        // Get employee_id (which is the same as record_id in this case)
+                        $employeeId = $recordToArchive['employee_id'];
+                        
+                        // Determine archive reason based on employment status
+                        $archiveReason = 'Data Cleanup';
+                        $archiveReasonDetails = 'Employee profile deleted by user';
+                        
+                        if ($recordToArchive['employment_status'] === 'Terminated') {
+                            $archiveReason = 'Termination';
+                            $archiveReasonDetails = 'Employee profile archived after termination';
+                        }
+                        
+                        // Archive the record
+                        $archiveStmt = $pdo->prepare("INSERT INTO archive_storage (
+                            source_table, 
+                            record_id, 
+                            employee_id, 
+                            archive_reason, 
+                            archive_reason_details, 
+                            archived_by, 
+                            archived_at, 
+                            can_restore, 
+                            record_data, 
+                            notes
+                        ) VALUES (?, ?, ?, ?, ?, ?, NOW(), 1, ?, ?)");
+                        
+                        $archiveStmt->execute([
+                            'employee_profiles',
+                            $recordToArchive['employee_id'],
+                            $employeeId,
+                            $archiveReason,
+                            $archiveReasonDetails,
+                            $archived_by,
+                            json_encode($recordToArchive, JSON_PRETTY_PRINT),
+                            'Employee profile archived on deletion. Employee Number: ' . ($recordToArchive['employee_number'] ?? 'N/A')
+                        ]);
+                        
+                        // Delete from employee_profiles table
+                        $deleteStmt = $pdo->prepare("DELETE FROM employee_profiles WHERE employee_id=?");
+                        $deleteStmt->execute([$_POST['employee_id']]);
+                        
+                        $pdo->commit();
+                        $message = "Employee profile archived successfully! You can view it in Archive Storage.";
+                        $messageType = "success";
+                    } else {
+                        $pdo->rollBack();
+                        $message = "Error: Employee profile record not found!";
+                        $messageType = "error";
+                    }
                 } catch (PDOException $e) {
-                    $message = "Error deleting employee: " . $e->getMessage();
+                    $pdo->rollBack();
+                    $message = "Error archiving employee profile: " . $e->getMessage();
                     $messageType = "error";
                 }
                 break;
@@ -508,7 +563,6 @@ $jobRoles = $stmt->fetchAll(PDO::FETCH_ASSOC);
                                         <th>Job Title</th>
                                         <th>Department</th>
                                         <th>Email</th>
-                                        <th>Salary</th>
                                         <th>Status</th>
                                         <th>Hire Date</th>
                                         <th>Actions</th>
@@ -527,7 +581,6 @@ $jobRoles = $stmt->fetchAll(PDO::FETCH_ASSOC);
                                         <td><?= htmlspecialchars($employee['job_title']) ?></td>
                                         <td><?= htmlspecialchars($employee['department']) ?></td>
                                         <td><?= htmlspecialchars($employee['work_email']) ?></td>
-                                        <td><strong>₱<?= number_format($employee['current_salary'], 2) ?></strong></td>
                                         <td>
                                             <span class="status-badge status-<?= strtolower($employee['employment_status']) === 'full-time' ? 'active' : 'inactive' ?>">
                                                 <?= htmlspecialchars($employee['employment_status']) ?>
@@ -625,12 +678,6 @@ $jobRoles = $stmt->fetchAll(PDO::FETCH_ASSOC);
                                     <option value="Intern">Intern</option>
                                     <option value="Terminated">Terminated</option>
                                 </select>
-                            </div>
-                        </div>
-                        <div class="form-col">
-                            <div class="form-group">
-                                <label for="current_salary">Current Salary (₱)</label>
-                                <input type="number" id="current_salary" name="current_salary" class="form-control" step="0.01" required>
                             </div>
                         </div>
                     </div>
@@ -732,7 +779,6 @@ $jobRoles = $stmt->fetchAll(PDO::FETCH_ASSOC);
                 document.getElementById('employee_number').value = employee.employee_number || '';
                 document.getElementById('hire_date').value = employee.hire_date || '';
                 document.getElementById('employment_status').value = employee.employment_status || '';
-                document.getElementById('current_salary').value = employee.current_salary || '';
                 document.getElementById('work_email').value = employee.work_email || '';
                 document.getElementById('work_phone').value = employee.work_phone || '';
                 document.getElementById('location').value = employee.location || '';
@@ -745,7 +791,7 @@ $jobRoles = $stmt->fetchAll(PDO::FETCH_ASSOC);
         }
 
         function deleteEmployee(employeeId) {
-            if (confirm('Are you sure you want to delete this employee? This action cannot be undone.')) {
+            if (confirm('Are you sure you want to archive this employee profile? The record will be moved to Archive Storage and can be restored later.')) {
                 const form = document.createElement('form');
                 form.method = 'POST';
                 form.innerHTML = `
@@ -767,13 +813,6 @@ $jobRoles = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
         // Form validation
         document.getElementById('employeeForm').addEventListener('submit', function(e) {
-            const salary = document.getElementById('current_salary').value;
-            if (salary <= 0) {
-                e.preventDefault();
-                alert('Salary must be greater than 0');
-                return;
-            }
-
             const email = document.getElementById('work_email').value;
             if (email && !isValidEmail(email)) {
                 e.preventDefault();
