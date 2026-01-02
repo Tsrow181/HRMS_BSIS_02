@@ -811,6 +811,9 @@ $personalInfo = $stmt->fetchAll(PDO::FETCH_ASSOC);
                                         <button class="btn btn-warning btn-small" onclick="editPerson(<?= $person['personal_info_id'] ?>)">
                                             ✏️ Edit
                                         </button>
+                                        <button class="btn btn-success btn-small" onclick="printPDS(<?= $person['personal_info_id'] ?>)">
+                                            🖨️ Print PDS
+                                        </button>
                                         <button class="btn btn-danger btn-small" onclick="deletePerson(<?= $person['personal_info_id'] ?>, '<?= htmlspecialchars(addslashes($person['full_name'])) ?>')">
                                             🗑️ Delete
                                         </button>
@@ -1081,6 +1084,11 @@ $personalInfo = $stmt->fetchAll(PDO::FETCH_ASSOC);
             <div class="modal-body" id="viewDetailsContent">
                 <!-- Content will be loaded dynamically -->
             </div>
+            <div style="padding: 20px 30px; border-top: 1px solid #e0e0e0; text-align: center;">
+                <button class="btn btn-success" id="printPDSFromView" onclick="printPDSFromViewModal()" style="display: none;">
+                    🖨️ Print PDS
+                </button>
+            </div>
         </div>
     </div>
 
@@ -1198,12 +1206,19 @@ $personalInfo = $stmt->fetchAll(PDO::FETCH_ASSOC);
             }
         }
 
+        // Store current viewing person ID for print function
+        let currentViewingPersonId = null;
+
         function viewDetails(personalInfoId) {
+            currentViewingPersonId = personalInfoId;
             const person = personalInfoData.find(p => p.personal_info_id == personalInfoId);
             if (!person) return;
 
             const personEducation = educationData.filter(e => e.personal_info_id == personalInfoId);
             const personMaritalHistory = maritalHistoryData.filter(m => m.personal_info_id == personalInfoId);
+            
+            // Show print button
+            document.getElementById('printPDSFromView').style.display = 'inline-block';
 
             let html = `
                 <div class="info-grid">
@@ -1358,6 +1373,12 @@ $personalInfo = $stmt->fetchAll(PDO::FETCH_ASSOC);
             document.body.style.overflow = 'hidden';
         }
 
+        function printPDSFromViewModal() {
+            if (currentViewingPersonId) {
+                printPDS(currentViewingPersonId);
+            }
+        }
+
         // Close modal when clicking outside
         window.onclick = function(event) {
             const personalInfoModal = document.getElementById('personalInfoModal');
@@ -1454,6 +1475,377 @@ $personalInfo = $stmt->fetchAll(PDO::FETCH_ASSOC);
                     console.log(`Age will be: ${age} years`);
                 }
             });
+        }
+
+        // Print PDS function
+        function printPDS(personalInfoId) {
+            const person = personalInfoData.find(p => p.personal_info_id == personalInfoId);
+            if (!person) {
+                alert('Person not found!');
+                return;
+            }
+
+            const personEducation = educationData.filter(e => e.personal_info_id == personalInfoId);
+            const personMaritalHistory = maritalHistoryData.filter(m => m.personal_info_id == personalInfoId);
+
+            // Format date helper
+            function formatDate(dateString) {
+                if (!dateString) return 'N/A';
+                const date = new Date(dateString);
+                return date.toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
+            }
+
+            // Generate PDS HTML
+            let pdsHTML = `
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Personal Data Sheet - ${person.first_name} ${person.last_name}</title>
+    <style>
+        @media print {
+            @page {
+                size: A4;
+                margin: 0.8cm;
+            }
+            body {
+                margin: 0;
+                padding: 0;
+            }
+            .no-print {
+                display: none !important;
+            }
+            .page-break {
+                page-break-after: always;
+            }
+        }
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            font-family: 'Arial', sans-serif;
+            font-size: 9pt;
+            line-height: 1.3;
+            color: #000;
+            background: #fff;
+            padding: 10px;
+        }
+        .pds-header {
+            text-align: center;
+            border: 2px solid #000;
+            padding: 8px;
+            margin-bottom: 10px;
+        }
+        .pds-header h1 {
+            font-size: 13pt;
+            font-weight: bold;
+            margin-bottom: 3px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        .pds-header p {
+            font-size: 8pt;
+            margin: 0;
+        }
+        .photo-section {
+            float: right;
+            width: 100px;
+            height: 120px;
+            border: 1px solid #000;
+            margin: 0 0 10px 10px;
+            text-align: center;
+            padding: 5px;
+            background: #f9f9f9;
+        }
+        .photo-section p {
+            font-size: 7pt;
+            margin-top: 85px;
+        }
+        .section {
+            margin-bottom: 10px;
+            clear: both;
+        }
+        .section-title {
+            background: #000;
+            color: #fff;
+            padding: 4px 8px;
+            font-size: 10pt;
+            font-weight: bold;
+            margin-bottom: 5px;
+            text-transform: uppercase;
+        }
+        .info-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 8px;
+            font-size: 8.5pt;
+        }
+        .info-table td {
+            padding: 3px 6px;
+            border: 1px solid #000;
+            vertical-align: top;
+        }
+        .info-table td.label {
+            width: 30%;
+            background: #f0f0f0;
+            font-weight: bold;
+            font-size: 8pt;
+        }
+        .info-table td.value {
+            width: 70%;
+            font-size: 8.5pt;
+        }
+        .info-table thead td {
+            padding: 4px 6px;
+            font-size: 8pt;
+        }
+        .signature-section {
+            margin-top: 15px;
+            display: flex;
+            justify-content: space-between;
+        }
+        .signature-box {
+            width: 45%;
+            text-align: center;
+        }
+        .signature-line {
+            border-top: 1px solid #000;
+            margin-top: 35px;
+            padding-top: 3px;
+            font-size: 8pt;
+        }
+        .footer {
+            margin-top: 10px;
+            text-align: center;
+            font-size: 7pt;
+            color: #666;
+        }
+        .print-button {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            padding: 12px 24px;
+            background: #28a745;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: bold;
+            z-index: 1000;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.2);
+        }
+        .print-button:hover {
+            background: #218838;
+        }
+        @media print {
+            .print-button {
+                display: none;
+            }
+            body {
+                padding: 5px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <button class="print-button no-print" onclick="window.print()">🖨️ Print PDS</button>
+    
+    <div class="pds-header">
+        <h1>Personal Data Sheet</h1>
+        <p>Republic of the Philippines</p>
+    </div>
+
+    <div class="photo-section">
+        <p>Paste ID Picture Here<br>(4.5 cm x 3.5 cm)</p>
+    </div>
+
+    <div class="section">
+        <div class="section-title">I. Personal Information</div>
+        <table class="info-table">
+            <tr>
+                <td class="label">1. SURNAME</td>
+                <td class="value">${person.last_name || 'N/A'}</td>
+            </tr>
+            <tr>
+                <td class="label">2. FIRST NAME</td>
+                <td class="value">${person.first_name || 'N/A'}</td>
+            </tr>
+            <tr>
+                <td class="label">3. MIDDLE NAME</td>
+                <td class="value">N/A</td>
+            </tr>
+            <tr>
+                <td class="label">4. DATE OF BIRTH</td>
+                <td class="value">${formatDate(person.date_of_birth)}</td>
+            </tr>
+            <tr>
+                <td class="label">6. GENDER</td>
+                <td class="value">${person.gender || 'N/A'}</td>
+            </tr>
+            <tr>
+                <td class="label">7. CIVIL STATUS</td>
+                <td class="value">${person.marital_status || 'N/A'}</td>
+            </tr>
+            <tr>
+                <td class="label">8. NATIONALITY</td>
+                <td class="value">${person.nationality || 'N/A'}</td>
+            </tr>
+
+        </table>
+    </div>
+
+    <div class="section">
+        <div class="section-title">II. Contact Information</div>
+        <table class="info-table">
+            <tr>
+                <td class="label">14. TELEPHONE NO.</td>
+                <td class="value">${person.phone_number || 'N/A'}</td>
+            </tr>
+            <tr>
+                <td class="label">15. MOBILE NO.</td>
+                <td class="value">${person.phone_number || 'N/A'}</td>
+            </tr>
+        </table>
+    </div>
+
+    <div class="section">
+        <div class="section-title">III. Educational Background</div>
+        <table class="info-table">
+            <thead>
+                <tr>
+                    <td class="label" style="text-align: center; font-weight: bold;">LEVEL</td>
+                    <td class="label" style="text-align: center; font-weight: bold;">NAME OF SCHOOL</td>
+                    <td class="label" style="text-align: center; font-weight: bold;">COURSE/DEGREE</td>
+                    <td class="label" style="text-align: center; font-weight: bold;">YEAR GRADUATED</td>
+                </tr>
+            </thead>
+            <tbody>
+                ${personEducation.length > 0 ? personEducation.slice(0, 3).map(e => `
+                    <tr>
+                        <td class="value">${e.education_level || 'N/A'}</td>
+                        <td class="value">${e.school_name || 'N/A'}</td>
+                        <td class="value">${e.course_degree || 'N/A'}</td>
+                        <td class="value">${e.year_graduated || 'N/A'}</td>
+                    </tr>
+                `).join('') : ''}
+                ${person.highest_educational_attainment && !personEducation.some(e => e.education_level === person.highest_educational_attainment) ? `
+                    <tr>
+                        <td class="value">${person.highest_educational_attainment}</td>
+                        <td class="value">${person.school_university || 'N/A'}</td>
+                        <td class="value">${person.course_degree || 'N/A'}</td>
+                        <td class="value">${person.year_graduated || 'N/A'}</td>
+                    </tr>
+                ` : ''}
+                ${personEducation.length === 0 && !person.highest_educational_attainment ? `
+                    <tr>
+                        <td class="value" colspan="4" style="text-align: center;">No educational background recorded</td>
+                    </tr>
+                ` : ''}
+            </tbody>
+        </table>
+    </div>
+
+    <div class="section">
+        <div class="section-title">IV. Government Issued ID</div>
+        <table class="info-table">
+            <tr>
+                <td class="label">17. TAX ID (TIN)</td>
+                <td class="value">${person.tax_id || 'N/A'}</td>
+            </tr>
+            <tr>
+                <td class="label">18. SOCIAL SECURITY NUMBER (SSS)</td>
+                <td class="value">${person.social_security_number || 'N/A'}</td>
+            </tr>
+            <tr>
+                <td class="label">19. PAG-IBIG ID</td>
+                <td class="value">${person.pagibig_id || 'N/A'}</td>
+            </tr>
+            <tr>
+                <td class="label">20. PHILHEALTH ID</td>
+                <td class="value">${person.philhealth_id || 'N/A'}</td>
+            </tr>
+        </table>
+    </div>
+
+    <div class="section">
+        <div class="section-title">V. Emergency Contact</div>
+        <table class="info-table">
+            <tr>
+                <td class="label">21. NAME</td>
+                <td class="value">${person.emergency_contact_name || 'N/A'}</td>
+            </tr>
+            <tr>
+                <td class="label">22. RELATIONSHIP</td>
+                <td class="value">${person.emergency_contact_relationship || 'N/A'}</td>
+            </tr>
+            <tr>
+                <td class="label">23. CONTACT NUMBER</td>
+                <td class="value">${person.emergency_contact_phone || 'N/A'}</td>
+            </tr>
+        </table>
+    </div>
+
+    ${personMaritalHistory.length > 0 ? `
+    <div class="section">
+        <div class="section-title">VI. Marital Status History</div>
+        <table class="info-table">
+            <thead>
+                <tr>
+                    <td class="label" style="text-align: center; font-weight: bold;">STATUS</td>
+                    <td class="label" style="text-align: center; font-weight: bold;">DATE</td>
+                    <td class="label" style="text-align: center; font-weight: bold;">SPOUSE NAME</td>
+                    <td class="label" style="text-align: center; font-weight: bold;">DOCUMENT TYPE</td>
+                </tr>
+            </thead>
+            <tbody>
+                ${personMaritalHistory.slice(0, 2).map(m => `
+                    <tr>
+                        <td class="value">${m.marital_status || 'N/A'}</td>
+                        <td class="value">${formatDate(m.status_date)}</td>
+                        <td class="value">${m.spouse_name || 'N/A'}</td>
+                        <td class="value">${m.supporting_document_type || 'N/A'}</td>
+                    </tr>
+                `).join('')}
+            </tbody>
+        </table>
+    </div>
+    ` : ''}
+
+    <div class="signature-section">
+        <div class="signature-box">
+            <div class="signature-line">
+                <strong>Signature of Employee</strong>
+            </div>
+        </div>
+        <div class="signature-box">
+            <div class="signature-line">
+                <strong>Date</strong>
+            </div>
+        </div>
+    </div>
+
+    <div class="footer">
+        <p>This Personal Data Sheet is generated on ${new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })}</p>
+    </div>
+</body>
+</html>
+            `;
+
+            // Open print window
+            const printWindow = window.open('', '_blank');
+            printWindow.document.write(pdsHTML);
+            printWindow.document.close();
+            
+            // Wait for content to load, then trigger print
+            printWindow.onload = function() {
+                setTimeout(function() {
+                    printWindow.print();
+                }, 250);
+            };
         }
     </script>
     <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
