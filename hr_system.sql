@@ -1371,7 +1371,6 @@ INSERT INTO `public_holidays` (`holiday_id`, `holiday_date`, `holiday_name`, `de
 (20, '2025-12-30', 'Rizal Day', 'Araw ng Kamatayan ni Dr. Jose Rizal', '2025-09-09 02:00:57', '2025-09-09 02:00:57'),
 (21, '2025-12-31', 'Last Day of The Year', 'Huling Araw ng Taon', '2025-09-09 02:00:57', '2025-09-09 02:00:57');
 
--- --------------------------------------------------------
 
 --
 -- Table structure for table `recruitment_analytics`
@@ -2879,6 +2878,377 @@ ALTER TABLE `users`
   ADD CONSTRAINT `users_ibfk_1` FOREIGN KEY (`employee_id`) REFERENCES `employee_profiles` (`employee_id`) ON DELETE SET NULL;
 COMMIT;
 
+-- --------------------------------------------------------
+--
+-- Unified Archive Storage Table
+-- Handles archiving for: employee_profiles, personal_information, 
+-- employment_history, and document_management
+--
+
+CREATE TABLE `archive_storage` (
+  `archive_id` int(11) NOT NULL AUTO_INCREMENT,
+  `source_table` enum('employee_profiles','personal_information','employment_history','document_management') NOT NULL,
+  `record_id` int(11) NOT NULL COMMENT 'Original primary key from source table',
+  `employee_id` int(11) DEFAULT NULL COMMENT 'Employee reference for all archived records',
+  `record_data` longtext CHARACTER SET utf8mb4 COLLATE utf8mb4_bin NOT NULL COMMENT 'JSON containing all original data',
+  `archive_reason` enum('Termination','Resignation','Retirement','Data Cleanup','System Migration','Expired Document','Other') NOT NULL,
+  `archive_reason_details` text DEFAULT NULL,
+  `archived_by` int(11) NOT NULL COMMENT 'User ID who archived the record',
+  `archived_at` timestamp NOT NULL DEFAULT current_timestamp(),
+  `can_restore` tinyint(1) DEFAULT 1 COMMENT 'Whether this record can be restored',
+  `restored_at` timestamp NULL DEFAULT NULL,
+  `restored_by` int(11) DEFAULT NULL,
+  `notes` text DEFAULT NULL,
+  `created_at` timestamp NOT NULL DEFAULT current_timestamp(),
+  `updated_at` timestamp NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp(),
+  PRIMARY KEY (`archive_id`),
+  KEY `source_table` (`source_table`),
+  KEY `record_id` (`record_id`),
+  KEY `employee_id` (`employee_id`),
+  KEY `archived_by` (`archived_by`),
+  KEY `archived_at` (`archived_at`),
+  CONSTRAINT `archive_storage_ibfk_1` FOREIGN KEY (`archived_by`) REFERENCES `users` (`user_id`) ON DELETE CASCADE,
+  CONSTRAINT `archive_storage_ibfk_2` FOREIGN KEY (`restored_by`) REFERENCES `users` (`user_id`) ON DELETE SET NULL,
+  CONSTRAINT CHK_record_data CHECK (json_valid(`record_data`))
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+-- --------------------------------------------------------
+--
+-- Sample Data for Unified Archive Storage
+--
+
+-- Example 1: Archived Employee Profile (Terminated)
+INSERT INTO `archive_storage` 
+(`source_table`, `record_id`, `employee_id`, `record_data`, `archive_reason`, 
+`archive_reason_details`, `archived_by`, `archived_at`, `can_restore`, `notes`) 
+VALUES
+('employee_profiles', 16, 16, 
+'{
+  "employee_id": 16,
+  "personal_info_id": 16,
+  "job_role_id": 29,
+  "employee_number": "MUN016",
+  "hire_date": "2018-03-15",
+  "employment_status": "Terminated",
+  "current_salary": 30000.00,
+  "work_email": "pedro.santos@municipality.gov.ph",
+  "work_phone": "034-123-0016",
+  "location": "Municipal Civil Registrar\'s Office",
+  "remote_work": 0,
+  "created_at": "2018-03-15 02:00:00",
+  "updated_at": "2025-08-14 05:20:00"
+}', 
+'Termination', 'Employee terminated due to prolonged absence without notice (AWOL)', 
+1, '2025-08-15 08:30:00', 0, 'Final clearance completed. All equipment returned.');
+
+-- Example 2: Archived Personal Information (Terminated Employee)
+INSERT INTO `archive_storage` 
+(`source_table`, `record_id`, `employee_id`, `record_data`, `archive_reason`, 
+`archive_reason_details`, `archived_by`, `archived_at`, `can_restore`, `notes`) 
+VALUES
+('personal_information', 16, 16, 
+'{
+  "personal_info_id": 16,
+  "first_name": "Pedro",
+  "last_name": "Santos",
+  "date_of_birth": "1985-05-20",
+  "gender": "Male",
+  "marital_status": "Single",
+  "nationality": "Filipino",
+  "tax_id": "678-91-2345",
+  "social_security_number": "678912345",
+  "phone_number": "0917-680-1234",
+  "emergency_contact_name": "Maria Santos",
+  "emergency_contact_relationship": "Sister",
+  "emergency_contact_phone": "0917-024-5678",
+  "created_at": "2018-03-15 02:00:00",
+  "updated_at": "2022-06-10 03:15:00"
+}', 
+'Termination', 'Personal information archived with employee termination', 
+1, '2025-08-15 08:30:00', 0, 'Sensitive data retained as per retention policy.');
+
+-- Example 3: Archived Employment History (Terminated Employee)
+INSERT INTO `archive_storage` 
+(`source_table`, `record_id`, `employee_id`, `record_data`, `archive_reason`, 
+`archive_reason_details`, `archived_by`, `archived_at`, `can_restore`, `notes`) 
+VALUES
+('employment_history', 16, 16, 
+'{
+  "history_id": 16,
+  "employee_id": 16,
+  "job_title": "Clerk",
+  "department_id": 8,
+  "employment_type": "Full-time",
+  "start_date": "2018-03-15",
+  "end_date": "2025-08-14",
+  "employment_status": "Terminated",
+  "reporting_manager_id": null,
+  "location": "Municipal Civil Registrar\'s Office",
+  "base_salary": 30000.00,
+  "allowances": 1000.00,
+  "bonuses": 0.00,
+  "salary_adjustments": 0.00,
+  "reason_for_change": "Terminated due to AWOL",
+  "promotions_transfers": null,
+  "duties_responsibilities": "Maintained registry records, assisted clients with civil documents.",
+  "performance_evaluations": "Last rating was Satisfactory in 2024 review",
+  "training_certifications": "Civil Registration Training",
+  "contract_details": "Fixed-term contract terminated early",
+  "remarks": "Multiple written warnings for attendance issues before termination",
+  "created_at": "2018-03-15 02:00:00",
+  "updated_at": "2025-08-14 05:20:00"
+}', 
+'Termination', 'Employment history archived upon termination', 
+1, '2025-08-15 08:30:00', 0, 'Complete employment record preserved for legal compliance.');
+
+-- Example 4: Archived Document (Expired Contract)
+INSERT INTO `archive_storage` 
+(`source_table`, `record_id`, `employee_id`, `record_data`, `archive_reason`, 
+`archive_reason_details`, `archived_by`, `archived_at`, `can_restore`, `notes`) 
+VALUES
+('document_management', 33, 16, 
+'{
+  "document_id": 33,
+  "employee_id": 16,
+  "document_type": "Contract",
+  "document_name": "Employment Contract - Clerk",
+  "file_path": "/documents/contracts/pedro_santos_contract.pdf",
+  "upload_date": "2018-03-15 02:00:00",
+  "expiry_date": "2025-03-15",
+  "document_status": "Expired",
+  "notes": "Civil registrar office clerk contract",
+  "created_at": "2018-03-15 02:00:00",
+  "updated_at": "2025-08-14 05:20:00"
+}', 
+'Expired Document', 'Document archived after employee termination and contract expiry', 
+1, '2025-08-15 08:30:00', 0, 'Physical document retained in secure storage.');
+
+-- Example 5: Archived Employee Profile (Retired)
+INSERT INTO `archive_storage` 
+(`source_table`, `record_id`, `employee_id`, `record_data`, `archive_reason`, 
+`archive_reason_details`, `archived_by`, `archived_at`, `can_restore`, `notes`) 
+VALUES
+('employee_profiles', 17, 17, 
+'{
+  "employee_id": 17,
+  "personal_info_id": 17,
+  "job_role_id": 34,
+  "employee_number": "MUN017",
+  "hire_date": "1995-06-01",
+  "employment_status": "Full-time",
+  "current_salary": 25000.00,
+  "work_email": "ramon.reyes@municipality.gov.ph",
+  "work_phone": "034-123-0017",
+  "location": "General Services Office",
+  "remote_work": 0,
+  "created_at": "1995-06-01 02:00:00",
+  "updated_at": "2025-06-29 08:00:00"
+}', 
+'Retirement', 'Employee retired after 30 years of exemplary service', 
+2, '2025-06-30 16:00:00', 0, 'Retirement ceremony held on June 28, 2025. Plaque of appreciation awarded.');
+
+-- Example 6: Archived Personal Information (Retired Employee)
+INSERT INTO `archive_storage` 
+(`source_table`, `record_id`, `employee_id`, `record_data`, `archive_reason`, 
+`archive_reason_details`, `archived_by`, `archived_at`, `can_restore`, `notes`) 
+VALUES
+('personal_information', 17, 17, 
+'{
+  "personal_info_id": 17,
+  "first_name": "Ramon",
+  "last_name": "Reyes",
+  "date_of_birth": "1960-02-15",
+  "gender": "Male",
+  "marital_status": "Married",
+  "nationality": "Filipino",
+  "tax_id": "789-02-3456",
+  "social_security_number": "789023456",
+  "phone_number": "0917-791-2345",
+  "emergency_contact_name": "Elena Reyes",
+  "emergency_contact_relationship": "Spouse",
+  "emergency_contact_phone": "0917-135-6789",
+  "created_at": "1995-06-01 02:00:00",
+  "updated_at": "2020-03-10 04:20:00"
+}', 
+'Retirement', 'Personal information archived upon retirement', 
+2, '2025-06-30 16:00:00', 0, 'Contact information maintained for pension processing.');
+
+-- Example 7: Archived Document (Data Cleanup - Old Resume)
+INSERT INTO `archive_storage` 
+(`source_table`, `record_id`, `employee_id`, `record_data`, `archive_reason`, 
+`archive_reason_details`, `archived_by`, `archived_at`, `can_restore`, `notes`) 
+VALUES
+('document_management', 35, 11, 
+'{
+  "document_id": 35,
+  "employee_id": 11,
+  "document_type": "Resume",
+  "document_name": "Resume - Ana Morales (2020 Version)",
+  "file_path": "/documents/resumes/ana_morales_resume_2020.pdf",
+  "upload_date": "2020-04-15 02:00:00",
+  "expiry_date": null,
+  "document_status": "Active",
+  "notes": "Outdated resume replaced with newer version",
+  "created_at": "2020-04-15 02:00:00",
+  "updated_at": "2025-10-01 03:15:00"
+}', 
+'Data Cleanup', 'Old version archived after employee submitted updated resume', 
+2, '2025-10-01 10:00:00', 1, 'Previous version archived for historical records.');
+
+-- Example 8: Archived Employment History (Resigned Employee)
+INSERT INTO `archive_storage` 
+(`source_table`, `record_id`, `employee_id`, `record_data`, `archive_reason`, 
+`archive_reason_details`, `archived_by`, `archived_at`, `can_restore`, `notes`) 
+VALUES
+('employment_history', 18, 18, 
+'{
+  "history_id": 18,
+  "employee_id": 18,
+  "job_title": "Budget Analyst",
+  "department_id": 4,
+  "employment_type": "Full-time",
+  "start_date": "2019-09-01",
+  "end_date": "2025-09-30",
+  "employment_status": "Resigned",
+  "reporting_manager_id": null,
+  "location": "Municipal Budget Office",
+  "base_salary": 42000.00,
+  "allowances": 3000.00,
+  "bonuses": 5000.00,
+  "salary_adjustments": 2000.00,
+  "reason_for_change": "Resigned for career advancement opportunity abroad",
+  "promotions_transfers": "Promoted from Administrative Aide in 2021",
+  "duties_responsibilities": "Analyzed budget data and prepared financial reports for municipal operations.",
+  "performance_evaluations": "Consistently rated Outstanding. Received Best Employee Award 2023.",
+  "training_certifications": "Financial Planning Certification, Advanced Excel Training",
+  "contract_details": "Regular plantilla position",
+  "remarks": "Excellent employee. Provided comprehensive turnover documentation. Eligible for rehire.",
+  "created_at": "2019-09-01 02:00:00",
+  "updated_at": "2025-09-30 10:15:00"
+}', 
+'Resignation', 'Employee resigned in good standing for overseas employment', 
+1, '2025-09-30 14:00:00', 1, 'Exit clearance completed. Certificate of Employment issued.');
+
+
+-- Step 1: Add new columns to personal_information table
+ALTER TABLE `personal_information`
+ADD COLUMN `highest_educational_attainment` ENUM('Elementary', 'High School', 'Vocational', 'Associate Degree', 'Bachelor\'s Degree', 'Master\'s Degree', 'Doctoral Degree') DEFAULT NULL AFTER `emergency_contact_phone`,
+ADD COLUMN `course_degree` VARCHAR(150) DEFAULT NULL AFTER `highest_educational_attainment`,
+ADD COLUMN `school_university` VARCHAR(150) DEFAULT NULL AFTER `course_degree`,
+ADD COLUMN `year_graduated` YEAR DEFAULT NULL AFTER `school_university`,
+ADD COLUMN `marital_status_date` DATE DEFAULT NULL COMMENT 'Date of marriage or divorce' AFTER `marital_status`,
+ADD COLUMN `marital_status_document_url` VARCHAR(255) DEFAULT NULL COMMENT 'Marriage certificate or divorce decree' AFTER `marital_status_date`;
+
+-- Step 2: Create educational_background table for detailed education history
+CREATE TABLE `educational_background` (
+  `education_id` INT(11) NOT NULL AUTO_INCREMENT,
+  `personal_info_id` INT(11) NOT NULL,
+  `education_level` ENUM('Elementary', 'High School', 'Vocational', 'Associate Degree', 'Bachelor\'s Degree', 'Master\'s Degree', 'Doctoral Degree', 'Other') NOT NULL,
+  `school_name` VARCHAR(150) NOT NULL,
+  `course_degree` VARCHAR(150) DEFAULT NULL COMMENT 'Course or degree program',
+  `major_specialization` VARCHAR(100) DEFAULT NULL,
+  `year_started` YEAR DEFAULT NULL,
+  `year_graduated` YEAR DEFAULT NULL,
+  `honors_awards` VARCHAR(255) DEFAULT NULL,
+  `is_highest_attainment` TINYINT(1) DEFAULT 0,
+  `document_url` VARCHAR(255) DEFAULT NULL COMMENT 'Diploma or certificate',
+  `created_at` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `updated_at` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  PRIMARY KEY (`education_id`),
+  KEY `personal_info_id` (`personal_info_id`),
+  CONSTRAINT `educational_background_ibfk_1` FOREIGN KEY (`personal_info_id`) REFERENCES `personal_information` (`personal_info_id`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+-- Step 3: Create marital_status_history table for tracking changes
+CREATE TABLE `marital_status_history` (
+  `status_history_id` INT(11) NOT NULL AUTO_INCREMENT,
+  `personal_info_id` INT(11) NOT NULL,
+  `marital_status` ENUM('Single', 'Married', 'Divorced', 'Widowed', 'Separated', 'Annulled') NOT NULL,
+  `status_date` DATE NOT NULL COMMENT 'Date of marriage, divorce, etc.',
+  `spouse_name` VARCHAR(100) DEFAULT NULL,
+  `supporting_document_type` ENUM('Marriage Certificate', 'Divorce Decree', 'Death Certificate', 'Annulment Certificate', 'Separation Agreement') DEFAULT NULL,
+  `document_url` VARCHAR(255) DEFAULT NULL,
+  `document_number` VARCHAR(50) DEFAULT NULL COMMENT 'Certificate or decree number',
+  `issuing_authority` VARCHAR(150) DEFAULT NULL,
+  `remarks` TEXT DEFAULT NULL,
+  `is_current` TINYINT(1) DEFAULT 1 COMMENT '1 = current status, 0 = historical',
+  `created_at` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `updated_at` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  PRIMARY KEY (`status_history_id`),
+  KEY `personal_info_id` (`personal_info_id`),
+  CONSTRAINT `marital_status_history_ibfk_1` FOREIGN KEY (`personal_info_id`) REFERENCES `personal_information` (`personal_info_id`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+-- Step 4: Sample data for educational_background
+INSERT INTO `educational_background` 
+(`personal_info_id`, `education_level`, `school_name`, `course_degree`, `major_specialization`, `year_started`, `year_graduated`, `honors_awards`, `is_highest_attainment`, `document_url`) 
+VALUES
+(1, 'Bachelor\'s Degree', 'University of the Philippines', 'Bachelor of Science in Accountancy', 'Accountancy', 2003, 2007, 'Cum Laude', 1, '/documents/diplomas/maria_santos_bsa.pdf'),
+(2, 'Bachelor\'s Degree', 'De La Salle University', 'Bachelor of Science in Civil Engineering', 'Civil Engineering', 1996, 2000, NULL, 1, '/documents/diplomas/roberto_cruz_bsce.pdf'),
+(3, 'Bachelor\'s Degree', 'Far Eastern University', 'Bachelor of Science in Nursing', 'Nursing', 2006, 2010, NULL, 1, '/documents/diplomas/jennifer_reyes_bsn.pdf'),
+(4, 'Vocational', 'Technical Education and Skills Development Authority', 'Computer-Aided Design', 'CAD Operations', 1993, 1995, NULL, 1, '/documents/certificates/antonio_garcia_cad_cert.pdf'),
+(5, 'Master\'s Degree', 'University of Santo Tomas', 'Master of Social Work', 'Community Development', 2008, 2012, NULL, 1, '/documents/diplomas/lisa_mendoza_msw.pdf');
+
+-- Step 5: Sample data for marital_status_history
+INSERT INTO `marital_status_history` 
+(`personal_info_id`, `marital_status`, `status_date`, `spouse_name`, `supporting_document_type`, `document_url`, `document_number`, `issuing_authority`, `is_current`) 
+VALUES
+(1, 'Married', '2012-05-15', 'Carlos Santos', 'Marriage Certificate', '/documents/marital/maria_santos_marriage_cert.pdf', 'MC-2012-05-001234', 'Manila City Civil Registrar', 1),
+(2, 'Married', '2005-11-20', 'Elena Cruz', 'Marriage Certificate', '/documents/marital/roberto_cruz_marriage_cert.pdf', 'MC-2005-11-005678', 'Quezon City Civil Registrar', 1),
+(4, 'Married', '2001-03-10', 'Rosa Garcia', 'Marriage Certificate', '/documents/marital/antonio_garcia_marriage_cert.pdf', 'MC-2001-03-009012', 'Makati City Civil Registrar', 1),
+(5, 'Divorced', '2018-08-22', 'John Mendoza', 'Divorce Decree', '/documents/marital/lisa_mendoza_divorce_decree.pdf', 'DD-2018-08-003456', 'Family Court Manila', 1),
+(6, 'Married', '2008-07-14', 'Anna Torres', 'Marriage Certificate', '/documents/marital/michael_torres_marriage_cert.pdf', 'MC-2008-07-007890', 'Pasig City Civil Registrar', 1);
+
+-- Step 6: Update existing personal_information records with educational data
+UPDATE `personal_information` SET 
+  `highest_educational_attainment` = 'Bachelor\'s Degree',
+  `course_degree` = 'Bachelor of Science in Accountancy',
+  `school_university` = 'University of the Philippines',
+  `year_graduated` = 2007,
+  `marital_status_date` = '2012-05-15',
+  `marital_status_document_url` = '/documents/marital/maria_santos_marriage_cert.pdf'
+WHERE `personal_info_id` = 1;
+
+UPDATE `personal_information` SET 
+  `highest_educational_attainment` = 'Bachelor\'s Degree',
+  `course_degree` = 'Bachelor of Science in Civil Engineering',
+  `school_university` = 'De La Salle University',
+  `year_graduated` = 2000,
+  `marital_status_date` = '2005-11-20',
+  `marital_status_document_url` = '/documents/marital/roberto_cruz_marriage_cert.pdf'
+WHERE `personal_info_id` = 2;
+
+UPDATE `personal_information` SET 
+  `highest_educational_attainment` = 'Bachelor\'s Degree',
+  `course_degree` = 'Bachelor of Science in Nursing',
+  `school_university` = 'Far Eastern University',
+  `year_graduated` = 2010
+WHERE `personal_info_id` = 3;
+
+UPDATE `personal_information` SET 
+  `highest_educational_attainment` = 'Vocational',
+  `course_degree` = 'Computer-Aided Design',
+  `school_university` = 'TESDA',
+  `year_graduated` = 1995,
+  `marital_status_date` = '2001-03-10',
+  `marital_status_document_url` = '/documents/marital/antonio_garcia_marriage_cert.pdf'
+WHERE `personal_info_id` = 4;
+
+UPDATE `personal_information` SET 
+  `highest_educational_attainment` = 'Master\'s Degree',
+  `course_degree` = 'Master of Social Work',
+  `school_university` = 'University of Santo Tomas',
+  `year_graduated` = 2012,
+  `marital_status_date` = '2018-08-22',
+  `marital_status_document_url` = '/documents/marital/lisa_mendoza_divorce_decree.pdf'
+WHERE `personal_info_id` = 5;
+
+-- Step 7: Create uploads directory structure (Note: This needs to be done manually on the server)
+-- Create these directories in your project root:
+-- /uploads/education_documents/
+-- /uploads/marital_documents/
+
 /*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;
 /*!40101 SET CHARACTER_SET_RESULTS=@OLD_CHARACTER_SET_RESULTS */;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
+
