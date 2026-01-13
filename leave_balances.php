@@ -34,6 +34,13 @@ if (count($leaveBalances) > 0) {
     error_log("First employee: " . json_encode($leaveBalances[0]));
 }
 
+// Get default days from leave_types table
+$leaveTypesData = getLeaveTypes();
+$defaultDays = [];
+foreach ($leaveTypesData as $lt) {
+    $defaultDays[$lt['leave_type_name']] = (float)($lt['default_days'] ?? 0);
+}
+
 // Calculate actual totals from database data
 $vacationTotal = 0;
 $sickTotal = 0;
@@ -47,28 +54,40 @@ foreach ($leaveBalances as $employee) {
     $paternityTotal += $employee['paternity_leave'] ?? 0;
 }
 
-// Calculate utilization percentages based on actual data
-$vacationUtilization = count($leaveBalances) > 0 ? round(($vacationTotal / (count($leaveBalances) * 15)) * 100) : 0;
-$sickUtilization = count($leaveBalances) > 0 ? round(($sickTotal / (count($leaveBalances) * 10)) * 100) : 0;
+// Get default days for each leave type from database
+$vacationDefaultDays = $defaultDays['Vacation Leave'] ?? 15;
+$sickDefaultDays = $defaultDays['Sick Leave'] ?? 15;
+$specialDefaultDays = $defaultDays['Special Leave'] ?? 0;
+
+// Calculate total allocated days based on number of employees and default days from database
+$totalEmployees = count($leaveBalances);
+$vacationTotalAllocated = $totalEmployees * $vacationDefaultDays;
+$sickTotalAllocated = $totalEmployees * $sickDefaultDays;
+$specialTotalAllocated = $totalEmployees * $specialDefaultDays;
+
+// Calculate utilization percentages based on actual data from leave_types table
+$vacationUtilization = $vacationTotalAllocated > 0 ? round(($vacationTotal / $vacationTotalAllocated) * 100) : 0;
+$sickUtilization = $sickTotalAllocated > 0 ? round(($sickTotal / $sickTotalAllocated) * 100) : 0;
+$specialUtilization = $specialTotalAllocated > 0 ? round((0 / $specialTotalAllocated) * 100) : 0;
 
 // Find specific leave type totals from actual data
 $vacationLeaveTotal = [
     'leave_type_name' => 'Vacation Leave',
     'total_remaining' => $vacationTotal,
-    'total_allocated' => count($leaveBalances) * 15,
+    'total_allocated' => $vacationTotalAllocated,
     'utilization_percentage' => $vacationUtilization
 ];
 $sickLeaveTotal = [
     'leave_type_name' => 'Sick Leave',
     'total_remaining' => $sickTotal,
-    'total_allocated' => count($leaveBalances) * 10,
+    'total_allocated' => $sickTotalAllocated,
     'utilization_percentage' => $sickUtilization
 ];
 $specialLeaveTotal = [
     'leave_type_name' => 'Special Leave',
     'total_remaining' => 0,
-    'total_allocated' => 0,
-    'utilization_percentage' => 0
+    'total_allocated' => $specialTotalAllocated,
+    'utilization_percentage' => $specialUtilization
 ];
 ?>
 <!DOCTYPE html>
@@ -165,33 +184,33 @@ $specialLeaveTotal = [
                                                                      alt="Profile" class="profile-image mr-2">
                                                                 <div>
                                                                     <h6 class="mb-0"><?= htmlspecialchars($employee['first_name'] . ' ' . $employee['last_name']) ?></h6>
-                                                                    <small class="text-muted"><?= htmlspecialchars($employee['employee_code']) ?></small>
+                                                                    <small class="text-muted"><?= htmlspecialchars($employee['employee_number'] ?? 'N/A') ?></small>
                                                                 </div>
                                                             </div>
                                                         </td>
                                                         <td><?= htmlspecialchars($employee['department_name'] ?? 'N/A') ?></td>
                                                         <td>
-                                                            <span class="badge badge-primary"><?= $employee['vacation_leave'] ?? 0 ?> days</span>
+                                                            <span class="badge badge-primary"><?= (int)($employee['vacation_leave'] ?? 0) ?> days</span>
                                                         </td>
                                                         <td>
-                                                            <span class="badge badge-success"><?= $employee['sick_leave'] ?? 0 ?> days</span>
+                                                            <span class="badge badge-success"><?= (int)($employee['sick_leave'] ?? 0) ?> days</span>
                                                         </td>
                                                         <td>
                                                             <?php if ($employee['gender'] === 'Female'): ?>
-                                                                <span class="badge badge-info"><?= $employee['maternity_leave'] ?? 0 ?> days</span>
+                                                                <span class="badge badge-info"><?= (int)($employee['maternity_leave'] ?? 0) ?> days</span>
                                                             <?php else: ?>
                                                                 <span class="badge badge-secondary" title="Not applicable for <?= $employee['gender'] ?> employees">N/A</span>
                                                             <?php endif; ?>
                                                         </td>
                                                         <td>
                                                             <?php if ($employee['gender'] === 'Male'): ?>
-                                                                <span class="badge badge-warning"><?= $employee['paternity_leave'] ?? 0 ?> days</span>
+                                                                <span class="badge badge-warning"><?= (int)($employee['paternity_leave'] ?? 0) ?> days</span>
                                                             <?php else: ?>
                                                                 <span class="badge badge-secondary" title="Not applicable for <?= $employee['gender'] ?> employees">N/A</span>
                                                             <?php endif; ?>
                                                         </td>
                                                         <td>
-                                                            <strong><?= $employee['total_balance'] ?? 0 ?> days</strong>
+                                                            <strong><?= (int)($employee['total_balance'] ?? 0) ?> days</strong>
                                                         </td>
                                                         <td>
                                                             <button class="btn btn-sm btn-outline-primary">
@@ -224,7 +243,7 @@ $specialLeaveTotal = [
                                     <span class="progress-text"><?= $vacationLeaveTotal['utilization_percentage'] ?>%</span>
                                 </div>
                                 <h5>Vacation Leave</h5>
-                                <h3 class="text-primary"><?= $vacationLeaveTotal['total_remaining'] ?>/<?= $vacationLeaveTotal['total_allocated'] ?> days</h3>
+                                <h3 class="text-primary"><?= (int)$vacationLeaveTotal['total_remaining'] ?>/<?= (int)$vacationLeaveTotal['total_allocated'] ?> days</h3>
                                 <small class="text-muted">Average utilization</small>
                             </div>
                         </div>
@@ -236,7 +255,7 @@ $specialLeaveTotal = [
                                     <span class="progress-text"><?= $sickLeaveTotal['utilization_percentage'] ?>%</span>
                                 </div>
                                 <h5>Sick Leave</h5>
-                                <h3 class="text-success"><?= $sickLeaveTotal['total_remaining'] ?>/<?= $sickLeaveTotal['total_allocated'] ?> days</h3>
+                                <h3 class="text-success"><?= (int)$sickLeaveTotal['total_remaining'] ?>/<?= (int)$sickLeaveTotal['total_allocated'] ?> days</h3>
                                 <small class="text-muted">Average utilization</small>
                             </div>
                         </div>
@@ -244,11 +263,11 @@ $specialLeaveTotal = [
                     <div class="col-md-4">
                         <div class="card balance-card">
                             <div class="card-body text-center">
-                                <div class="progress-circle mb-3" style="--percentage: 0%">
-                                    <span class="progress-text">0%</span>
+                                <div class="progress-circle mb-3" style="--percentage: <?= $specialLeaveTotal['utilization_percentage'] ?>%">
+                                    <span class="progress-text"><?= $specialLeaveTotal['utilization_percentage'] ?>%</span>
                                 </div>
                                 <h5>Special Leave</h5>
-                                <h3 class="text-info">0/0 days</h3>
+                                <h3 class="text-info"><?= (int)$specialLeaveTotal['total_remaining'] ?>/<?= (int)$specialLeaveTotal['total_allocated'] ?> days</h3>
                                 <small class="text-muted">Average utilization</small>
                             </div>
                         </div>

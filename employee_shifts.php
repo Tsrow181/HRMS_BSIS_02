@@ -78,18 +78,18 @@ $shifts = getShifts();
             margin-bottom: 30px;
             font-weight: 600;
         }
-        
+
         .employee-shift-card {
             border-radius: 10px;
             transition: all 0.3s ease;
             border: 1px solid var(--border-light);
         }
-        
+
         .employee-shift-card:hover {
             transform: translateY(-2px);
             box-shadow: 0 4px 12px var(--shadow-medium);
         }
-        
+
         .sample-data {
             background-color: #f8f9fa;
             opacity: 0.7;
@@ -103,7 +103,7 @@ $shifts = getShifts();
             <?php include 'sidebar.php'; ?>
             <div class="main-content">
                 <h2 class="section-title">Employee Shifts Management</h2>
-                
+
                 <?php if (isset($error)): ?>
                     <div class="alert alert-danger"><?php echo $error; ?></div>
                 <?php endif; ?>
@@ -136,7 +136,7 @@ $shifts = getShifts();
                                                 <tr class="sample-data">
                                                     <td>
                                                         <div class="d-flex align-items-center">
-                                                            <img src="https://ui-avatars.com/api/?name=John+Doe&background=E91E63&color=fff&size=35" 
+                                                            <img src="https://ui-avatars.com/api/?name=John+Doe&background=E91E63&color=fff&size=35"
                                                                  alt="Profile" class="profile-image mr-2">
                                                             <div>
                                                                 <h6 class="mb-0">John Doe</h6>
@@ -157,7 +157,7 @@ $shifts = getShifts();
                                                 <tr class="sample-data">
                                                     <td>
                                                         <div class="d-flex align-items-center">
-                                                            <img src="https://ui-avatars.com/api/?name=Jane+Smith&background=2196F3&color=fff&size=35" 
+                                                            <img src="https://ui-avatars.com/api/?name=Jane+Smith&background=2196F3&color=fff&size=35"
                                                                  alt="Profile" class="profile-image mr-2">
                                                             <div>
                                                                 <h6 class="mb-0">Jane Smith</h6>
@@ -194,18 +194,11 @@ $shifts = getShifts();
                                                         <td>
                                                             <?php
                                                             $status = $shift['status'] ?? 'Active';
-<<<<<<< HEAD
-                                                            $badgeClass = ($status === 'On Leave') ? 'badge-danger' : 'badge-success';
-                                                            ?>
-                                                            <span class="badge <?php echo $badgeClass; ?>">
-                                                                <?php echo htmlspecialchars($status); ?>
-=======
                                                             $displayStatus = ($status === 'Inactive') ? 'ON LEAVE' : $status;
                                                             $badgeClass = ($status === 'Inactive') ? 'badge-danger' : 'badge-success';
                                                             ?>
                                                             <span class="badge <?php echo $badgeClass; ?>">
                                                                 <?php echo $displayStatus; ?>
->>>>>>> 48f0fd909401d87fc7e82ce488dfd81cd0dfc6fa
                                                             </span>
                                                         </td>
                                                         <td>

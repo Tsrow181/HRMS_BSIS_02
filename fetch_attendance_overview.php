@@ -13,7 +13,8 @@ if (!isset($_SESSION['loggedin']) || $_SESSION['loggedin'] !== true || ($_SESSIO
 require_once 'dp.php';
 
 try {
-    // Get employees with their attendance data (same query as attendance.php)
+    // Get employees with their attendance data
+    // First, try with employment_history filter, but if no results, fall back to simpler query
     $stmt = $conn->query("
         SELECT
             ep.employee_id,
@@ -27,23 +28,52 @@ try {
             a.working_hours,
             a.status,
             a.overtime_hours,
-            CASE WHEN TIME(a.clock_in) > '08:00:00' THEN TIMESTAMPDIFF(MINUTE, '08:00:00', TIME(a.clock_in)) ELSE 0 END as late_minutes
+            CASE WHEN a.clock_in IS NOT NULL AND TIME(a.clock_in) > '08:00:00' THEN TIMESTAMPDIFF(MINUTE, '08:00:00', TIME(a.clock_in)) ELSE 0 END as late_minutes
         FROM employee_profiles ep
         LEFT JOIN personal_information pi ON ep.personal_info_id = pi.personal_info_id
         LEFT JOIN job_roles jr ON ep.job_role_id = jr.job_role_id
         LEFT JOIN attendance a ON ep.employee_id = a.employee_id
             AND a.attendance_date = DATE(NOW())
-        WHERE ep.employment_status IN ('Full-time', 'Part-time')
-        AND ep.employee_id IN (
-            SELECT employee_id FROM employment_history
-            WHERE history_id IN (
-                SELECT MAX(history_id) FROM employment_history GROUP BY employee_id
-            ) AND employment_status = 'Active'
-        )
+        LEFT JOIN (
+            SELECT employee_id, MAX(history_id) as max_history_id
+            FROM employment_history
+            GROUP BY employee_id
+        ) eh_max ON ep.employee_id = eh_max.employee_id
+        LEFT JOIN employment_history eh ON eh_max.employee_id = eh.employee_id
+            AND eh_max.max_history_id = eh.history_id
+        WHERE (eh.employment_status = 'Active' OR eh.employment_status IS NULL)
         ORDER BY pi.first_name, pi.last_name
     ");
     $employees = $stmt->fetchAll(PDO::FETCH_ASSOC);
     error_log("fetch_attendance_overview: Query executed, fetched " . count($employees) . " employees");
+    
+    // If no employees found with employment_history filter, try simpler query
+    if (empty($employees)) {
+        error_log("fetch_attendance_overview: No employees with employment_history filter, trying simpler query");
+        $stmt = $conn->query("
+            SELECT
+                ep.employee_id,
+                COALESCE(pi.first_name, 'Unknown') as first_name,
+                COALESCE(pi.last_name, 'Employee') as last_name,
+                ep.employee_number,
+                COALESCE(jr.department, 'N/A') as department,
+                a.attendance_date,
+                a.clock_in,
+                a.clock_out,
+                a.working_hours,
+                a.status,
+                a.overtime_hours,
+                CASE WHEN a.clock_in IS NOT NULL AND TIME(a.clock_in) > '08:00:00' THEN TIMESTAMPDIFF(MINUTE, '08:00:00', TIME(a.clock_in)) ELSE 0 END as late_minutes
+            FROM employee_profiles ep
+            LEFT JOIN personal_information pi ON ep.personal_info_id = pi.personal_info_id
+            LEFT JOIN job_roles jr ON ep.job_role_id = jr.job_role_id
+            LEFT JOIN attendance a ON ep.employee_id = a.employee_id
+                AND a.attendance_date = DATE(NOW())
+            ORDER BY pi.first_name, pi.last_name
+        ");
+        $employees = $stmt->fetchAll(PDO::FETCH_ASSOC);
+        error_log("fetch_attendance_overview: Simpler query executed, fetched " . count($employees) . " employees");
+    }
 
     if (empty($employees)) {
         // Debug: Check total employees
