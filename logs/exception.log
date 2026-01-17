@@ -161,3 +161,20 @@
 2025-10-23 18:25:26 Exception: SQLSTATE[42S22]: Column not found: 1054 Unknown column 'leave_request_id' in 'field list' in C:\Program Files\xampp\htdocs\HRMS_BSIS_02\test_leave_approval.php on line 8
 >>>>>>> 48f0fd909401d87fc7e82ce488dfd81cd0dfc6fa
 2025-10-24 15:21:00 Exception: trim(): Argument #1 ($string) must be of type string, array given in C:\xampp\htdocs\HRMS_BSIS_02\assign_competency.php on line 11
+2026-01-17 06:35:46 Exception: SQLSTATE[42S22]: Column not found: 1054 Unknown column 'reason' in 'field list' in C:\xampp\htdocs\HRMS_BSIS_02\file_resignation.php on line 34
+2026-01-17 06:36:01 Exception: SQLSTATE[42S22]: Column not found: 1054 Unknown column 'reason' in 'field list' in C:\xampp\htdocs\HRMS_BSIS_02\file_resignation.php on line 34
+2026-01-17 06:36:04 Exception: SQLSTATE[42S22]: Column not found: 1054 Unknown column 'reason' in 'field list' in C:\xampp\htdocs\HRMS_BSIS_02\file_resignation.php on line 34
+2026-01-17 06:39:14 Exception: SQLSTATE[42S02]: Base table or view not found: 1146 Table 'hr_system.employees' doesn't exist in C:\xampp\htdocs\HRMS_BSIS_02\file_resignation.php on line 23
+2026-01-17 06:39:19 Exception: SQLSTATE[42S02]: Base table or view not found: 1146 Table 'hr_system.employees' doesn't exist in C:\xampp\htdocs\HRMS_BSIS_02\file_resignation.php on line 23
+2026-01-17 06:46:55 Exception: Call to undefined method PDOStatement::bind_param() in C:\xampp\htdocs\HRMS_BSIS_02\file_resignation.php on line 53
+2026-01-17 06:47:01 Exception: Call to undefined method PDOStatement::bind_param() in C:\xampp\htdocs\HRMS_BSIS_02\file_resignation.php on line 53
+2026-01-17 06:50:16 Exception: Call to undefined method PDOStatement::bind_param() in C:\xampp\htdocs\HRMS_BSIS_02\file_resignation.php on line 117
+2026-01-17 06:59:27 Exception: Call to undefined method PDOStatement::bind_param() in C:\xampp\htdocs\HRMS_BSIS_02\file_resignation.php on line 65
+2026-01-17 06:59:58 Exception: Call to undefined method PDOStatement::bind_param() in C:\xampp\htdocs\HRMS_BSIS_02\file_resignation.php on line 65
+2026-01-17 07:05:35 Exception: Call to undefined method PDOStatement::bind_param() in C:\xampp\htdocs\HRMS_BSIS_02\file_resignation.php on line 65
+2026-01-17 07:05:36 Exception: Call to undefined method PDOStatement::bind_param() in C:\xampp\htdocs\HRMS_BSIS_02\file_resignation.php on line 65
+2026-01-17 07:06:11 Exception: Call to undefined method PDOStatement::bind_param() in C:\xampp\htdocs\HRMS_BSIS_02\file_resignation.php on line 65
+2026-01-17 07:06:12 Exception: Call to undefined method PDOStatement::bind_param() in C:\xampp\htdocs\HRMS_BSIS_02\file_resignation.php on line 65
+2026-01-17 07:06:33 Exception: Call to undefined method PDOStatement::bind_param() in C:\xampp\htdocs\HRMS_BSIS_02\file_resignation.php on line 65
+2026-01-17 07:06:49 Exception: Call to undefined method PDOStatement::bind_param() in C:\xampp\htdocs\HRMS_BSIS_02\file_resignation.php on line 65
+2026-01-17 07:06:49 Exception: Call to undefined method PDOStatement::bind_param() in C:\xampp\htdocs\HRMS_BSIS_02\file_resignation.php on line 65

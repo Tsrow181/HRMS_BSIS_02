@@ -122,6 +122,12 @@ if (!$is_logged_in || $user_role !== 'employee') {
             </a>
         </li>
         
+        <li class="nav-item">
+            <a class="nav-link <?php echo isActiveMenu('file_resignation.php'); ?>" href="file_resignation.php">
+                <i class="fas fa-sign-out-alt"></i> File Resignation
+            </a>
+        </li>
+        
         <!-- Logout Section -->
         <li class="nav-item mt-4">
             <a class="nav-link text-danger" href="logout.php">
