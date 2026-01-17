@@ -3453,3 +3453,4 @@ DELIMITER ;
 -- Add this logic to your PHP update statement:
 -- IF status='Completed' AND approval_status='Approved' THEN SET clearance_status='Cleared'
 
+
