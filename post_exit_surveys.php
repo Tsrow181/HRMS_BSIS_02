@@ -33,48 +33,60 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             case 'add':
                 // Add new survey
                 try {
-                    $stmt = $pdo->prepare("INSERT INTO post_exit_surveys (employee_id, exit_id, survey_date, survey_response, satisfaction_rating, submitted_date) VALUES (?, ?, ?, ?, ?, ?)");
+                    // Handle anonymous survey: set employee_id to NULL if not provided
+                    $employee_id = isset($_POST['employee_id']) && $_POST['employee_id'] !== '' ? $_POST['employee_id'] : null;
+                    $stmt = $pdo->prepare("INSERT INTO post_exit_surveys (employee_id, exit_id, survey_date, survey_response, satisfaction_rating, submitted_date, is_anonymous, evaluation_score, evaluation_criteria) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)");
                     $stmt->execute([
-                        $_POST['employee_id'],
+                        $employee_id,
                         $_POST['exit_id'],
                         $_POST['survey_date'],
                         $_POST['survey_response'],
                         $_POST['satisfaction_rating'],
-                        $_POST['submitted_date']
+                        $_POST['submitted_date'],
+                        isset($_POST['is_anonymous']) ? 1 : 0,
+                        isset($_POST['evaluation_score']) ? $_POST['evaluation_score'] : 0,
+                        isset($_POST['evaluation_criteria']) ? $_POST['evaluation_criteria'] : null
                     ]);
-                    $message = "Post-exit survey added successfully!";
-                    $messageType = "success";
+                    $_SESSION['message'] = "Post-exit survey added successfully!";
+                    $_SESSION['messageType'] = "success";
+                    header("Location: " . $_SERVER['PHP_SELF']);
+                    exit;
                 } catch (PDOException $e) {
                     $_SESSION['message'] = "Error adding survey: " . $e->getMessage();
                     $_SESSION['messageType'] = "error";
                     header("Location: " . $_SERVER['PHP_SELF']);
                     exit;
                 }
-                break;
-
+                // break; // not needed after exit
             case 'update':
                 // Update survey
                 try {
-                    $stmt = $pdo->prepare("UPDATE post_exit_surveys SET employee_id=?, exit_id=?, survey_date=?, survey_response=?, satisfaction_rating=?, submitted_date=? WHERE survey_id=?");
+                    // Handle anonymous survey: set employee_id to NULL if not provided
+                    $employee_id = isset($_POST['employee_id']) && $_POST['employee_id'] !== '' ? $_POST['employee_id'] : null;
+                    $stmt = $pdo->prepare("UPDATE post_exit_surveys SET employee_id=?, exit_id=?, survey_date=?, survey_response=?, satisfaction_rating=?, submitted_date=?, is_anonymous=?, evaluation_score=?, evaluation_criteria=? WHERE survey_id=?");
                     $stmt->execute([
-                        $_POST['employee_id'],
+                        $employee_id,
                         $_POST['exit_id'],
                         $_POST['survey_date'],
                         $_POST['survey_response'],
                         $_POST['satisfaction_rating'],
                         $_POST['submitted_date'],
+                        isset($_POST['is_anonymous']) ? 1 : 0,
+                        isset($_POST['evaluation_score']) ? $_POST['evaluation_score'] : 0,
+                        isset($_POST['evaluation_criteria']) ? $_POST['evaluation_criteria'] : null,
                         $_POST['survey_id']
                     ]);
-                    $message = "Post-exit survey updated successfully!";
-                    $messageType = "success";
+                    $_SESSION['message'] = "Post-exit survey updated successfully!";
+                    $_SESSION['messageType'] = "success";
+                    header("Location: " . $_SERVER['PHP_SELF']);
+                    exit;
                 } catch (PDOException $e) {
                     $_SESSION['message'] = "Error updating survey: " . $e->getMessage();
                     $_SESSION['messageType'] = "error";
                     header("Location: " . $_SERVER['PHP_SELF']);
                     exit;
                 }
-                break;
-            
+                // break; // not needed after exit
             case 'delete':
                 // Delete survey
                 try {
