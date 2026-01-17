@@ -82,6 +82,9 @@ require_once 'dp.php';
                                 <div class="card-header d-flex justify-content-between align-items-center">
                                     <h5 class="mb-0"><i class="fas fa-calendar-day mr-2"></i>Public Holidays List</h5>
                                     <div>
+                                        <button class="btn btn-secondary mr-2" id="migrateHolidaysBtn" onclick="migrateHolidayTypes()">
+                                            <i class="fas fa-cogs mr-2"></i>Migrate Holiday Types
+                                        </button>
                                         <button class="btn btn-info mr-2" id="syncHolidaysBtn" onclick="syncHolidays()">
                                             <i class="fas fa-sync-alt mr-2"></i>Sync from API
                                         </button>
@@ -97,6 +100,7 @@ require_once 'dp.php';
                                             <tr>
                                                 <th>Holiday Name</th>
                                                 <th>Date</th>
+                                                <th>Type</th>
                                                 <th>Description</th>
                                                 <th>Actions</th>
                                             </tr>
@@ -192,10 +196,12 @@ require_once 'dp.php';
                         <div class="form-group">
                             <label for="holidayType">Holiday Type</label>
                             <select class="form-control" id="holidayType" required>
-                                <option value="National">National</option>
-                                <option value="Regional">Regional</option>
-                                <option value="Special">Special</option>
+                                <option value="Regular Holiday">Regular Holiday - 100% pay if not working, 200% if working</option>
+                                <option value="Special Non-Working Holiday">Special Non-Working Holiday - No work no pay, 130% if working</option>
+                                <option value="Special Working Holiday">Special Working Holiday - Regular pay, work as usual</option>
+                                <option value="Local Special Holiday">Local Special Holiday - Regional/local holiday</option>
                             </select>
+                            <small class="form-text text-muted">Philippine official holiday classification per DOLE</small>
                         </div>
                         <div class="form-group">
                             <label for="holidayDescription">Description</label>
@@ -235,10 +241,12 @@ require_once 'dp.php';
                         <div class="form-group">
                             <label for="editHolidayType">Holiday Type</label>
                             <select class="form-control" id="editHolidayType" required>
-                                <option value="National">National</option>
-                                <option value="Regional">Regional</option>
-                                <option value="Special">Special</option>
+                                <option value="Regular Holiday">Regular Holiday - 100% pay if not working, 200% if working</option>
+                                <option value="Special Non-Working Holiday">Special Non-Working Holiday - No work no pay, 130% if working</option>
+                                <option value="Special Working Holiday">Special Working Holiday - Regular pay, work as usual</option>
+                                <option value="Local Special Holiday">Local Special Holiday - Regional/local holiday</option>
                             </select>
+                            <small class="form-text text-muted">Philippine official holiday classification per DOLE</small>
                         </div>
                         <div class="form-group">
                             <label for="editHolidayDescription">Description</label>
@@ -371,7 +379,7 @@ require_once 'dp.php';
         if (holidays.length === 0) {
             tableBody.append(`
                 <tr>
-                    <td colspan="4" class="text-center text-muted">
+                    <td colspan="5" class="text-center text-muted">
                         No holidays found. Click "Add Holiday" to create one.
                     </td>
                 </tr>
@@ -386,10 +394,14 @@ require_once 'dp.php';
                 day: 'numeric'
             });
 
+            const holidayType = holiday.holiday_type || 'Regular Holiday';
+            const typeBadge = getHolidayTypeBadge(holidayType);
+            
             tableBody.append(`
                 <tr>
                     <td>${escapeHtml(holiday.holiday_name)}</td>
                     <td>${formattedDate}</td>
+                    <td>${typeBadge}</td>
                     <td>${escapeHtml(holiday.description || '')}</td>
                     <td>
                         <button class="btn btn-sm btn-outline-primary mr-2" onclick="editHoliday(${holiday.holiday_id})">
@@ -404,6 +416,20 @@ require_once 'dp.php';
         });
     }
 
+    function getHolidayTypeBadge(type) {
+        const badges = {
+            'Regular Holiday': '<span class="badge badge-primary">Regular Holiday</span>',
+            'Special Non-Working Holiday': '<span class="badge badge-warning">Special Non-Working</span>',
+            'Special Working Holiday': '<span class="badge badge-info">Special Working</span>',
+            'Local Special Holiday': '<span class="badge badge-secondary">Local Special</span>',
+            // Backward compatibility
+            'National': '<span class="badge badge-primary">National</span>',
+            'Regional': '<span class="badge badge-secondary">Regional</span>',
+            'Special': '<span class="badge badge-warning">Special</span>'
+        };
+        return badges[type] || '<span class="badge badge-light">' + escapeHtml(type) + '</span>';
+    }
+
     function updateHolidayStats(holidays) {
         // Update statistics cards
         const totalHolidays = holidays.length;
@@ -413,34 +439,43 @@ require_once 'dp.php';
         const hasHolidayType = holidays.length > 0 && holidays[0].hasOwnProperty('holiday_type');
         
         if (hasHolidayType) {
-            // Count holidays by type
-            const nationalHolidays = holidays.filter(holiday => holiday.holiday_type === 'National').length;
-            const regionalHolidays = holidays.filter(holiday => holiday.holiday_type === 'Regional').length;
-            const specialHolidays = holidays.filter(holiday => holiday.holiday_type === 'Special').length;
+            // Count holidays by Philippine official types
+            const regularHolidays = holidays.filter(h => 
+                h.holiday_type === 'Regular Holiday' || h.holiday_type === 'National'
+            ).length;
+            const specialNonWorking = holidays.filter(h => 
+                h.holiday_type === 'Special Non-Working Holiday' || 
+                (h.holiday_type === 'Special' && !h.holiday_type.includes('Working'))
+            ).length;
+            const localHolidays = holidays.filter(h => 
+                h.holiday_type === 'Local Special Holiday' || h.holiday_type === 'Regional'
+            ).length;
             
-            $('#nationalHolidays').text(nationalHolidays);
-            $('#regionalHolidays').text(regionalHolidays);
+            $('#nationalHolidays').text(regularHolidays);
+            $('#nationalHolidays').parent().find('small').text('Regular Holidays');
+            $('#regionalHolidays').text(specialNonWorking);
+            $('#regionalHolidays').parent().find('small').text('Special Non-Working');
             
             // Update progress bars
-            const nationalPercentage = totalHolidays > 0 ? Math.round((nationalHolidays / totalHolidays) * 100) : 0;
-            const regionalPercentage = totalHolidays > 0 ? Math.round((regionalHolidays / totalHolidays) * 100) : 0;
+            const regularPercentage = totalHolidays > 0 ? Math.round((regularHolidays / totalHolidays) * 100) : 0;
+            const specialPercentage = totalHolidays > 0 ? Math.round((specialNonWorking / totalHolidays) * 100) : 0;
             
-            $('#nationalProgress').css('width', nationalPercentage + '%').text(`National (${nationalPercentage}%)`);
-            $('#regionalProgress').css('width', regionalPercentage + '%').text(`Regional (${regionalPercentage}%)`);
+            $('#nationalProgress').css('width', regularPercentage + '%').text(`Regular (${regularPercentage}%)`);
+            $('#regionalProgress').css('width', specialPercentage + '%').text(`Special Non-Working (${specialPercentage}%)`);
         } else {
             // Fallback: use default values if holiday_type column doesn't exist
-            const nationalHolidays = Math.floor(totalHolidays * 0.7); // 70% national
-            const regionalHolidays = totalHolidays - nationalHolidays; // 30% regional
+            const regularHolidays = Math.floor(totalHolidays * 0.7); // 70% regular
+            const specialHolidays = totalHolidays - regularHolidays; // 30% special
             
-            $('#nationalHolidays').text(nationalHolidays);
-            $('#regionalHolidays').text(regionalHolidays);
+            $('#nationalHolidays').text(regularHolidays);
+            $('#regionalHolidays').text(specialHolidays);
             
             // Update progress bars
-            const nationalPercentage = totalHolidays > 0 ? Math.round((nationalHolidays / totalHolidays) * 100) : 0;
-            const regionalPercentage = totalHolidays > 0 ? Math.round((regionalHolidays / totalHolidays) * 100) : 0;
+            const regularPercentage = totalHolidays > 0 ? Math.round((regularHolidays / totalHolidays) * 100) : 0;
+            const specialPercentage = totalHolidays > 0 ? Math.round((specialHolidays / totalHolidays) * 100) : 0;
             
-            $('#nationalProgress').css('width', nationalPercentage + '%').text(`National (${nationalPercentage}%)`);
-            $('#regionalProgress').css('width', regionalPercentage + '%').text(`Regional (${regionalPercentage}%)`);
+            $('#nationalProgress').css('width', regularPercentage + '%').text(`Regular (${regularPercentage}%)`);
+            $('#regionalProgress').css('width', specialPercentage + '%').text(`Special (${specialPercentage}%)`);
         }
     }
 
@@ -497,7 +532,12 @@ require_once 'dp.php';
                     $('#editHolidayId').val(holiday.holiday_id);
                     $('#editHolidayName').val(holiday.holiday_name);
                     $('#editHolidayDate').val(holiday.holiday_date);
-                    $('#editHolidayType').val(holiday.holiday_type || 'National');
+                    // Map old types to new types if needed
+                    let holidayType = holiday.holiday_type || 'Regular Holiday';
+                    if (holidayType === 'National') holidayType = 'Regular Holiday';
+                    else if (holidayType === 'Regional') holidayType = 'Local Special Holiday';
+                    else if (holidayType === 'Special') holidayType = 'Special Non-Working Holiday';
+                    $('#editHolidayType').val(holidayType);
                     $('#editHolidayDescription').val(holiday.description || '');
                     $('#editHolidayModal').modal('show');
                 } else {
@@ -636,6 +676,42 @@ require_once 'dp.php';
             "'": '&#039;'
         };
         return text.replace(/[&<>"']/g, function(m) { return map[m]; });
+    }
+
+    function migrateHolidayTypes() {
+        const migrateBtn = $('#migrateHolidaysBtn');
+        const originalText = migrateBtn.html();
+
+        // Show loading state
+        migrateBtn.prop('disabled', true);
+        migrateBtn.html('<i class="fas fa-spinner fa-spin mr-2"></i>Migrating...');
+
+        $.ajax({
+            url: 'migrate_holiday_types.php', // This script will perform the migration
+            type: 'POST',
+            data: { action: 'migrate_types' },
+            dataType: 'json',
+            success: function(response) {
+                migrateBtn.prop('disabled', false);
+                migrateBtn.html(originalText);
+
+                if (response.success) {
+                    showAlert(response.message, 'success');
+                    loadHolidays(); // Reload the holidays list to show updated types
+                } else {
+                    if (response.message.includes('column does not exist')) {
+                        showAlert('<b>Database Schema Error:</b> The table is missing a required column. Please run the `add_columns.php` script to update your database, then try again.', 'danger');
+                    } else {
+                        showAlert('Migration failed: ' + response.message, 'danger');
+                    }
+                }
+            },
+            error: function() {
+                migrateBtn.prop('disabled', false);
+                migrateBtn.html(originalText);
+                showAlert('Error connecting to server. Please try again.', 'danger');
+            }
+        });
     }
     </script>
 </body>

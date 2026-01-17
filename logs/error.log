@@ -10,7 +10,6 @@
 2025-08-26 05:28:13 Error: [2] Undefined array key "REQUEST_METHOD" - C:\Program Files\xampp\htdocs\Human-Resources-Management-System-BSIS-02\holiday_actions.php:354
 2025-08-26 05:28:40 Error: [8] session_start(): Ignoring session_start() because a session is already active - C:\Program Files\xampp\htdocs\Human-Resources-Management-System-BSIS-02\holiday_actions.php:2
 2025-08-26 05:28:40 Error: [2] Undefined array key "REQUEST_METHOD" - C:\Program Files\xampp\htdocs\Human-Resources-Management-System-BSIS-02\holiday_actions.php:354
-<<<<<<< HEAD
 2025-08-26 06:16:06 Error: [2] Undefined array key "REQUEST_METHOD" - C:\Program Files\xampp\htdocs\Human-Resources-Management-System-BSIS-02\holiday_actions.php:354
 2025-08-26 07:30:55 Error: [8] session_start(): Ignoring session_start() because a session is already active - C:\Program Files\xampp\htdocs\Human-Resources-Management-System-BSIS-02\leave_types.php:2
 2025-08-26 07:30:56 Error: [8] session_start(): Ignoring session_start() because a session is already active - C:\Program Files\xampp\htdocs\Human-Resources-Management-System-BSIS-02\leave_types.php:2
@@ -79,50 +78,6 @@
 2025-08-26 08:01:04 Error: [8] session_start(): Ignoring session_start() because a session is already active - C:\Program Files\xampp\htdocs\Human-Resources-Management-System-BSIS-02\leave_types.php:2
 2025-08-26 08:03:49 Error: [8] session_start(): Ignoring session_start() because a session is already active - C:\Program Files\xampp\htdocs\Human-Resources-Management-System-BSIS-02\leave_types.php:2
 2025-08-26 08:04:45 Error: [8] session_start(): Ignoring session_start() because a session is already active - C:\Program Files\xampp\htdocs\Human-Resources-Management-System-BSIS-02\leave_types.php:2
-=======
-2025-08-27 04:23:00 Error: [2] Undefined variable $message - C:\xampp\htdocs\Human-Resources-Management-System-BSIS-02\competencies.php:55
-2025-08-27 04:23:00 Error: [2] Undefined variable $employees - C:\xampp\htdocs\Human-Resources-Management-System-BSIS-02\competencies.php:87
-2025-08-27 04:23:00 Error: [2] foreach() argument must be of type array|object, null given - C:\xampp\htdocs\Human-Resources-Management-System-BSIS-02\competencies.php:87
-2025-08-27 04:23:00 Error: [2] Undefined variable $personalInfo - C:\xampp\htdocs\Human-Resources-Management-System-BSIS-02\competencies.php:151
-2025-08-27 04:23:00 Error: [2] foreach() argument must be of type array|object, null given - C:\xampp\htdocs\Human-Resources-Management-System-BSIS-02\competencies.php:151
-2025-08-27 04:23:00 Error: [2] Undefined variable $jobRoles - C:\xampp\htdocs\Human-Resources-Management-System-BSIS-02\competencies.php:162
-2025-08-27 04:23:00 Error: [2] foreach() argument must be of type array|object, null given - C:\xampp\htdocs\Human-Resources-Management-System-BSIS-02\competencies.php:162
-2025-08-27 04:23:01 Error: [2] Undefined variable $message - C:\xampp\htdocs\Human-Resources-Management-System-BSIS-02\competencies.php:55
-2025-08-27 04:23:01 Error: [2] Undefined variable $employees - C:\xampp\htdocs\Human-Resources-Management-System-BSIS-02\competencies.php:87
-2025-08-27 04:23:01 Error: [2] foreach() argument must be of type array|object, null given - C:\xampp\htdocs\Human-Resources-Management-System-BSIS-02\competencies.php:87
-2025-08-27 04:23:01 Error: [2] Undefined variable $personalInfo - C:\xampp\htdocs\Human-Resources-Management-System-BSIS-02\competencies.php:151
-2025-08-27 04:23:01 Error: [2] foreach() argument must be of type array|object, null given - C:\xampp\htdocs\Human-Resources-Management-System-BSIS-02\competencies.php:151
-2025-08-27 04:23:01 Error: [2] Undefined variable $jobRoles - C:\xampp\htdocs\Human-Resources-Management-System-BSIS-02\competencies.php:162
-2025-08-27 04:23:01 Error: [2] foreach() argument must be of type array|object, null given - C:\xampp\htdocs\Human-Resources-Management-System-BSIS-02\competencies.php:162
-2025-08-27 04:23:01 Error: [2] Undefined variable $message - C:\xampp\htdocs\Human-Resources-Management-System-BSIS-02\competencies.php:55
-2025-08-27 04:23:01 Error: [2] Undefined variable $employees - C:\xampp\htdocs\Human-Resources-Management-System-BSIS-02\competencies.php:87
-2025-08-27 04:23:01 Error: [2] foreach() argument must be of type array|object, null given - C:\xampp\htdocs\Human-Resources-Management-System-BSIS-02\competencies.php:87
-2025-08-27 04:23:01 Error: [2] Undefined variable $personalInfo - C:\xampp\htdocs\Human-Resources-Management-System-BSIS-02\competencies.php:151
-2025-08-27 04:23:01 Error: [2] foreach() argument must be of type array|object, null given - C:\xampp\htdocs\Human-Resources-Management-System-BSIS-02\competencies.php:151
-2025-08-27 04:23:01 Error: [2] Undefined variable $jobRoles - C:\xampp\htdocs\Human-Resources-Management-System-BSIS-02\competencies.php:162
-2025-08-27 04:23:01 Error: [2] foreach() argument must be of type array|object, null given - C:\xampp\htdocs\Human-Resources-Management-System-BSIS-02\competencies.php:162
-2025-08-27 04:23:01 Error: [2] Undefined variable $message - C:\xampp\htdocs\Human-Resources-Management-System-BSIS-02\competencies.php:55
-2025-08-27 04:23:01 Error: [2] Undefined variable $employees - C:\xampp\htdocs\Human-Resources-Management-System-BSIS-02\competencies.php:87
-2025-08-27 04:23:01 Error: [2] foreach() argument must be of type array|object, null given - C:\xampp\htdocs\Human-Resources-Management-System-BSIS-02\competencies.php:87
-2025-08-27 04:23:01 Error: [2] Undefined variable $personalInfo - C:\xampp\htdocs\Human-Resources-Management-System-BSIS-02\competencies.php:151
-2025-08-27 04:23:01 Error: [2] foreach() argument must be of type array|object, null given - C:\xampp\htdocs\Human-Resources-Management-System-BSIS-02\competencies.php:151
-2025-08-27 04:23:01 Error: [2] Undefined variable $jobRoles - C:\xampp\htdocs\Human-Resources-Management-System-BSIS-02\competencies.php:162
-2025-08-27 04:23:01 Error: [2] foreach() argument must be of type array|object, null given - C:\xampp\htdocs\Human-Resources-Management-System-BSIS-02\competencies.php:162
-2025-08-27 04:23:05 Error: [2] Undefined variable $message - C:\xampp\htdocs\Human-Resources-Management-System-BSIS-02\competencies.php:55
-2025-08-27 04:23:05 Error: [2] Undefined variable $employees - C:\xampp\htdocs\Human-Resources-Management-System-BSIS-02\competencies.php:87
-2025-08-27 04:23:05 Error: [2] foreach() argument must be of type array|object, null given - C:\xampp\htdocs\Human-Resources-Management-System-BSIS-02\competencies.php:87
-2025-08-27 04:23:05 Error: [2] Undefined variable $personalInfo - C:\xampp\htdocs\Human-Resources-Management-System-BSIS-02\competencies.php:151
-2025-08-27 04:23:05 Error: [2] foreach() argument must be of type array|object, null given - C:\xampp\htdocs\Human-Resources-Management-System-BSIS-02\competencies.php:151
-2025-08-27 04:23:05 Error: [2] Undefined variable $jobRoles - C:\xampp\htdocs\Human-Resources-Management-System-BSIS-02\competencies.php:162
-2025-08-27 04:23:05 Error: [2] foreach() argument must be of type array|object, null given - C:\xampp\htdocs\Human-Resources-Management-System-BSIS-02\competencies.php:162
-2025-08-27 04:23:33 Error: [2] Undefined variable $message - C:\xampp\htdocs\Human-Resources-Management-System-BSIS-02\competencies.php:55
-2025-08-27 04:23:33 Error: [2] Undefined variable $employees - C:\xampp\htdocs\Human-Resources-Management-System-BSIS-02\competencies.php:87
-2025-08-27 04:23:33 Error: [2] foreach() argument must be of type array|object, null given - C:\xampp\htdocs\Human-Resources-Management-System-BSIS-02\competencies.php:87
-2025-08-27 04:23:33 Error: [2] Undefined variable $personalInfo - C:\xampp\htdocs\Human-Resources-Management-System-BSIS-02\competencies.php:151
-2025-08-27 04:23:33 Error: [2] foreach() argument must be of type array|object, null given - C:\xampp\htdocs\Human-Resources-Management-System-BSIS-02\competencies.php:151
-2025-08-27 04:23:33 Error: [2] Undefined variable $jobRoles - C:\xampp\htdocs\Human-Resources-Management-System-BSIS-02\competencies.php:162
-2025-08-27 04:23:33 Error: [2] foreach() argument must be of type array|object, null given - C:\xampp\htdocs\Human-Resources-Management-System-BSIS-02\competencies.php:162
->>>>>>> upstream/main
 2025-10-08 14:40:46 Error: [2] Undefined array key "email" - C:\Program Files\xampp\htdocs\HRMS_BSIS_02\my_profile.php:498
 2025-10-08 14:40:46 Error: [2] Undefined array key "address" - C:\Program Files\xampp\htdocs\HRMS_BSIS_02\my_profile.php:518
 2025-10-08 14:40:46 Error: [2] Undefined array key "address" - C:\Program Files\xampp\htdocs\HRMS_BSIS_02\my_profile.php:583
@@ -859,7 +814,6 @@
 2025-10-23 17:15:26 Error: [2] Undefined array key "document_path" - C:\Program Files\xampp\htdocs\HRMS_BSIS_02\leave_requests.php:254
 2025-10-23 17:15:26 Error: [2] Undefined array key "document_path" - C:\Program Files\xampp\htdocs\HRMS_BSIS_02\leave_requests.php:254
 2025-10-23 17:15:26 Error: [2] Undefined array key "document_path" - C:\Program Files\xampp\htdocs\HRMS_BSIS_02\leave_requests.php:254
-<<<<<<< HEAD
 2025-10-23 18:51:25 Error: [2] Undefined array key "employee_code" - C:\Program Files\xampp\htdocs\HRMS_BSIS_02\leave_balances.php:168
 2025-10-23 18:51:25 Error: [8192] htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated - C:\Program Files\xampp\htdocs\HRMS_BSIS_02\leave_balances.php:168
 2025-10-23 18:51:25 Error: [2] Undefined array key "employee_code" - C:\Program Files\xampp\htdocs\HRMS_BSIS_02\leave_balances.php:168
@@ -1203,185 +1157,6 @@
 2025-10-23 20:10:50 Error: [8192] htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated - C:\Program Files\xampp\htdocs\HRMS_BSIS_02\leave_balances.php:168
 2025-10-23 20:10:50 Error: [2] Undefined array key "employee_code" - C:\Program Files\xampp\htdocs\HRMS_BSIS_02\leave_balances.php:168
 2025-10-23 20:10:50 Error: [8192] htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated - C:\Program Files\xampp\htdocs\HRMS_BSIS_02\leave_balances.php:168
-=======
-2025-10-23 17:24:22 Error: [8192] htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated - C:\Program Files\xampp\htdocs\HRMS_BSIS_02\document_management.php:940
-2025-10-23 17:26:09 Error: [2] Undefined array key "document_path" - C:\Program Files\xampp\htdocs\HRMS_BSIS_02\leave_requests.php:254
-2025-10-23 17:26:09 Error: [2] Undefined array key "document_path" - C:\Program Files\xampp\htdocs\HRMS_BSIS_02\leave_requests.php:254
-2025-10-23 17:26:09 Error: [2] Undefined array key "document_path" - C:\Program Files\xampp\htdocs\HRMS_BSIS_02\leave_requests.php:254
-2025-10-23 17:27:32 Error: [2] Undefined array key "document_path" - C:\Program Files\xampp\htdocs\HRMS_BSIS_02\leave_requests.php:254
-2025-10-23 17:27:32 Error: [2] Undefined array key "document_path" - C:\Program Files\xampp\htdocs\HRMS_BSIS_02\leave_requests.php:254
-2025-10-23 17:27:32 Error: [2] Undefined array key "document_path" - C:\Program Files\xampp\htdocs\HRMS_BSIS_02\leave_requests.php:254
-2025-10-23 17:27:32 Error: [2] Undefined array key "document_path" - C:\Program Files\xampp\htdocs\HRMS_BSIS_02\leave_requests.php:254
-2025-10-23 17:29:20 Error: [2] Undefined array key "document_path" - C:\Program Files\xampp\htdocs\HRMS_BSIS_02\leave_requests.php:254
-2025-10-23 17:29:20 Error: [2] Undefined array key "document_path" - C:\Program Files\xampp\htdocs\HRMS_BSIS_02\leave_requests.php:254
-2025-10-23 17:29:20 Error: [2] Undefined array key "document_path" - C:\Program Files\xampp\htdocs\HRMS_BSIS_02\leave_requests.php:254
-2025-10-23 17:29:20 Error: [2] Undefined array key "document_path" - C:\Program Files\xampp\htdocs\HRMS_BSIS_02\leave_requests.php:254
-2025-10-23 17:29:22 Error: [2] Undefined array key "document_path" - C:\Program Files\xampp\htdocs\HRMS_BSIS_02\leave_requests.php:254
-2025-10-23 17:29:22 Error: [2] Undefined array key "document_path" - C:\Program Files\xampp\htdocs\HRMS_BSIS_02\leave_requests.php:254
-2025-10-23 17:29:22 Error: [2] Undefined array key "document_path" - C:\Program Files\xampp\htdocs\HRMS_BSIS_02\leave_requests.php:254
-2025-10-23 17:29:22 Error: [2] Undefined array key "document_path" - C:\Program Files\xampp\htdocs\HRMS_BSIS_02\leave_requests.php:254
-2025-10-23 17:29:24 Error: [2] Undefined array key "document_path" - C:\Program Files\xampp\htdocs\HRMS_BSIS_02\leave_requests.php:254
-2025-10-23 17:29:24 Error: [2] Undefined array key "document_path" - C:\Program Files\xampp\htdocs\HRMS_BSIS_02\leave_requests.php:254
-2025-10-23 17:29:24 Error: [2] Undefined array key "document_path" - C:\Program Files\xampp\htdocs\HRMS_BSIS_02\leave_requests.php:254
-2025-10-23 17:29:24 Error: [2] Undefined array key "document_path" - C:\Program Files\xampp\htdocs\HRMS_BSIS_02\leave_requests.php:254
-2025-10-23 17:29:31 Error: [2] Undefined array key "document_path" - C:\Program Files\xampp\htdocs\HRMS_BSIS_02\leave_requests.php:254
-2025-10-23 17:29:31 Error: [2] Undefined array key "document_path" - C:\Program Files\xampp\htdocs\HRMS_BSIS_02\leave_requests.php:254
-2025-10-23 17:29:31 Error: [2] Undefined array key "document_path" - C:\Program Files\xampp\htdocs\HRMS_BSIS_02\leave_requests.php:254
-2025-10-23 17:29:31 Error: [2] Undefined array key "document_path" - C:\Program Files\xampp\htdocs\HRMS_BSIS_02\leave_requests.php:254
-2025-10-23 17:34:01 Error: [2] Undefined array key "document_path" - C:\Program Files\xampp\htdocs\HRMS_BSIS_02\leave_requests.php:254
-2025-10-23 17:34:01 Error: [2] Undefined array key "document_path" - C:\Program Files\xampp\htdocs\HRMS_BSIS_02\leave_requests.php:254
-2025-10-23 17:34:01 Error: [2] Undefined array key "document_path" - C:\Program Files\xampp\htdocs\HRMS_BSIS_02\leave_requests.php:254
-2025-10-23 17:34:01 Error: [2] Undefined array key "document_path" - C:\Program Files\xampp\htdocs\HRMS_BSIS_02\leave_requests.php:254
-2025-10-23 17:34:03 Error: [2] Undefined array key "document_path" - C:\Program Files\xampp\htdocs\HRMS_BSIS_02\leave_requests.php:254
-2025-10-23 17:34:03 Error: [2] Undefined array key "document_path" - C:\Program Files\xampp\htdocs\HRMS_BSIS_02\leave_requests.php:254
-2025-10-23 17:34:03 Error: [2] Undefined array key "document_path" - C:\Program Files\xampp\htdocs\HRMS_BSIS_02\leave_requests.php:254
-2025-10-23 17:34:03 Error: [2] Undefined array key "document_path" - C:\Program Files\xampp\htdocs\HRMS_BSIS_02\leave_requests.php:254
-2025-10-23 17:36:34 Error: [2] Undefined array key "document_path" - C:\Program Files\xampp\htdocs\HRMS_BSIS_02\leave_requests.php:254
-2025-10-23 17:36:34 Error: [2] Undefined array key "document_path" - C:\Program Files\xampp\htdocs\HRMS_BSIS_02\leave_requests.php:254
-2025-10-23 17:36:34 Error: [2] Undefined array key "document_path" - C:\Program Files\xampp\htdocs\HRMS_BSIS_02\leave_requests.php:254
-2025-10-23 17:36:34 Error: [2] Undefined array key "document_path" - C:\Program Files\xampp\htdocs\HRMS_BSIS_02\leave_requests.php:254
-2025-10-23 17:36:34 Error: [2] Undefined array key "document_path" - C:\Program Files\xampp\htdocs\HRMS_BSIS_02\leave_requests.php:254
-2025-10-23 17:36:34 Error: [2] Undefined array key "document_path" - C:\Program Files\xampp\htdocs\HRMS_BSIS_02\leave_requests.php:254
-2025-10-23 17:36:34 Error: [2] Undefined array key "document_path" - C:\Program Files\xampp\htdocs\HRMS_BSIS_02\leave_requests.php:254
-2025-10-23 17:36:34 Error: [2] Undefined array key "document_path" - C:\Program Files\xampp\htdocs\HRMS_BSIS_02\leave_requests.php:254
-2025-10-23 17:36:35 Error: [2] Undefined array key "document_path" - C:\Program Files\xampp\htdocs\HRMS_BSIS_02\leave_requests.php:254
-2025-10-23 17:36:35 Error: [2] Undefined array key "document_path" - C:\Program Files\xampp\htdocs\HRMS_BSIS_02\leave_requests.php:254
-2025-10-23 17:36:35 Error: [2] Undefined array key "document_path" - C:\Program Files\xampp\htdocs\HRMS_BSIS_02\leave_requests.php:254
-2025-10-23 17:36:35 Error: [2] Undefined array key "document_path" - C:\Program Files\xampp\htdocs\HRMS_BSIS_02\leave_requests.php:254
-2025-10-23 17:36:35 Error: [2] Undefined array key "document_path" - C:\Program Files\xampp\htdocs\HRMS_BSIS_02\leave_requests.php:254
-2025-10-23 17:36:35 Error: [2] Undefined array key "document_path" - C:\Program Files\xampp\htdocs\HRMS_BSIS_02\leave_requests.php:254
-2025-10-23 17:36:35 Error: [2] Undefined array key "document_path" - C:\Program Files\xampp\htdocs\HRMS_BSIS_02\leave_requests.php:254
-2025-10-23 17:36:35 Error: [2] Undefined array key "document_path" - C:\Program Files\xampp\htdocs\HRMS_BSIS_02\leave_requests.php:254
-2025-10-23 17:36:35 Error: [2] Undefined array key "document_path" - C:\Program Files\xampp\htdocs\HRMS_BSIS_02\leave_requests.php:254
-2025-10-23 17:36:35 Error: [2] Undefined array key "document_path" - C:\Program Files\xampp\htdocs\HRMS_BSIS_02\leave_requests.php:254
-2025-10-23 17:36:35 Error: [2] Undefined array key "document_path" - C:\Program Files\xampp\htdocs\HRMS_BSIS_02\leave_requests.php:254
-2025-10-23 17:36:35 Error: [2] Undefined array key "document_path" - C:\Program Files\xampp\htdocs\HRMS_BSIS_02\leave_requests.php:254
-2025-10-23 17:36:37 Error: [2] Undefined array key "document_path" - C:\Program Files\xampp\htdocs\HRMS_BSIS_02\leave_requests.php:254
-2025-10-23 17:36:37 Error: [2] Undefined array key "document_path" - C:\Program Files\xampp\htdocs\HRMS_BSIS_02\leave_requests.php:254
-2025-10-23 17:36:37 Error: [2] Undefined array key "document_path" - C:\Program Files\xampp\htdocs\HRMS_BSIS_02\leave_requests.php:254
-2025-10-23 17:36:37 Error: [2] Undefined array key "document_path" - C:\Program Files\xampp\htdocs\HRMS_BSIS_02\leave_requests.php:254
-2025-10-23 17:58:48 Error: [2] Undefined array key "employee_code" - C:\Program Files\xampp\htdocs\HRMS_BSIS_02\leave_balances.php:168
-2025-10-23 17:58:48 Error: [8192] htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated - C:\Program Files\xampp\htdocs\HRMS_BSIS_02\leave_balances.php:168
-2025-10-23 17:58:48 Error: [2] Undefined array key "employee_code" - C:\Program Files\xampp\htdocs\HRMS_BSIS_02\leave_balances.php:168
-2025-10-23 17:58:48 Error: [8192] htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated - C:\Program Files\xampp\htdocs\HRMS_BSIS_02\leave_balances.php:168
-2025-10-23 17:58:48 Error: [2] Undefined array key "employee_code" - C:\Program Files\xampp\htdocs\HRMS_BSIS_02\leave_balances.php:168
-2025-10-23 17:58:48 Error: [8192] htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated - C:\Program Files\xampp\htdocs\HRMS_BSIS_02\leave_balances.php:168
-2025-10-23 17:58:48 Error: [2] Undefined array key "employee_code" - C:\Program Files\xampp\htdocs\HRMS_BSIS_02\leave_balances.php:168
-2025-10-23 17:58:48 Error: [8192] htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated - C:\Program Files\xampp\htdocs\HRMS_BSIS_02\leave_balances.php:168
-2025-10-23 17:58:48 Error: [2] Undefined array key "employee_code" - C:\Program Files\xampp\htdocs\HRMS_BSIS_02\leave_balances.php:168
-2025-10-23 17:58:48 Error: [8192] htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated - C:\Program Files\xampp\htdocs\HRMS_BSIS_02\leave_balances.php:168
-2025-10-23 17:58:48 Error: [2] Undefined array key "employee_code" - C:\Program Files\xampp\htdocs\HRMS_BSIS_02\leave_balances.php:168
-2025-10-23 17:58:48 Error: [8192] htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated - C:\Program Files\xampp\htdocs\HRMS_BSIS_02\leave_balances.php:168
-2025-10-23 17:58:48 Error: [2] Undefined array key "employee_code" - C:\Program Files\xampp\htdocs\HRMS_BSIS_02\leave_balances.php:168
-2025-10-23 17:58:48 Error: [8192] htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated - C:\Program Files\xampp\htdocs\HRMS_BSIS_02\leave_balances.php:168
-2025-10-23 17:58:48 Error: [2] Undefined array key "employee_code" - C:\Program Files\xampp\htdocs\HRMS_BSIS_02\leave_balances.php:168
-2025-10-23 17:58:48 Error: [8192] htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated - C:\Program Files\xampp\htdocs\HRMS_BSIS_02\leave_balances.php:168
-2025-10-23 17:58:48 Error: [2] Undefined array key "employee_code" - C:\Program Files\xampp\htdocs\HRMS_BSIS_02\leave_balances.php:168
-2025-10-23 17:58:48 Error: [8192] htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated - C:\Program Files\xampp\htdocs\HRMS_BSIS_02\leave_balances.php:168
-2025-10-23 17:58:48 Error: [2] Undefined array key "employee_code" - C:\Program Files\xampp\htdocs\HRMS_BSIS_02\leave_balances.php:168
-2025-10-23 17:58:48 Error: [8192] htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated - C:\Program Files\xampp\htdocs\HRMS_BSIS_02\leave_balances.php:168
-2025-10-23 17:58:48 Error: [2] Undefined array key "employee_code" - C:\Program Files\xampp\htdocs\HRMS_BSIS_02\leave_balances.php:168
-2025-10-23 17:58:48 Error: [8192] htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated - C:\Program Files\xampp\htdocs\HRMS_BSIS_02\leave_balances.php:168
-2025-10-23 17:58:48 Error: [2] Undefined array key "employee_code" - C:\Program Files\xampp\htdocs\HRMS_BSIS_02\leave_balances.php:168
-2025-10-23 17:58:48 Error: [8192] htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated - C:\Program Files\xampp\htdocs\HRMS_BSIS_02\leave_balances.php:168
-2025-10-23 17:58:48 Error: [2] Undefined array key "employee_code" - C:\Program Files\xampp\htdocs\HRMS_BSIS_02\leave_balances.php:168
-2025-10-23 17:58:48 Error: [8192] htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated - C:\Program Files\xampp\htdocs\HRMS_BSIS_02\leave_balances.php:168
-2025-10-23 17:58:48 Error: [2] Undefined array key "employee_code" - C:\Program Files\xampp\htdocs\HRMS_BSIS_02\leave_balances.php:168
-2025-10-23 17:58:48 Error: [8192] htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated - C:\Program Files\xampp\htdocs\HRMS_BSIS_02\leave_balances.php:168
-2025-10-23 17:58:48 Error: [2] Undefined array key "employee_code" - C:\Program Files\xampp\htdocs\HRMS_BSIS_02\leave_balances.php:168
-2025-10-23 17:58:48 Error: [8192] htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated - C:\Program Files\xampp\htdocs\HRMS_BSIS_02\leave_balances.php:168
-2025-10-23 18:13:00 Error: [2] Undefined array key "employee_code" - C:\Program Files\xampp\htdocs\HRMS_BSIS_02\leave_balances.php:168
-2025-10-23 18:13:00 Error: [8192] htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated - C:\Program Files\xampp\htdocs\HRMS_BSIS_02\leave_balances.php:168
-2025-10-23 18:13:00 Error: [2] Undefined array key "employee_code" - C:\Program Files\xampp\htdocs\HRMS_BSIS_02\leave_balances.php:168
-2025-10-23 18:13:00 Error: [8192] htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated - C:\Program Files\xampp\htdocs\HRMS_BSIS_02\leave_balances.php:168
-2025-10-23 18:13:00 Error: [2] Undefined array key "employee_code" - C:\Program Files\xampp\htdocs\HRMS_BSIS_02\leave_balances.php:168
-2025-10-23 18:13:00 Error: [8192] htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated - C:\Program Files\xampp\htdocs\HRMS_BSIS_02\leave_balances.php:168
-2025-10-23 18:13:00 Error: [2] Undefined array key "employee_code" - C:\Program Files\xampp\htdocs\HRMS_BSIS_02\leave_balances.php:168
-2025-10-23 18:13:00 Error: [8192] htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated - C:\Program Files\xampp\htdocs\HRMS_BSIS_02\leave_balances.php:168
-2025-10-23 18:13:00 Error: [2] Undefined array key "employee_code" - C:\Program Files\xampp\htdocs\HRMS_BSIS_02\leave_balances.php:168
-2025-10-23 18:13:00 Error: [8192] htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated - C:\Program Files\xampp\htdocs\HRMS_BSIS_02\leave_balances.php:168
-2025-10-23 18:13:00 Error: [2] Undefined array key "employee_code" - C:\Program Files\xampp\htdocs\HRMS_BSIS_02\leave_balances.php:168
-2025-10-23 18:13:00 Error: [8192] htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated - C:\Program Files\xampp\htdocs\HRMS_BSIS_02\leave_balances.php:168
-2025-10-23 18:13:00 Error: [2] Undefined array key "employee_code" - C:\Program Files\xampp\htdocs\HRMS_BSIS_02\leave_balances.php:168
-2025-10-23 18:13:00 Error: [8192] htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated - C:\Program Files\xampp\htdocs\HRMS_BSIS_02\leave_balances.php:168
-2025-10-23 18:13:00 Error: [2] Undefined array key "employee_code" - C:\Program Files\xampp\htdocs\HRMS_BSIS_02\leave_balances.php:168
-2025-10-23 18:13:00 Error: [8192] htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated - C:\Program Files\xampp\htdocs\HRMS_BSIS_02\leave_balances.php:168
-2025-10-23 18:13:00 Error: [2] Undefined array key "employee_code" - C:\Program Files\xampp\htdocs\HRMS_BSIS_02\leave_balances.php:168
-2025-10-23 18:13:00 Error: [8192] htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated - C:\Program Files\xampp\htdocs\HRMS_BSIS_02\leave_balances.php:168
-2025-10-23 18:13:00 Error: [2] Undefined array key "employee_code" - C:\Program Files\xampp\htdocs\HRMS_BSIS_02\leave_balances.php:168
-2025-10-23 18:13:00 Error: [8192] htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated - C:\Program Files\xampp\htdocs\HRMS_BSIS_02\leave_balances.php:168
-2025-10-23 18:13:00 Error: [2] Undefined array key "employee_code" - C:\Program Files\xampp\htdocs\HRMS_BSIS_02\leave_balances.php:168
-2025-10-23 18:13:00 Error: [8192] htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated - C:\Program Files\xampp\htdocs\HRMS_BSIS_02\leave_balances.php:168
-2025-10-23 18:13:00 Error: [2] Undefined array key "employee_code" - C:\Program Files\xampp\htdocs\HRMS_BSIS_02\leave_balances.php:168
-2025-10-23 18:13:00 Error: [8192] htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated - C:\Program Files\xampp\htdocs\HRMS_BSIS_02\leave_balances.php:168
-2025-10-23 18:13:00 Error: [2] Undefined array key "employee_code" - C:\Program Files\xampp\htdocs\HRMS_BSIS_02\leave_balances.php:168
-2025-10-23 18:13:00 Error: [8192] htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated - C:\Program Files\xampp\htdocs\HRMS_BSIS_02\leave_balances.php:168
-2025-10-23 18:13:00 Error: [2] Undefined array key "employee_code" - C:\Program Files\xampp\htdocs\HRMS_BSIS_02\leave_balances.php:168
-2025-10-23 18:13:00 Error: [8192] htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated - C:\Program Files\xampp\htdocs\HRMS_BSIS_02\leave_balances.php:168
-2025-10-23 18:13:00 Error: [2] Undefined array key "employee_code" - C:\Program Files\xampp\htdocs\HRMS_BSIS_02\leave_balances.php:168
-2025-10-23 18:13:00 Error: [8192] htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated - C:\Program Files\xampp\htdocs\HRMS_BSIS_02\leave_balances.php:168
-2025-10-23 18:13:52 Error: [8192] htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated - C:\Program Files\xampp\htdocs\HRMS_BSIS_02\document_management.php:940
-2025-10-23 18:15:22 Error: [2] Undefined array key "employee_code" - C:\Program Files\xampp\htdocs\HRMS_BSIS_02\leave_balances.php:168
-2025-10-23 18:15:22 Error: [8192] htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated - C:\Program Files\xampp\htdocs\HRMS_BSIS_02\leave_balances.php:168
-2025-10-23 18:15:22 Error: [2] Undefined array key "employee_code" - C:\Program Files\xampp\htdocs\HRMS_BSIS_02\leave_balances.php:168
-2025-10-23 18:15:22 Error: [8192] htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated - C:\Program Files\xampp\htdocs\HRMS_BSIS_02\leave_balances.php:168
-2025-10-23 18:15:22 Error: [2] Undefined array key "employee_code" - C:\Program Files\xampp\htdocs\HRMS_BSIS_02\leave_balances.php:168
-2025-10-23 18:15:22 Error: [8192] htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated - C:\Program Files\xampp\htdocs\HRMS_BSIS_02\leave_balances.php:168
-2025-10-23 18:15:22 Error: [2] Undefined array key "employee_code" - C:\Program Files\xampp\htdocs\HRMS_BSIS_02\leave_balances.php:168
-2025-10-23 18:15:22 Error: [8192] htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated - C:\Program Files\xampp\htdocs\HRMS_BSIS_02\leave_balances.php:168
-2025-10-23 18:15:22 Error: [2] Undefined array key "employee_code" - C:\Program Files\xampp\htdocs\HRMS_BSIS_02\leave_balances.php:168
-2025-10-23 18:15:22 Error: [8192] htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated - C:\Program Files\xampp\htdocs\HRMS_BSIS_02\leave_balances.php:168
-2025-10-23 18:15:22 Error: [2] Undefined array key "employee_code" - C:\Program Files\xampp\htdocs\HRMS_BSIS_02\leave_balances.php:168
-2025-10-23 18:15:22 Error: [8192] htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated - C:\Program Files\xampp\htdocs\HRMS_BSIS_02\leave_balances.php:168
-2025-10-23 18:15:22 Error: [2] Undefined array key "employee_code" - C:\Program Files\xampp\htdocs\HRMS_BSIS_02\leave_balances.php:168
-2025-10-23 18:15:22 Error: [8192] htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated - C:\Program Files\xampp\htdocs\HRMS_BSIS_02\leave_balances.php:168
-2025-10-23 18:15:22 Error: [2] Undefined array key "employee_code" - C:\Program Files\xampp\htdocs\HRMS_BSIS_02\leave_balances.php:168
-2025-10-23 18:15:22 Error: [8192] htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated - C:\Program Files\xampp\htdocs\HRMS_BSIS_02\leave_balances.php:168
-2025-10-23 18:15:22 Error: [2] Undefined array key "employee_code" - C:\Program Files\xampp\htdocs\HRMS_BSIS_02\leave_balances.php:168
-2025-10-23 18:15:22 Error: [8192] htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated - C:\Program Files\xampp\htdocs\HRMS_BSIS_02\leave_balances.php:168
-2025-10-23 18:15:22 Error: [2] Undefined array key "employee_code" - C:\Program Files\xampp\htdocs\HRMS_BSIS_02\leave_balances.php:168
-2025-10-23 18:15:22 Error: [8192] htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated - C:\Program Files\xampp\htdocs\HRMS_BSIS_02\leave_balances.php:168
-2025-10-23 18:15:22 Error: [2] Undefined array key "employee_code" - C:\Program Files\xampp\htdocs\HRMS_BSIS_02\leave_balances.php:168
-2025-10-23 18:15:22 Error: [8192] htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated - C:\Program Files\xampp\htdocs\HRMS_BSIS_02\leave_balances.php:168
-2025-10-23 18:15:22 Error: [2] Undefined array key "employee_code" - C:\Program Files\xampp\htdocs\HRMS_BSIS_02\leave_balances.php:168
-2025-10-23 18:15:22 Error: [8192] htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated - C:\Program Files\xampp\htdocs\HRMS_BSIS_02\leave_balances.php:168
-2025-10-23 18:15:22 Error: [2] Undefined array key "employee_code" - C:\Program Files\xampp\htdocs\HRMS_BSIS_02\leave_balances.php:168
-2025-10-23 18:15:22 Error: [8192] htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated - C:\Program Files\xampp\htdocs\HRMS_BSIS_02\leave_balances.php:168
-2025-10-23 18:15:22 Error: [2] Undefined array key "employee_code" - C:\Program Files\xampp\htdocs\HRMS_BSIS_02\leave_balances.php:168
-2025-10-23 18:15:22 Error: [8192] htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated - C:\Program Files\xampp\htdocs\HRMS_BSIS_02\leave_balances.php:168
-2025-10-23 18:15:22 Error: [2] Undefined array key "employee_code" - C:\Program Files\xampp\htdocs\HRMS_BSIS_02\leave_balances.php:168
-2025-10-23 18:15:22 Error: [8192] htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated - C:\Program Files\xampp\htdocs\HRMS_BSIS_02\leave_balances.php:168
-2025-10-23 18:19:49 Error: [2] Undefined array key "employee_code" - C:\Program Files\xampp\htdocs\HRMS_BSIS_02\leave_balances.php:168
-2025-10-23 18:19:49 Error: [8192] htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated - C:\Program Files\xampp\htdocs\HRMS_BSIS_02\leave_balances.php:168
-2025-10-23 18:19:49 Error: [2] Undefined array key "employee_code" - C:\Program Files\xampp\htdocs\HRMS_BSIS_02\leave_balances.php:168
-2025-10-23 18:19:49 Error: [8192] htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated - C:\Program Files\xampp\htdocs\HRMS_BSIS_02\leave_balances.php:168
-2025-10-23 18:19:49 Error: [2] Undefined array key "employee_code" - C:\Program Files\xampp\htdocs\HRMS_BSIS_02\leave_balances.php:168
-2025-10-23 18:19:49 Error: [8192] htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated - C:\Program Files\xampp\htdocs\HRMS_BSIS_02\leave_balances.php:168
-2025-10-23 18:19:49 Error: [2] Undefined array key "employee_code" - C:\Program Files\xampp\htdocs\HRMS_BSIS_02\leave_balances.php:168
-2025-10-23 18:19:49 Error: [8192] htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated - C:\Program Files\xampp\htdocs\HRMS_BSIS_02\leave_balances.php:168
-2025-10-23 18:19:49 Error: [2] Undefined array key "employee_code" - C:\Program Files\xampp\htdocs\HRMS_BSIS_02\leave_balances.php:168
-2025-10-23 18:19:49 Error: [8192] htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated - C:\Program Files\xampp\htdocs\HRMS_BSIS_02\leave_balances.php:168
-2025-10-23 18:19:49 Error: [2] Undefined array key "employee_code" - C:\Program Files\xampp\htdocs\HRMS_BSIS_02\leave_balances.php:168
-2025-10-23 18:19:49 Error: [8192] htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated - C:\Program Files\xampp\htdocs\HRMS_BSIS_02\leave_balances.php:168
-2025-10-23 18:19:49 Error: [2] Undefined array key "employee_code" - C:\Program Files\xampp\htdocs\HRMS_BSIS_02\leave_balances.php:168
-2025-10-23 18:19:49 Error: [8192] htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated - C:\Program Files\xampp\htdocs\HRMS_BSIS_02\leave_balances.php:168
-2025-10-23 18:19:49 Error: [2] Undefined array key "employee_code" - C:\Program Files\xampp\htdocs\HRMS_BSIS_02\leave_balances.php:168
-2025-10-23 18:19:49 Error: [8192] htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated - C:\Program Files\xampp\htdocs\HRMS_BSIS_02\leave_balances.php:168
-2025-10-23 18:19:49 Error: [2] Undefined array key "employee_code" - C:\Program Files\xampp\htdocs\HRMS_BSIS_02\leave_balances.php:168
-2025-10-23 18:19:49 Error: [8192] htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated - C:\Program Files\xampp\htdocs\HRMS_BSIS_02\leave_balances.php:168
-2025-10-23 18:19:49 Error: [2] Undefined array key "employee_code" - C:\Program Files\xampp\htdocs\HRMS_BSIS_02\leave_balances.php:168
-2025-10-23 18:19:49 Error: [8192] htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated - C:\Program Files\xampp\htdocs\HRMS_BSIS_02\leave_balances.php:168
-2025-10-23 18:19:49 Error: [2] Undefined array key "employee_code" - C:\Program Files\xampp\htdocs\HRMS_BSIS_02\leave_balances.php:168
-2025-10-23 18:19:49 Error: [8192] htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated - C:\Program Files\xampp\htdocs\HRMS_BSIS_02\leave_balances.php:168
-2025-10-23 18:19:49 Error: [2] Undefined array key "employee_code" - C:\Program Files\xampp\htdocs\HRMS_BSIS_02\leave_balances.php:168
-2025-10-23 18:19:49 Error: [8192] htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated - C:\Program Files\xampp\htdocs\HRMS_BSIS_02\leave_balances.php:168
-2025-10-23 18:19:49 Error: [2] Undefined array key "employee_code" - C:\Program Files\xampp\htdocs\HRMS_BSIS_02\leave_balances.php:168
-2025-10-23 18:19:49 Error: [8192] htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated - C:\Program Files\xampp\htdocs\HRMS_BSIS_02\leave_balances.php:168
-2025-10-23 18:19:49 Error: [2] Undefined array key "employee_code" - C:\Program Files\xampp\htdocs\HRMS_BSIS_02\leave_balances.php:168
-2025-10-23 18:19:49 Error: [8192] htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated - C:\Program Files\xampp\htdocs\HRMS_BSIS_02\leave_balances.php:168
-2025-10-23 18:19:49 Error: [2] Undefined array key "employee_code" - C:\Program Files\xampp\htdocs\HRMS_BSIS_02\leave_balances.php:168
-2025-10-23 18:19:49 Error: [8192] htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated - C:\Program Files\xampp\htdocs\HRMS_BSIS_02\leave_balances.php:168
->>>>>>> 48f0fd909401d87fc7e82ce488dfd81cd0dfc6fa
 2025-10-24 15:44:52 Error: [2] Undefined property: PDOStatement::$num_rows - C:\xampp\htdocs\HRMS_BSIS_02\development_plans.php:462
 2025-10-24 15:44:56 Error: [2] Undefined property: PDOStatement::$num_rows - C:\xampp\htdocs\HRMS_BSIS_02\development_activities.php:374
 2026-01-14 14:00:25 Error: [2] Undefined array key "personal_info_id" - C:\xampp\htdocs\HRMS_BSIS_02\exits.php:49

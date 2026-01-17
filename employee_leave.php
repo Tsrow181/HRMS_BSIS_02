@@ -96,10 +96,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['submitLeaveRequest'])
 
                 $success = "Leave request submitted successfully!";
 
-                // Update shift status if leave is approved and currently active
-                require_once 'shift_status_functions.php';
-                updateAllEmployeesShiftStatusBasedOnLeave();
-
             } catch (PDOException $e) {
                 $error = "Error submitting leave request: " . $e->getMessage();
             }

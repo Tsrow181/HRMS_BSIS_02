@@ -68,26 +68,129 @@ function getLeaveBalances() {
     global $conn;
     try {
         // Get all employees with their leave balances grouped by employee, including gender info
+        // Fixed: Use MAX to get single value per leave type (in case of duplicates), fallback to default_days from leave_types
         $sql = "SELECT 
                     ep.employee_id,
                     pi.first_name, 
                     pi.last_name,
                     pi.gender,
                     ep.employee_number,
-                    d.department_name,
-                    COALESCE(SUM(CASE WHEN lt.leave_type_name = 'Vacation Leave' THEN lb.leaves_remaining ELSE 0 END), 0) as vacation_leave,
-                    COALESCE(SUM(CASE WHEN lt.leave_type_name = 'Sick Leave' THEN lb.leaves_remaining ELSE 0 END), 0) as sick_leave,
-                    COALESCE(SUM(CASE WHEN lt.leave_type_name = 'Maternity Leave' AND pi.gender = 'Female' THEN lb.leaves_remaining ELSE 0 END), 0) as maternity_leave,
-                    COALESCE(SUM(CASE WHEN lt.leave_type_name = 'Paternity Leave' AND pi.gender = 'Male' THEN lb.leaves_remaining ELSE 0 END), 0) as paternity_leave,
-                    COALESCE(SUM(lb.leaves_remaining), 0) as total_balance
+                    COALESCE(
+                        (SELECT d.department_name 
+                         FROM job_roles jr 
+                         LEFT JOIN departments d ON jr.department = d.department_name 
+                         WHERE jr.job_role_id = ep.job_role_id 
+                         LIMIT 1),
+                        (SELECT jr.department 
+                         FROM job_roles jr 
+                         WHERE jr.job_role_id = ep.job_role_id 
+                         LIMIT 1),
+                        'N/A'
+                    ) as department_name,
+                    COALESCE(
+                        (SELECT lb.leaves_remaining 
+                         FROM leave_balances lb 
+                         JOIN leave_types lt ON lb.leave_type_id = lt.leave_type_id 
+                         WHERE lb.employee_id = ep.employee_id 
+                         AND lb.year = YEAR(CURDATE()) 
+                         AND lt.leave_type_name = 'Vacation Leave' 
+                         LIMIT 1),
+                        (SELECT default_days FROM leave_types WHERE leave_type_name = 'Vacation Leave' LIMIT 1),
+                        0
+                    ) as vacation_leave,
+                    COALESCE(
+                        (SELECT lb.leaves_remaining 
+                         FROM leave_balances lb 
+                         JOIN leave_types lt ON lb.leave_type_id = lt.leave_type_id 
+                         WHERE lb.employee_id = ep.employee_id 
+                         AND lb.year = YEAR(CURDATE()) 
+                         AND lt.leave_type_name = 'Sick Leave' 
+                         LIMIT 1),
+                        (SELECT default_days FROM leave_types WHERE leave_type_name = 'Sick Leave' LIMIT 1),
+                        0
+                    ) as sick_leave,
+                    COALESCE(
+                        CASE WHEN pi.gender = 'Female' THEN
+                            (SELECT lb.leaves_remaining 
+                             FROM leave_balances lb 
+                             JOIN leave_types lt ON lb.leave_type_id = lt.leave_type_id 
+                             WHERE lb.employee_id = ep.employee_id 
+                             AND lb.year = YEAR(CURDATE()) 
+                             AND lt.leave_type_name = 'Maternity Leave' 
+                             LIMIT 1)
+                        ELSE 0 END,
+                        CASE WHEN pi.gender = 'Female' THEN
+                            (SELECT default_days FROM leave_types WHERE leave_type_name = 'Maternity Leave' LIMIT 1)
+                        ELSE 0 END,
+                        0
+                    ) as maternity_leave,
+                    COALESCE(
+                        CASE WHEN pi.gender = 'Male' THEN
+                            (SELECT lb.leaves_remaining 
+                             FROM leave_balances lb 
+                             JOIN leave_types lt ON lb.leave_type_id = lt.leave_type_id 
+                             WHERE lb.employee_id = ep.employee_id 
+                             AND lb.year = YEAR(CURDATE()) 
+                             AND lt.leave_type_name = 'Paternity Leave' 
+                             LIMIT 1)
+                        ELSE 0 END,
+                        CASE WHEN pi.gender = 'Male' THEN
+                            (SELECT default_days FROM leave_types WHERE leave_type_name = 'Paternity Leave' LIMIT 1)
+                        ELSE 0 END,
+                        0
+                    ) as paternity_leave,
+                    (
+                        COALESCE(
+                            (SELECT lb.leaves_remaining 
+                             FROM leave_balances lb 
+                             JOIN leave_types lt ON lb.leave_type_id = lt.leave_type_id 
+                             WHERE lb.employee_id = ep.employee_id 
+                             AND lb.year = YEAR(CURDATE()) 
+                             AND lt.leave_type_name = 'Vacation Leave' 
+                             LIMIT 1),
+                            (SELECT default_days FROM leave_types WHERE leave_type_name = 'Vacation Leave' LIMIT 1),
+                            0
+                        ) +
+                        COALESCE(
+                            (SELECT lb.leaves_remaining 
+                             FROM leave_balances lb 
+                             JOIN leave_types lt ON lb.leave_type_id = lt.leave_type_id 
+                             WHERE lb.employee_id = ep.employee_id 
+                             AND lb.year = YEAR(CURDATE()) 
+                             AND lt.leave_type_name = 'Sick Leave' 
+                             LIMIT 1),
+                            (SELECT default_days FROM leave_types WHERE leave_type_name = 'Sick Leave' LIMIT 1),
+                            0
+                        ) +
+                        CASE WHEN pi.gender = 'Female' THEN
+                            COALESCE(
+                                (SELECT lb.leaves_remaining 
+                                 FROM leave_balances lb 
+                                 JOIN leave_types lt ON lb.leave_type_id = lt.leave_type_id 
+                                 WHERE lb.employee_id = ep.employee_id 
+                                 AND lb.year = YEAR(CURDATE()) 
+                                 AND lt.leave_type_name = 'Maternity Leave' 
+                                 LIMIT 1),
+                                (SELECT default_days FROM leave_types WHERE leave_type_name = 'Maternity Leave' LIMIT 1),
+                                0
+                            )
+                        ELSE 0 END +
+                        CASE WHEN pi.gender = 'Male' THEN
+                            COALESCE(
+                                (SELECT lb.leaves_remaining 
+                                 FROM leave_balances lb 
+                                 JOIN leave_types lt ON lb.leave_type_id = lt.leave_type_id 
+                                 WHERE lb.employee_id = ep.employee_id 
+                                 AND lb.year = YEAR(CURDATE()) 
+                                 AND lt.leave_type_name = 'Paternity Leave' 
+                                 LIMIT 1),
+                                (SELECT default_days FROM leave_types WHERE leave_type_name = 'Paternity Leave' LIMIT 1),
+                                0
+                            )
+                        ELSE 0 END
+                    ) as total_balance
                 FROM employee_profiles ep
                 JOIN personal_information pi ON ep.personal_info_id = pi.personal_info_id
-                LEFT JOIN departments d ON ep.job_role_id IN (
-                    SELECT job_role_id FROM job_roles WHERE department = d.department_name
-                )
-                LEFT JOIN leave_balances lb ON ep.employee_id = lb.employee_id AND lb.year = YEAR(CURDATE())
-                LEFT JOIN leave_types lt ON lb.leave_type_id = lt.leave_type_id
-                GROUP BY ep.employee_id, pi.first_name, pi.last_name, pi.gender, ep.employee_number, d.department_name
                 ORDER BY pi.first_name, pi.last_name";
         $stmt = $conn->query($sql);
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
@@ -101,17 +204,27 @@ function getLeaveTypeTotals() {
     global $conn;
     try {
         $sql = "SELECT lt.leave_type_name,
-                       SUM(lb.total_leaves) as total_allocated,
-                       SUM(lb.leaves_taken) as total_taken,
-                       SUM(lb.leaves_remaining) as total_remaining,
-                       ROUND((SUM(lb.leaves_taken) / SUM(lb.total_leaves)) * 100, 2) as utilization_percentage
+                       COALESCE(SUM(lb.total_leaves), 0) as total_allocated,
+                       COALESCE(SUM(lb.leaves_taken), 0) as total_taken,
+                       COALESCE(SUM(lb.leaves_remaining), 0) as total_remaining,
+                       CASE 
+                           WHEN SUM(lb.total_leaves) > 0 
+                           THEN ROUND((SUM(lb.leaves_taken) / SUM(lb.total_leaves)) * 100, 2)
+                           ELSE 0
+                       END as utilization_percentage
                 FROM leave_types lt
                 LEFT JOIN leave_balances lb ON lt.leave_type_id = lb.leave_type_id AND lb.year = YEAR(CURDATE())
                 GROUP BY lt.leave_type_id, lt.leave_type_name
                 ORDER BY lt.leave_type_name";
         $stmt = $conn->query($sql);
-        return $stmt->fetchAll(PDO::FETCH_ASSOC);
+        $results = $stmt->fetchAll(PDO::FETCH_ASSOC);
+        error_log("getLeaveTypeTotals: Fetched " . count($results) . " leave types");
+        if (count($results) > 0) {
+            error_log("getLeaveTypeTotals: First result - " . json_encode($results[0]));
+        }
+        return $results;
     } catch (PDOException $e) {
+        error_log("getLeaveTypeTotals error: " . $e->getMessage());
         return [];
     }
 }
