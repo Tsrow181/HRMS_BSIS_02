@@ -60,35 +60,60 @@ require_once 'dp.php';
                 $totalAbsent = 0;
 
                 try {
-                    // Get total active employees (only those with 'Active' status in latest employment_history)
+                    // Get total active employees using LEFT JOIN instead of restrictive subquery
                     $stmt = $conn->query("
-                        SELECT COUNT(*) as count FROM employee_profiles
-                        WHERE employment_status IN ('Full-time', 'Part-time')
-                        AND employee_id IN (
-                            SELECT employee_id FROM employment_history
-                            WHERE history_id IN (
-                                SELECT MAX(history_id) FROM employment_history GROUP BY employee_id
-                            ) AND employment_status = 'Active'
-                        )
+                        SELECT COUNT(DISTINCT ep.employee_id) as count
+                        FROM employee_profiles ep
+                        LEFT JOIN (
+                            SELECT employee_id, MAX(history_id) as max_history_id
+                            FROM employment_history
+                            GROUP BY employee_id
+                        ) eh_max ON ep.employee_id = eh_max.employee_id
+                        LEFT JOIN employment_history eh ON eh_max.employee_id = eh.employee_id
+                            AND eh_max.max_history_id = eh.history_id
+                        WHERE (eh.employment_status = 'Active' OR eh.employment_status IS NULL)
                     ");
                     $result = $stmt->fetch(PDO::FETCH_ASSOC);
-                    $totalEmployees = $result['count'];
+                    $totalEmployees = $result['count'] ?? 0;
+
+                    // If no employees found, try simpler query
+                    if ($totalEmployees == 0) {
+                        $stmt = $conn->query("SELECT COUNT(*) as count FROM employee_profiles");
+                        $result = $stmt->fetch(PDO::FETCH_ASSOC);
+                        $totalEmployees = $result['count'] ?? 0;
+                    }
 
                     // Get today's attendance summary (if available) for active employees only
                     $today = date('Y-m-d');
                     $stmt = $conn->query("
-                        SELECT COUNT(*) as present FROM attendance a
+                        SELECT COUNT(DISTINCT a.employee_id) as present
+                        FROM attendance a
                         JOIN employee_profiles ep ON a.employee_id = ep.employee_id
-                        WHERE a.attendance_date = '$today' AND a.status = 'Present'
-                        AND ep.employee_id IN (
-                            SELECT employee_id FROM employment_history
-                            WHERE history_id IN (
-                                SELECT MAX(history_id) FROM employment_history GROUP BY employee_id
-                            ) AND employment_status = 'Active'
-                        )
+                        LEFT JOIN (
+                            SELECT employee_id, MAX(history_id) as max_history_id
+                            FROM employment_history
+                            GROUP BY employee_id
+                        ) eh_max ON ep.employee_id = eh_max.employee_id
+                        LEFT JOIN employment_history eh ON eh_max.employee_id = eh.employee_id
+                            AND eh_max.max_history_id = eh.history_id
+                        WHERE a.attendance_date = '$today'
+                        AND (a.status = 'Present' OR (a.status IS NULL AND a.clock_in IS NOT NULL))
+                        AND (eh.employment_status = 'Active' OR eh.employment_status IS NULL)
                     ");
                     $result = $stmt->fetch(PDO::FETCH_ASSOC);
-                    $totalPresent = $result['present'];
+                    $totalPresent = $result['present'] ?? 0;
+
+                    // If no results, try simpler query
+                    if ($totalPresent == 0 && $totalEmployees > 0) {
+                        $stmt = $conn->query("
+                            SELECT COUNT(DISTINCT employee_id) as present
+                            FROM attendance
+                            WHERE attendance_date = '$today'
+                            AND (status = 'Present' OR (status IS NULL AND clock_in IS NOT NULL))
+                        ");
+                        $result = $stmt->fetch(PDO::FETCH_ASSOC);
+                        $totalPresent = $result['present'] ?? 0;
+                    }
 
                     $totalAbsent = $totalEmployees - $totalPresent;
 
@@ -108,35 +133,69 @@ require_once 'dp.php';
                 try {
                     // Get on-time attendance (clock_in <= 08:00:00)
                     $stmt = $conn->query("
-                        SELECT COUNT(*) as on_time FROM attendance a
+                        SELECT COUNT(DISTINCT a.employee_id) as on_time
+                        FROM attendance a
                         JOIN employee_profiles ep ON a.employee_id = ep.employee_id
-                        WHERE a.attendance_date = '$today' AND a.status = 'Present'
+                        LEFT JOIN (
+                            SELECT employee_id, MAX(history_id) as max_history_id
+                            FROM employment_history
+                            GROUP BY employee_id
+                        ) eh_max ON ep.employee_id = eh_max.employee_id
+                        LEFT JOIN employment_history eh ON eh_max.employee_id = eh.employee_id
+                            AND eh_max.max_history_id = eh.history_id
+                        WHERE a.attendance_date = '$today'
+                        AND (a.status = 'Present' OR (a.status IS NULL AND a.clock_in IS NOT NULL))
                         AND TIME(a.clock_in) <= '08:00:00'
-                        AND ep.employee_id IN (
-                            SELECT employee_id FROM employment_history
-                            WHERE history_id IN (
-                                SELECT MAX(history_id) FROM employment_history GROUP BY employee_id
-                            ) AND employment_status = 'Active'
-                        )
+                        AND (eh.employment_status = 'Active' OR eh.employment_status IS NULL)
                     ");
                     $result = $stmt->fetch(PDO::FETCH_ASSOC);
-                    $totalOnTime = $result['on_time'];
+                    $totalOnTime = $result['on_time'] ?? 0;
+
+                    // If no results, try simpler query
+                    if ($totalOnTime == 0 && $totalPresent > 0) {
+                        $stmt = $conn->query("
+                            SELECT COUNT(DISTINCT employee_id) as on_time
+                            FROM attendance
+                            WHERE attendance_date = '$today'
+                            AND (status = 'Present' OR (status IS NULL AND clock_in IS NOT NULL))
+                            AND TIME(clock_in) <= '08:00:00'
+                        ");
+                        $result = $stmt->fetch(PDO::FETCH_ASSOC);
+                        $totalOnTime = $result['on_time'] ?? 0;
+                    }
 
                     // Get late attendance (clock_in > 08:00:00)
                     $stmt = $conn->query("
-                        SELECT COUNT(*) as late FROM attendance a
+                        SELECT COUNT(DISTINCT a.employee_id) as late
+                        FROM attendance a
                         JOIN employee_profiles ep ON a.employee_id = ep.employee_id
-                        WHERE a.attendance_date = '$today' AND a.status = 'Present'
+                        LEFT JOIN (
+                            SELECT employee_id, MAX(history_id) as max_history_id
+                            FROM employment_history
+                            GROUP BY employee_id
+                        ) eh_max ON ep.employee_id = eh_max.employee_id
+                        LEFT JOIN employment_history eh ON eh_max.employee_id = eh.employee_id
+                            AND eh_max.max_history_id = eh.history_id
+                        WHERE a.attendance_date = '$today'
+                        AND (a.status = 'Present' OR (a.status IS NULL AND a.clock_in IS NOT NULL))
                         AND TIME(a.clock_in) > '08:00:00'
-                        AND ep.employee_id IN (
-                            SELECT employee_id FROM employment_history
-                            WHERE history_id IN (
-                                SELECT MAX(history_id) FROM employment_history GROUP BY employee_id
-                            ) AND employment_status = 'Active'
-                        )
+                        AND (eh.employment_status = 'Active' OR eh.employment_status IS NULL)
                     ");
                     $result = $stmt->fetch(PDO::FETCH_ASSOC);
-                    $totalLate = $result['late'];
+                    $totalLate = $result['late'] ?? 0;
+
+                    // If no results, try simpler query
+                    if ($totalLate == 0 && $totalPresent > 0) {
+                        $stmt = $conn->query("
+                            SELECT COUNT(DISTINCT employee_id) as late
+                            FROM attendance
+                            WHERE attendance_date = '$today'
+                            AND (status = 'Present' OR (status IS NULL AND clock_in IS NOT NULL))
+                            AND TIME(clock_in) > '08:00:00'
+                        ");
+                        $result = $stmt->fetch(PDO::FETCH_ASSOC);
+                        $totalLate = $result['late'] ?? 0;
+                    }
 
                 } catch (PDOException $e) {
                     error_log("Error fetching on-time/late stats: " . $e->getMessage());
