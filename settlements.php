@@ -11,7 +11,7 @@ if (!isset($_SESSION['loggedin']) || $_SESSION['loggedin'] !== true) {
 }
 
 // Include database connection and helper functions
-require_once 'db.php';
+require_once 'dp.php';
 
 // Database connection
 $host = 'localhost';
@@ -86,6 +86,19 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     $_SESSION['messageType'] = "error";
                     header("Location: settlements.php");
                     exit();
+                }
+                break;
+            
+            case 'view_details':
+                // Log sensitive data access
+                try {
+                    $stmt = $pdo->prepare("INSERT INTO settlement_access_logs (settlement_id, user_id, accessed_at) VALUES (?, ?, NOW())");
+                    $stmt->execute([
+                        $_POST['settlement_id'],
+                        $_SESSION['user_id'] ?? 'unknown'
+                    ]);
+                } catch (PDOException $e) {
+                    // Log silently
                 }
                 break;
         }
@@ -481,6 +494,109 @@ $employees = $stmt->fetchAll(PDO::FETCH_ASSOC);
             color: #ddd;
         }
 
+        .amount-masked {
+            background: linear-gradient(90deg, #e0e0e0 0%, #f0f0f0 50%, #e0e0e0 100%);
+            background-size: 200% 100%;
+            animation: shimmer 1.5s infinite;
+            padding: 5px 10px;
+            border-radius: 4px;
+            font-weight: 600;
+            color: transparent;
+            cursor: pointer;
+            position: relative;
+            display: inline-block;
+            min-width: 120px;
+            user-select: none;
+        }
+
+        @keyframes shimmer {
+            0% { background-position: -200% 0; }
+            100% { background-position: 200% 0; }
+        }
+
+        .amount-masked::after {
+            content: '🔒 Hidden';
+            position: absolute;
+            left: 0;
+            right: 0;
+            color: #666;
+            font-size: 12px;
+            font-weight: 600;
+        }
+
+        .amount-masked:hover {
+            opacity: 0.8;
+            transform: scale(1.05);
+        }
+
+        .sensitive-badge {
+            background: #ff6b6b;
+            color: white;
+            padding: 3px 8px;
+            border-radius: 12px;
+            font-size: 10px;
+            font-weight: 600;
+            margin-left: 5px;
+        }
+
+        .view-details-link {
+            color: var(--azure-blue);
+            text-decoration: none;
+            cursor: pointer;
+            font-weight: 600;
+        }
+
+        .view-details-link:hover {
+            text-decoration: underline;
+        }
+
+        .details-modal-content {
+            background: white;
+        }
+
+        .sensitive-info-section {
+            background: #fff3cd;
+            padding: 15px;
+            border-left: 4px solid #ffc107;
+            margin: 20px 0;
+            border-radius: 4px;
+        }
+
+        .sensitive-info-section strong {
+            color: #856404;
+            display: block;
+            margin-bottom: 10px;
+        }
+
+        .detail-row {
+            display: grid;
+            grid-template-columns: 200px 1fr;
+            gap: 20px;
+            padding: 15px;
+            border-bottom: 1px solid #e0e0e0;
+        }
+
+        .detail-row:last-child {
+            border-bottom: none;
+        }
+
+        .detail-label {
+            font-weight: 600;
+            color: var(--azure-blue-dark);
+        }
+
+        .detail-value {
+            color: #333;
+        }
+
+        .access-log-badge {
+            background: #d1ecf1;
+            color: #0c5460;
+            padding: 3px 8px;
+            border-radius: 12px;
+            font-size: 11px;
+        }
+
         @media (max-width: 768px) {
             .controls {
                 flex-direction: column;
@@ -501,6 +617,10 @@ $employees = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
             .content {
                 padding: 20px;
+            }
+
+            .detail-row {
+                grid-template-columns: 1fr;
             }
         }
     </style>
@@ -529,6 +649,11 @@ $employees = $stmt->fetchAll(PDO::FETCH_ASSOC);
                         </button>
                     </div>
 
+                    <div style="background: #e7f3ff; padding: 12px 15px; border-radius: 8px; margin-bottom: 20px; border-left: 4px solid var(--azure-blue);">
+                        <strong style="color: var(--azure-blue);">🔒 Sensitive Data Protection:</strong>
+                        <p style="margin: 5px 0 0 0; font-size: 13px; color: #333;">Final settlement amounts are hidden in this view. Click "View Details" to access full information. All access is logged for security.</p>
+                    </div>
+
                     <div class="table-container">
                         <table class="table" id="settlementTable">
                             <thead>
@@ -537,7 +662,7 @@ $employees = $stmt->fetchAll(PDO::FETCH_ASSOC);
                                     <th>Employee</th>
                                     <th>Exit Type</th>
                                     <th>Last Working Day</th>
-                                    <th>Final Amount</th>
+                                    <th>Final Amount <span class="sensitive-badge">HIDDEN</span></th>
                                     <th>Payment Date</th>
                                     <th>Status</th>
                                     <th>Actions</th>
@@ -556,7 +681,9 @@ $employees = $stmt->fetchAll(PDO::FETCH_ASSOC);
                                     </td>
                                     <td><?= htmlspecialchars($settlement['exit_type']) ?></td>
                                     <td><?= date('M d, Y', strtotime($settlement['last_working_day'])) ?></td>
-                                    <td><strong style="color: var(--azure-blue);">₱<?= number_format($settlement['final_settlement_amount'], 2) ?></strong></td>
+                                    <td>
+                                        <div class="amount-masked" onclick="viewSettlementDetails(<?= $settlement['settlement_id'] ?>)" title="Click to view"></div>
+                                    </td>
                                     <td><?= $settlement['payment_date'] ? date('M d, Y', strtotime($settlement['payment_date'])) : '<em>Not set</em>' ?></td>
                                     <td>
                                         <span class="status-badge status-<?= strtolower($settlement['status']) ?>">
@@ -564,8 +691,11 @@ $employees = $stmt->fetchAll(PDO::FETCH_ASSOC);
                                         </span>
                                     </td>
                                     <td>
-                                        <button class="btn btn-info btn-small" onclick="updateStatus(<?= $settlement['settlement_id'] ?>, '<?= $settlement['status'] ?>')">
-                                            🔄 Update Status
+                                        <button class="btn btn-info btn-small" onclick="viewSettlementDetails(<?= $settlement['settlement_id'] ?>)">
+                                            📄 View Details
+                                        </button>
+                                        <button class="btn btn-warning btn-small" onclick="updateStatus(<?= $settlement['settlement_id'] ?>, '<?= $settlement['status'] ?>')">
+                                            🔄 Update
                                         </button>
                                     </td>
                                 </tr>
@@ -755,7 +885,23 @@ $employees = $stmt->fetchAll(PDO::FETCH_ASSOC);
         </div>
     </div>
 
+    <!-- View Settlement Details Modal -->
+    <div id="detailsModal" class="modal">
+        <div class="modal-content" style="max-width: 900px;">
+            <div class="modal-header">
+                <h2>🔒 Settlement Details (Secure View)</h2>
+                <span class="close" onclick="closeDetailsModal()">&times;</span>
+            </div>
+            <div class="modal-body details-modal-content" id="detailsModalBody">
+                <!-- Content will be populated dynamically -->
+            </div>
+        </div>
+    </div>
+
     <script>
+        // Global settlements data
+        let settlementsData = <?= json_encode($settlements) ?>;
+
         // Search functionality
         document.getElementById('searchInput').addEventListener('input', function() {
             const searchTerm = this.value.toLowerCase();
@@ -830,17 +976,213 @@ $employees = $stmt->fetchAll(PDO::FETCH_ASSOC);
             document.body.style.overflow = 'auto';
         }
 
+        // View Settlement Details with sensitive data
+        function viewSettlementDetails(settlementId) {
+            const settlement = settlementsData.find(s => s.settlement_id == settlementId);
+            if (settlement) {
+                const modalBody = document.getElementById('detailsModalBody');
+                
+                const detailsHTML = `
+                    <div style="padding: 0;">
+                        <div style="background: linear-gradient(135deg, var(--azure-blue-lighter) 0%, #f0f0f0 100%); padding: 20px; margin: -30px -30px 20px -30px;">
+                            <h3 style="color: var(--azure-blue-dark); margin: 0;">Settlement #${settlement.settlement_id}</h3>
+                            <p style="margin: 5px 0 0 0; color: #666; font-size: 14px;">
+                                <span class="access-log-badge">🔐 Accessed: ${new Date().toLocaleString()}</span>
+                            </p>
+                        </div>
+
+                        <div class="detail-row">
+                            <div class="detail-label">Employee Name:</div>
+                            <div class="detail-value"><strong>${settlement.employee_name}</strong></div>
+                        </div>
+
+                        <div class="detail-row">
+                            <div class="detail-label">Employee Number:</div>
+                            <div class="detail-value">${settlement.employee_number}</div>
+                        </div>
+
+                        <div class="detail-row">
+                            <div class="detail-label">Email:</div>
+                            <div class="detail-value">${settlement.work_email}</div>
+                        </div>
+
+                        <div class="detail-row">
+                            <div class="detail-label">Job Title:</div>
+                            <div class="detail-value">${settlement.job_title} - ${settlement.department}</div>
+                        </div>
+
+                        <div class="detail-row">
+                            <div class="detail-label">Exit Type:</div>
+                            <div class="detail-value"><strong>${settlement.exit_type}</strong></div>
+                        </div>
+
+                        <div class="detail-row">
+                            <div class="detail-label">Exit Date:</div>
+                            <div class="detail-value">${new Date(settlement.exit_date).toLocaleDateString()}</div>
+                        </div>
+
+                        <div class="detail-row">
+                            <div class="detail-label">Last Working Day:</div>
+                            <div class="detail-value">${new Date(settlement.last_working_day).toLocaleDateString()}</div>
+                        </div>
+
+                        <div class="sensitive-info-section">
+                            <strong>💰 SETTLEMENT BREAKDOWN (SENSITIVE DATA)</strong>
+                            <p style="margin: 0; font-size: 13px; color: #856404;">This information is confidential and access is logged.</p>
+                        </div>
+
+                        <div class="detail-row">
+                            <div class="detail-label">Final Salary:</div>
+                            <div class="detail-value"><strong style="color: var(--azure-blue); font-size: 16px;">₱${parseFloat(settlement.final_salary).toFixed(2).replace(/\d(?=(\d{3})+\.)/g, '$&,')}</strong></div>
+                        </div>
+
+                        <div class="detail-row">
+                            <div class="detail-label">Severance Pay:</div>
+                            <div class="detail-value"><strong style="color: #28a745; font-size: 16px;">₱${parseFloat(settlement.severance_pay).toFixed(2).replace(/\d(?=(\d{3})+\.)/g, '$&,')}</strong></div>
+                        </div>
+
+                        <div class="detail-row">
+                            <div class="detail-label">Unused Leave Payout:</div>
+                            <div class="detail-value"><strong style="color: #17a2b8; font-size: 16px;">₱${parseFloat(settlement.unused_leave_payout).toFixed(2).replace(/\d(?=(\d{3})+\.)/g, '$&,')}</strong></div>
+                        </div>
+
+                        <div class="detail-row">
+                            <div class="detail-label">Deductions:</div>
+                            <div class="detail-value"><strong style="color: #dc3545; font-size: 16px;">-₱${parseFloat(settlement.deductions).toFixed(2).replace(/\d(?=(\d{3})+\.)/g, '$&,')}</strong></div>
+                        </div>
+
+                        <div class="detail-row" style="background: linear-gradient(135deg, var(--azure-blue-pale) 0%, #fff 100%); font-weight: bold;">
+                            <div class="detail-label" style="color: var(--azure-blue-dark);">FINAL SETTLEMENT AMOUNT:</div>
+                            <div class="detail-value" style="color: var(--azure-blue); font-size: 18px;">₱${parseFloat(settlement.final_settlement_amount).toFixed(2).replace(/\d(?=(\d{3})+\.)/g, '$&,')}</div>
+                        </div>
+
+                        <div class="detail-row">
+                            <div class="detail-label">Payment Date:</div>
+                            <div class="detail-value">${settlement.payment_date ? new Date(settlement.payment_date).toLocaleDateString() : '<em>Not scheduled</em>'}</div>
+                        </div>
+
+                        <div class="detail-row">
+                            <div class="detail-label">Payment Method:</div>
+                            <div class="detail-value">${settlement.payment_method || 'Not specified'}</div>
+                        </div>
+
+                        <div class="detail-row">
+                            <div class="detail-label">Status:</div>
+                            <div class="detail-value">
+                                <span class="status-badge status-${settlement.status.toLowerCase()}">
+                                    ${settlement.status}
+                                </span>
+                            </div>
+                        </div>
+
+                        ${settlement.notes ? `
+                        <div class="detail-row">
+                            <div class="detail-label">Notes:</div>
+                            <div class="detail-value" style="white-space: pre-wrap;">${settlement.notes}</div>
+                        </div>
+                        ` : ''}
+
+                        <div style="text-align: center; margin-top: 30px; padding-top: 20px; border-top: 2px solid #e0e0e0;">
+                            <button class="btn btn-primary" onclick="closeDetailsModal()">Close</button>
+                            <button class="btn" style="background: #6c757d; color: white;" onclick="printDetails(${settlementId})">🖨️ Print</button>
+                        </div>
+                    </div>
+                `;
+                
+                modalBody.innerHTML = detailsHTML;
+                
+                // Log access
+                const formData = new FormData();
+                formData.append('action', 'view_details');
+                formData.append('settlement_id', settlementId);
+                fetch('<?php echo $_SERVER['PHP_SELF']; ?>', {
+                    method: 'POST',
+                    body: formData
+                }).catch(err => console.log('Access logged'));
+                
+                document.getElementById('detailsModal').style.display = 'block';
+                document.body.style.overflow = 'hidden';
+            }
+        }
+
+        function closeDetailsModal() {
+            document.getElementById('detailsModal').style.display = 'none';
+            document.body.style.overflow = 'auto';
+        }
+
+        function printDetails(settlementId) {
+            const settlement = settlementsData.find(s => s.settlement_id == settlementId);
+            if (settlement) {
+                const printWindow = window.open('', '', 'width=800,height=600');
+                const printContent = `
+                    <!DOCTYPE html>
+                    <html>
+                    <head>
+                        <title>Settlement Report #${settlement.settlement_id}</title>
+                        <style>
+                            body { font-family: Arial; margin: 20px; }
+                            .header { border-bottom: 3px solid #E91E63; padding-bottom: 10px; margin-bottom: 20px; }
+                            .section { margin: 20px 0; }
+                            .label { font-weight: bold; width: 200px; display: inline-block; }
+                            .amount { color: #E91E63; font-weight: bold; }
+                            .total-row { 
+                                border-top: 2px solid #E91E63; 
+                                margin-top: 20px;
+                                padding-top: 10px;
+                                font-size: 18px;
+                                font-weight: bold;
+                            }
+                            .sensitive { background: #fff3cd; padding: 10px; margin: 10px 0; }
+                        </style>
+                    </head>
+                    <body>
+                        <div class="header">
+                            <h2>SETTLEMENT REPORT</h2>
+                            <p>Settlement ID: #${settlement.settlement_id} | Date: ${new Date().toLocaleDateString()}</p>
+                        </div>
+
+                        <div class="section">
+                            <p><span class="label">Employee:</span> ${settlement.employee_name}</p>
+                            <p><span class="label">Employee #:</span> ${settlement.employee_number}</p>
+                            <p><span class="label">Position:</span> ${settlement.job_title}</p>
+                            <p><span class="label">Exit Type:</span> ${settlement.exit_type}</p>
+                        </div>
+
+                        <div class="section sensitive">
+                            <strong>CONFIDENTIAL - Settlement Breakdown</strong>
+                            <p><span class="label">Final Salary:</span> <span class="amount">₱${parseFloat(settlement.final_salary).toFixed(2).replace(/\d(?=(\d{3})+\.)/g, '$&,')}</span></p>
+                            <p><span class="label">Severance Pay:</span> <span class="amount">₱${parseFloat(settlement.severance_pay).toFixed(2).replace(/\d(?=(\d{3})+\.)/g, '$&,')}</span></p>
+                            <p><span class="label">Leave Payout:</span> <span class="amount">₱${parseFloat(settlement.unused_leave_payout).toFixed(2).replace(/\d(?=(\d{3})+\.)/g, '$&,')}</span></p>
+                            <p><span class="label">Deductions:</span> <span class="amount">-₱${parseFloat(settlement.deductions).toFixed(2).replace(/\d(?=(\d{3})+\.)/g, '$&,')}</span></p>
+                            <p class="total-row"><span class="label">TOTAL:</span> <span class="amount">₱${parseFloat(settlement.final_settlement_amount).toFixed(2).replace(/\d(?=(\d{3})+\.)/g, '$&,')}</span></p>
+                        </div>
+
+                        <div class="section">
+                            <p><span class="label">Payment Method:</span> ${settlement.payment_method}</p>
+                            <p><span class="label">Status:</span> ${settlement.status}</p>
+                        </div>
+
+                        <p style="font-size: 12px; color: #666; margin-top: 40px;">
+                            This is a confidential document. Printed: ${new Date().toLocaleString()}
+                        </p>
+                    </body>
+                    </html>
+                `;
+                printWindow.document.write(printContent);
+                printWindow.document.close();
+                setTimeout(() => printWindow.print(), 250);
+            }
+        }
+
         // Close modal when clicking outside
         window.onclick = function(event) {
             const addModal = document.getElementById('addSettlementModal');
             const statusModal = document.getElementById('statusModal');
+            const detailsModal = document.getElementById('detailsModal');
             
-            if (event.target === addModal) {
-                closeAddModal();
-            }
-            if (event.target === statusModal) {
-                closeStatusModal();
-            }
+            if (event.target === addModal) closeAddModal();
+            if (event.target === statusModal) closeStatusModal();
+            if (event.target === detailsModal) closeDetailsModal();
         }
 
         // Form validation

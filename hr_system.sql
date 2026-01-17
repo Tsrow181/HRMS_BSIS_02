@@ -3252,3 +3252,204 @@ WHERE `personal_info_id` = 5;
 /*!40101 SET CHARACTER_SET_RESULTS=@OLD_CHARACTER_SET_RESULTS */;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 
+-- Enhanced Exit Checklist Table Schema
+-- This schema supports all panelist requirements: remarks, approval, physical items, clearances, and tracking codes
+
+-- First, ensure the exit_checklist table has all required columns
+ALTER TABLE exit_checklist 
+ADD COLUMN IF NOT EXISTS item_type ENUM('Physical', 'Document', 'Access', 'Financial', 'Other') DEFAULT 'Other' AFTER notes,
+ADD COLUMN IF NOT EXISTS serial_number VARCHAR(100) DEFAULT NULL AFTER item_type,
+ADD COLUMN IF NOT EXISTS sticker_type VARCHAR(100) DEFAULT NULL AFTER serial_number,
+ADD COLUMN IF NOT EXISTS approval_status ENUM('Pending', 'Approved', 'Rejected') DEFAULT 'Pending' AFTER sticker_type,
+ADD COLUMN IF NOT EXISTS approved_by VARCHAR(100) DEFAULT NULL AFTER approval_status,
+ADD COLUMN IF NOT EXISTS approved_date DATE DEFAULT NULL AFTER approved_by,
+ADD COLUMN IF NOT EXISTS remarks TEXT DEFAULT NULL AFTER approved_date,
+ADD COLUMN IF NOT EXISTS clearance_status ENUM('Pending', 'Cleared', 'Conditional') DEFAULT 'Pending' AFTER remarks,
+ADD COLUMN IF NOT EXISTS clearance_date DATE DEFAULT NULL AFTER clearance_status,
+ADD COLUMN IF NOT EXISTS cleared_by VARCHAR(100) DEFAULT NULL AFTER clearance_date;
+
+-- Create index for faster queries
+CREATE INDEX IF NOT EXISTS idx_approval_status ON exit_checklist(approval_status);
+CREATE INDEX IF NOT EXISTS idx_clearance_status ON exit_checklist(clearance_status);
+CREATE INDEX IF NOT EXISTS idx_item_type ON exit_checklist(item_type);
+CREATE INDEX IF NOT EXISTS idx_serial_number ON exit_checklist(serial_number);
+
+-- Create audit log table for tracking changes
+CREATE TABLE IF NOT EXISTS exit_checklist_audit (
+    audit_id INT PRIMARY KEY AUTO_INCREMENT,
+    checklist_id INT NOT NULL,
+    action_type ENUM('Created', 'Updated', 'Deleted', 'Approved', 'Rejected', 'Cleared') NOT NULL,
+    field_changed VARCHAR(100),
+    old_value TEXT,
+    new_value TEXT,
+    changed_by VARCHAR(100),
+    changed_date DATETIME DEFAULT CURRENT_TIMESTAMP,
+    remarks TEXT,
+    FOREIGN KEY (checklist_id) REFERENCES exit_checklist(checklist_id) ON DELETE CASCADE
+);
+
+-- Create approval workflow table
+CREATE TABLE IF NOT EXISTS exit_checklist_approvals (
+    approval_id INT PRIMARY KEY AUTO_INCREMENT,
+    checklist_id INT NOT NULL,
+    approver_id VARCHAR(100) NOT NULL,
+    approver_name VARCHAR(255) NOT NULL,
+    approval_level INT DEFAULT 1,
+    decision ENUM('Pending', 'Approved', 'Rejected') DEFAULT 'Pending',
+    decision_date DATETIME,
+    decision_remarks TEXT,
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (checklist_id) REFERENCES exit_checklist(checklist_id) ON DELETE CASCADE
+);
+
+-- Create clearance tracking table
+CREATE TABLE IF NOT EXISTS exit_clearance_tracking (
+    clearance_id INT PRIMARY KEY AUTO_INCREMENT,
+    exit_id INT NOT NULL,
+    department VARCHAR(100) NOT NULL,
+    clearance_officer VARCHAR(100),
+    clearance_status ENUM('Pending', 'Cleared', 'Conditional', 'Not Required') DEFAULT 'Pending',
+    items_cleared TEXT,
+    conditions TEXT,
+    cleared_date DATE,
+    remarks TEXT,
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    updated_at DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    FOREIGN KEY (exit_id) REFERENCES exits(exit_id) ON DELETE CASCADE
+);
+
+-- Create physical items inventory table
+CREATE TABLE IF NOT EXISTS exit_physical_items (
+    item_id INT PRIMARY KEY AUTO_INCREMENT,
+    checklist_id INT NOT NULL,
+    item_category VARCHAR(100) NOT NULL,
+    item_description TEXT,
+    serial_number VARCHAR(100),
+    sticker_code VARCHAR(100),
+    asset_tag VARCHAR(100),
+    condition_on_return ENUM('Good', 'Fair', 'Poor', 'Damaged', 'Missing') DEFAULT 'Good',
+    return_date DATE,
+    received_by VARCHAR(100),
+    verification_status ENUM('Pending', 'Verified', 'Discrepancy') DEFAULT 'Pending',
+    verification_remarks TEXT,
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (checklist_id) REFERENCES exit_checklist(checklist_id) ON DELETE CASCADE
+);
+
+-- View for complete exit clearance status
+CREATE OR REPLACE VIEW exit_clearance_summary AS
+SELECT 
+    e.exit_id,
+    e.employee_id,
+    CONCAT(pi.first_name, ' ', pi.last_name) as employee_name,
+    ep.employee_number,
+    e.exit_date,
+    COUNT(ec.checklist_id) as total_items,
+    SUM(CASE WHEN ec.status = 'Completed' THEN 1 ELSE 0 END) as completed_items,
+    SUM(CASE WHEN ec.approval_status = 'Approved' THEN 1 ELSE 0 END) as approved_items,
+    SUM(CASE WHEN ec.clearance_status = 'Cleared' THEN 1 ELSE 0 END) as cleared_items,
+    CASE 
+        WHEN COUNT(ec.checklist_id) = SUM(CASE WHEN ec.clearance_status = 'Cleared' THEN 1 ELSE 0 END) 
+        THEN 'Fully Cleared'
+        WHEN SUM(CASE WHEN ec.clearance_status = 'Cleared' THEN 1 ELSE 0 END) > 0 
+        THEN 'Partially Cleared'
+        ELSE 'Not Cleared'
+    END as overall_clearance_status
+FROM exits e
+LEFT JOIN employee_profiles ep ON e.employee_id = ep.employee_id
+LEFT JOIN personal_information pi ON ep.personal_info_id = pi.personal_info_id
+LEFT JOIN exit_checklist ec ON e.exit_id = ec.exit_id
+GROUP BY e.exit_id, e.employee_id, pi.first_name, pi.last_name, ep.employee_number, e.exit_date;
+
+-- Query to get comprehensive exit checklist report
+-- This includes all panelist requirements: remarks, approval, physical items, clearances, codes
+SELECT 
+    ec.*,
+    e.employee_id,
+    e.exit_date,
+    e.exit_type,
+    CONCAT(pi.first_name, ' ', pi.last_name) as employee_name,
+    ep.employee_number,
+    ec.responsible_department as department,
+    -- Clearance indicators
+    CASE 
+        WHEN ec.status = 'Completed' AND ec.approval_status = 'Approved' AND ec.clearance_status = 'Cleared'
+        THEN 'FULLY CLEARED'
+        WHEN ec.status = 'Completed' AND ec.approval_status = 'Approved'
+        THEN 'PENDING CLEARANCE'
+        WHEN ec.status = 'Completed'
+        THEN 'PENDING APPROVAL'
+        ELSE 'IN PROGRESS'
+    END as clearance_indicator,
+    -- Physical item tracking
+    CONCAT_WS(' | ', 
+        CASE WHEN ec.serial_number IS NOT NULL THEN CONCAT('SN:', ec.serial_number) END,
+        CASE WHEN ec.sticker_type IS NOT NULL THEN CONCAT('Sticker:', ec.sticker_type) END
+    ) as item_codes
+FROM exit_checklist ec
+LEFT JOIN exits e ON ec.exit_id = e.exit_id
+LEFT JOIN employee_profiles ep ON e.employee_id = ep.employee_id
+LEFT JOIN personal_information pi ON ep.personal_info_id = pi.personal_info_id
+ORDER BY 
+    FIELD(ec.clearance_status, 'Pending', 'Conditional', 'Cleared'),
+    FIELD(ec.approval_status, 'Pending', 'Rejected', 'Approved'),
+    ec.created_at DESC;
+
+-- Stored procedure for automatic clearance status update
+DELIMITER //
+CREATE PROCEDURE update_clearance_status(IN p_checklist_id INT)
+BEGIN
+    DECLARE v_status VARCHAR(20);
+    DECLARE v_approval VARCHAR(20);
+    
+    SELECT status, approval_status INTO v_status, v_approval
+    FROM exit_checklist
+    WHERE checklist_id = p_checklist_id;
+    
+    IF v_status = 'Completed' AND v_approval = 'Approved' THEN
+        UPDATE exit_checklist
+        SET clearance_status = 'Cleared',
+            clearance_date = CURDATE(),
+            cleared_by = COALESCE(approved_by, 'System')
+        WHERE checklist_id = p_checklist_id;
+    END IF;
+END//
+DELIMITER ;
+
+-- Trigger to log changes (audit trail only - no table updates to avoid recursion)
+DELIMITER //
+CREATE TRIGGER after_checklist_update
+AFTER UPDATE ON exit_checklist
+FOR EACH ROW
+BEGIN
+    -- Log the change in audit table
+    IF OLD.status != NEW.status OR OLD.approval_status != NEW.approval_status OR OLD.clearance_status != NEW.clearance_status THEN
+        INSERT INTO exit_checklist_audit (checklist_id, action_type, field_changed, old_value, new_value, changed_by)
+        VALUES (NEW.checklist_id, 'Updated', 
+                CASE 
+                    WHEN OLD.status != NEW.status THEN 'status'
+                    WHEN OLD.approval_status != NEW.approval_status THEN 'approval_status'
+                    WHEN OLD.clearance_status != NEW.clearance_status THEN 'clearance_status'
+                    ELSE 'general'
+                END,
+                CASE 
+                    WHEN OLD.status != NEW.status THEN OLD.status
+                    WHEN OLD.approval_status != NEW.approval_status THEN OLD.approval_status
+                    WHEN OLD.clearance_status != NEW.clearance_status THEN OLD.clearance_status
+                    ELSE NULL
+                END,
+                CASE 
+                    WHEN OLD.status != NEW.status THEN NEW.status
+                    WHEN OLD.approval_status != NEW.approval_status THEN NEW.approval_status
+                    WHEN OLD.clearance_status != NEW.clearance_status THEN NEW.clearance_status
+                    ELSE NULL
+                END,
+                COALESCE(NEW.approved_by, 'System'));
+    END IF;
+END//
+DELIMITER ;
+
+-- Note: Clearance status should be updated in the PHP code, not via trigger
+-- Add this logic to your PHP update statement:
+-- IF status='Completed' AND approval_status='Approved' THEN SET clearance_status='Cleared'
+
