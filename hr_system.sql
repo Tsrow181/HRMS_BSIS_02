@@ -3453,4 +3453,10 @@ DELIMITER ;
 -- Add this logic to your PHP update statement:
 -- IF status='Completed' AND approval_status='Approved' THEN SET clearance_status='Cleared'
 
+ALTER TABLE post_exit_surveys
+  ADD COLUMN is_anonymous TINYINT(1) NOT NULL DEFAULT 0,
+  ADD COLUMN evaluation_score INT DEFAULT 0,
+  ADD COLUMN evaluation_criteria TEXT NULL;
 
+  ALTER TABLE post_exit_surveys
+  MODIFY COLUMN employee_id INT NULL;
