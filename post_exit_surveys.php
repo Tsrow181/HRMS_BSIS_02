@@ -33,49 +33,17 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             case 'add':
                 // Add new survey
                 try {
-                    // Check if 'is_anonymous' column exists
-                    $checkColumns = $pdo->query("SHOW COLUMNS FROM post_exit_surveys LIKE 'is_anonymous'");
-                    $hasAnon = $checkColumns->rowCount() > 0;
-
-                    $employee_id = (isset($_POST['is_anonymous']) && $_POST['is_anonymous'] == '1') ? null : (!empty($_POST['employee_id']) ? $_POST['employee_id'] : null);
-
-                    if (!$employee_id && (!$hasAnon || !isset($_POST['is_anonymous']) || $_POST['is_anonymous'] != '1')) {
-                        throw new Exception("Please select an employee for non-anonymous surveys.");
-                    }
-
-                    if ($hasAnon) {
-                        $stmt = $pdo->prepare("INSERT INTO post_exit_surveys (employee_id, exit_id, survey_date, survey_response, satisfaction_rating, submitted_date, is_anonymous, evaluation_score, evaluation_criteria) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)");
-                        $stmt->execute([
-                            $employee_id,
-                            $_POST['exit_id'],
-                            $_POST['survey_date'],
-                            $_POST['survey_response'],
-                            $_POST['satisfaction_rating'],
-                            $_POST['submitted_date'],
-                            $_POST['is_anonymous'] ?? 0,
-                            $_POST['evaluation_score'] ?? 0,
-                            $_POST['evaluation_criteria'] ?? ''
-                        ]);
-                    } else {
-                        $stmt = $pdo->prepare("INSERT INTO post_exit_surveys (employee_id, exit_id, survey_date, survey_response, satisfaction_rating, submitted_date) VALUES (?, ?, ?, ?, ?, ?)");
-                        $stmt->execute([
-                            $employee_id,
-                            $_POST['exit_id'],
-                            $_POST['survey_date'],
-                            $_POST['survey_response'],
-                            $_POST['satisfaction_rating'],
-                            $_POST['submitted_date']
-                        ]);
-                    }
-                    $_SESSION['message'] = "Post-exit survey added successfully!";
-                    $_SESSION['messageType'] = "success";
-                    header("Location: " . $_SERVER['PHP_SELF']);
-                    exit;
-                } catch (Exception $e) {
-                    $_SESSION['message'] = "Error adding survey: " . $e->getMessage();
-                    $_SESSION['messageType'] = "error";
-                    header("Location: " . $_SERVER['PHP_SELF']);
-                    exit;
+                    $stmt = $pdo->prepare("INSERT INTO post_exit_surveys (employee_id, exit_id, survey_date, survey_response, satisfaction_rating, submitted_date) VALUES (?, ?, ?, ?, ?, ?)");
+                    $stmt->execute([
+                        $_POST['employee_id'],
+                        $_POST['exit_id'],
+                        $_POST['survey_date'],
+                        $_POST['survey_response'],
+                        $_POST['satisfaction_rating'],
+                        $_POST['submitted_date']
+                    ]);
+                    $message = "Post-exit survey added successfully!";
+                    $messageType = "success";
                 } catch (PDOException $e) {
                     $_SESSION['message'] = "Error adding survey: " . $e->getMessage();
                     $_SESSION['messageType'] = "error";
@@ -87,50 +55,18 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             case 'update':
                 // Update survey
                 try {
-                    $checkColumns = $pdo->query("SHOW COLUMNS FROM post_exit_surveys LIKE 'is_anonymous'");
-                    $hasAnon = $checkColumns->rowCount() > 0;
-
-                    $employee_id = (isset($_POST['is_anonymous']) && $_POST['is_anonymous'] == '1') ? null : (!empty($_POST['employee_id']) ? $_POST['employee_id'] : null);
-
-                    if (!$employee_id && (!$hasAnon || !isset($_POST['is_anonymous']) || $_POST['is_anonymous'] != '1')) {
-                        throw new Exception("Please select an employee for non-anonymous surveys.");
-                    }
-
-                    if ($hasAnon) {
-                        $stmt = $pdo->prepare("UPDATE post_exit_surveys SET employee_id=?, exit_id=?, survey_date=?, survey_response=?, satisfaction_rating=?, submitted_date=?, is_anonymous=?, evaluation_score=?, evaluation_criteria=? WHERE survey_id=?");
-                        $stmt->execute([
-                            $employee_id,
-                            $_POST['exit_id'],
-                            $_POST['survey_date'],
-                            $_POST['survey_response'],
-                            $_POST['satisfaction_rating'],
-                            $_POST['submitted_date'],
-                            $_POST['is_anonymous'] ?? 0,
-                            $_POST['evaluation_score'] ?? 0,
-                            $_POST['evaluation_criteria'] ?? '',
-                            $_POST['survey_id']
-                        ]);
-                    } else {
-                        $stmt = $pdo->prepare("UPDATE post_exit_surveys SET employee_id=?, exit_id=?, survey_date=?, survey_response=?, satisfaction_rating=?, submitted_date=? WHERE survey_id=?");
-                        $stmt->execute([
-                            $employee_id,
-                            $_POST['exit_id'],
-                            $_POST['survey_date'],
-                            $_POST['survey_response'],
-                            $_POST['satisfaction_rating'],
-                            $_POST['submitted_date'],
-                            $_POST['survey_id']
-                        ]);
-                    }
-                    $_SESSION['message'] = "Post-exit survey updated successfully!";
-                    $_SESSION['messageType'] = "success";
-                    header("Location: " . $_SERVER['PHP_SELF']);
-                    exit;
-                } catch (Exception $e) {
-                    $_SESSION['message'] = "Error updating survey: " . $e->getMessage();
-                    $_SESSION['messageType'] = "error";
-                    header("Location: " . $_SERVER['PHP_SELF']);
-                    exit;
+                    $stmt = $pdo->prepare("UPDATE post_exit_surveys SET employee_id=?, exit_id=?, survey_date=?, survey_response=?, satisfaction_rating=?, submitted_date=? WHERE survey_id=?");
+                    $stmt->execute([
+                        $_POST['employee_id'],
+                        $_POST['exit_id'],
+                        $_POST['survey_date'],
+                        $_POST['survey_response'],
+                        $_POST['satisfaction_rating'],
+                        $_POST['submitted_date'],
+                        $_POST['survey_id']
+                    ]);
+                    $message = "Post-exit survey updated successfully!";
+                    $messageType = "success";
                 } catch (PDOException $e) {
                     $_SESSION['message'] = "Error updating survey: " . $e->getMessage();
                     $_SESSION['messageType'] = "error";
