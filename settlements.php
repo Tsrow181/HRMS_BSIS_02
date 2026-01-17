@@ -89,16 +89,16 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 }
                 break;
             
-            case 'delete':
-                // Delete settlement
+            case 'view_details':
+                // Log sensitive data access
                 try {
-                    $stmt = $pdo->prepare("DELETE FROM settlements WHERE settlement_id=?");
-                    $stmt->execute([$_POST['settlement_id']]);
-                    $message = "Settlement record deleted successfully!";
-                    $messageType = "success";
+                    $stmt = $pdo->prepare("INSERT INTO settlement_access_logs (settlement_id, user_id, accessed_at) VALUES (?, ?, NOW())");
+                    $stmt->execute([
+                        $_POST['settlement_id'],
+                        $_SESSION['user_id'] ?? 'unknown'
+                    ]);
                 } catch (PDOException $e) {
-                    $message = "Error deleting settlement: " . $e->getMessage();
-                    $messageType = "error";
+                    // Log silently
                 }
                 break;
         }
@@ -619,9 +619,8 @@ $employees = $stmt->fetchAll(PDO::FETCH_ASSOC);
                 padding: 20px;
             }
 
-            .modal-content {
-                width: 98%;
-                margin: 1% auto;
+            .detail-row {
+                grid-template-columns: 1fr;
             }
         }
     </style>
@@ -663,8 +662,7 @@ $employees = $stmt->fetchAll(PDO::FETCH_ASSOC);
                                     <th>Employee</th>
                                     <th>Exit Type</th>
                                     <th>Last Working Day</th>
-                                    <th>Final Salary</th>
-                                    <th>Settlement Amount</th>
+                                    <th>Final Amount <span class="sensitive-badge">HIDDEN</span></th>
                                     <th>Payment Date</th>
                                     <th>Status</th>
                                     <th>Actions</th>
@@ -683,26 +681,21 @@ $employees = $stmt->fetchAll(PDO::FETCH_ASSOC);
                                     </td>
                                     <td><?= htmlspecialchars($settlement['exit_type']) ?></td>
                                     <td><?= date('M d, Y', strtotime($settlement['last_working_day'])) ?></td>
-                                    <td><strong>₱<?= number_format($settlement['final_salary'], 2) ?></strong></td>
                                     <td>
-                                        <span class="<?= $settlement['final_settlement_amount'] >= 0 ? 'amount-positive' : 'amount-negative' ?>">
-                                            ₱<?= number_format($settlement['final_settlement_amount'], 2) ?>
-                                        </span>
+                                        <div class="amount-masked" onclick="viewSettlementDetails(<?= $settlement['settlement_id'] ?>)" title="Click to view"></div>
                                     </td>
-                                    <td>
-                                        <?= $settlement['payment_date'] ? date('M d, Y', strtotime($settlement['payment_date'])) : 'Not Set' ?>
-                                    </td>
+                                    <td><?= $settlement['payment_date'] ? date('M d, Y', strtotime($settlement['payment_date'])) : '<em>Not set</em>' ?></td>
                                     <td>
                                         <span class="status-badge status-<?= strtolower($settlement['status']) ?>">
                                             <?= htmlspecialchars($settlement['status']) ?>
                                         </span>
                                     </td>
                                     <td>
-                                        <button class="btn btn-warning btn-small" onclick="editSettlement(<?= $settlement['settlement_id'] ?>)">
-                                            ✏️ Edit
+                                        <button class="btn btn-info btn-small" onclick="viewSettlementDetails(<?= $settlement['settlement_id'] ?>)">
+                                            📄 View Details
                                         </button>
-                                        <button class="btn btn-danger btn-small" onclick="deleteSettlement(<?= $settlement['settlement_id'] ?>)">
-                                            🗑️ Delete
+                                        <button class="btn btn-warning btn-small" onclick="updateStatus(<?= $settlement['settlement_id'] ?>, '<?= $settlement['status'] ?>')">
+                                            🔄 Update
                                         </button>
                                     </td>
                                 </tr>
@@ -906,10 +899,8 @@ $employees = $stmt->fetchAll(PDO::FETCH_ASSOC);
     </div>
 
     <script>
-        // Global variables
+        // Global settlements data
         let settlementsData = <?= json_encode($settlements) ?>;
-        let availableExitsData = <?= json_encode($availableExits) ?>;
-        let employeesData = <?= json_encode($employees) ?>;
 
         // Search functionality
         document.getElementById('searchInput').addEventListener('input', function() {
@@ -929,130 +920,269 @@ $employees = $stmt->fetchAll(PDO::FETCH_ASSOC);
             }
         });
 
-        // Modal functions
-        function openModal(mode, settlementId = null) {
-            const modal = document.getElementById('settlementModal');
-            const form = document.getElementById('settlementForm');
-            const title = document.getElementById('modalTitle');
-            const action = document.getElementById('action');
-
-            if (mode === 'add') {
-                title.textContent = 'Add New Settlement';
-                action.value = 'add';
-                form.reset();
-                document.getElementById('settlement_id').value = '';
-                document.getElementById('severance_pay').value = '0';
-                document.getElementById('unused_leave_payout').value = '0';
-                document.getElementById('deductions').value = '0';
-                document.getElementById('calculationBreakdown').style.display = 'none';
-            } else if (mode === 'edit' && settlementId) {
-                title.textContent = 'Edit Settlement';
-                action.value = 'update';
-                document.getElementById('settlement_id').value = settlementId;
-                populateEditForm(settlementId);
-            }
-
-            modal.style.display = 'block';
-            document.body.style.overflow = 'hidden';
-        }
-
-        function closeModal() {
-            const modal = document.getElementById('settlementModal');
-            modal.style.display = 'none';
-            document.body.style.overflow = 'auto';
-        }
-
-        function populateEditForm(settlementId) {
-            const settlement = settlementsData.find(s => s.settlement_id == settlementId);
-            if (settlement) {
-                document.getElementById('exit_id').value = settlement.exit_id || '';
-                document.getElementById('employee_id').value = settlement.employee_id || '';
-                document.getElementById('last_working_day').value = settlement.last_working_day || '';
-                document.getElementById('final_salary').value = settlement.final_salary || '';
-                document.getElementById('severance_pay').value = settlement.severance_pay || '0';
-                document.getElementById('unused_leave_payout').value = settlement.unused_leave_payout || '0';
-                document.getElementById('deductions').value = settlement.deductions || '0';
-                document.getElementById('final_settlement_amount').value = settlement.final_settlement_amount || '';
-                document.getElementById('payment_date').value = settlement.payment_date || '';
-                document.getElementById('payment_method').value = settlement.payment_method || '';
-                document.getElementById('status').value = settlement.status || 'Pending';
-                document.getElementById('notes').value = settlement.notes || '';
+        // Load exit details when selected
+        function loadExitDetails() {
+            const exitSelect = document.getElementById('exit_id');
+            const selectedOption = exitSelect.options[exitSelect.selectedIndex];
+            
+            if (selectedOption.value) {
+                const employeeId = selectedOption.getAttribute('data-employee-id');
+                const exitDate = selectedOption.getAttribute('data-exit-date');
                 
-                calculateSettlement();
+                document.getElementById('employee_id').value = employeeId;
+                document.getElementById('last_working_day').value = exitDate;
             }
         }
 
-        function editSettlement(settlementId) {
-            openModal('edit', settlementId);
-        }
-
-        function deleteSettlement(settlementId) {
-            if (confirm('Are you sure you want to delete this settlement record? This action cannot be undone.')) {
-                const form = document.createElement('form');
-                form.method = 'POST';
-                form.innerHTML = `
-                    <input type="hidden" name="action" value="delete">
-                    <input type="hidden" name="settlement_id" value="${settlementId}">
-                `;
-                document.body.appendChild(form);
-                form.submit();
-            }
-        }
-
-        // Settlement calculation functions
-        function calculateSettlement() {
+        // Calculate total settlement amount
+        function calculateTotal() {
             const finalSalary = parseFloat(document.getElementById('final_salary').value) || 0;
             const severancePay = parseFloat(document.getElementById('severance_pay').value) || 0;
             const leavePayout = parseFloat(document.getElementById('unused_leave_payout').value) || 0;
             const deductions = parseFloat(document.getElementById('deductions').value) || 0;
+
+            const total = finalSalary + severancePay + leavePayout - deductions;
+
+            document.getElementById('display_final_salary').textContent = '₱' + finalSalary.toFixed(2).replace(/\d(?=(\d{3})+\.)/g, '$&,');
+            document.getElementById('display_severance').textContent = '₱' + severancePay.toFixed(2).replace(/\d(?=(\d{3})+\.)/g, '$&,');
+            document.getElementById('display_leave').textContent = '₱' + leavePayout.toFixed(2).replace(/\d(?=(\d{3})+\.)/g, '$&,');
+            document.getElementById('display_deductions').textContent = '-₱' + deductions.toFixed(2).replace(/\d(?=(\d{3})+\.)/g, '$&,');
+            document.getElementById('display_total').textContent = '₱' + total.toFixed(2).replace(/\d(?=(\d{3})+\.)/g, '$&,');
             
-            const totalSettlement = finalSalary + severancePay + leavePayout - deductions;
-            
-            document.getElementById('final_settlement_amount').value = totalSettlement.toFixed(2);
-            
-            // Update calculation breakdown
-            document.getElementById('calc-final-salary').textContent = '₱' + finalSalary.toFixed(2);
-            document.getElementById('calc-severance').textContent = '₱' + severancePay.toFixed(2);
-            document.getElementById('calc-leave').textContent = '₱' + leavePayout.toFixed(2);
-            document.getElementById('calc-deductions').textContent = '₱' + deductions.toFixed(2);
-            document.getElementById('calc-total').textContent = '₱' + totalSettlement.toFixed(2);
-            
-            // Show calculation breakdown if any values are entered
-            if (finalSalary > 0 || severancePay > 0 || leavePayout > 0 || deductions > 0) {
-                document.getElementById('calculationBreakdown').style.display = 'block';
+            document.getElementById('final_settlement_amount').value = total.toFixed(2);
+        }
+
+        // Modal functions for Add Settlement
+        function openAddModal() {
+            document.getElementById('addSettlementModal').style.display = 'block';
+            document.body.style.overflow = 'hidden';
+        }
+
+        function closeAddModal() {
+            document.getElementById('addSettlementModal').style.display = 'none';
+            document.body.style.overflow = 'auto';
+        }
+
+        // Modal functions for Update Status
+        function updateStatus(settlementId, currentStatus) {
+            document.getElementById('status_settlement_id').value = settlementId;
+            document.getElementById('new_status').value = currentStatus;
+            document.getElementById('statusModal').style.display = 'block';
+            document.body.style.overflow = 'hidden';
+        }
+
+        function closeStatusModal() {
+            document.getElementById('statusModal').style.display = 'none';
+            document.body.style.overflow = 'auto';
+        }
+
+        // View Settlement Details with sensitive data
+        function viewSettlementDetails(settlementId) {
+            const settlement = settlementsData.find(s => s.settlement_id == settlementId);
+            if (settlement) {
+                const modalBody = document.getElementById('detailsModalBody');
+                
+                const detailsHTML = `
+                    <div style="padding: 0;">
+                        <div style="background: linear-gradient(135deg, var(--azure-blue-lighter) 0%, #f0f0f0 100%); padding: 20px; margin: -30px -30px 20px -30px;">
+                            <h3 style="color: var(--azure-blue-dark); margin: 0;">Settlement #${settlement.settlement_id}</h3>
+                            <p style="margin: 5px 0 0 0; color: #666; font-size: 14px;">
+                                <span class="access-log-badge">🔐 Accessed: ${new Date().toLocaleString()}</span>
+                            </p>
+                        </div>
+
+                        <div class="detail-row">
+                            <div class="detail-label">Employee Name:</div>
+                            <div class="detail-value"><strong>${settlement.employee_name}</strong></div>
+                        </div>
+
+                        <div class="detail-row">
+                            <div class="detail-label">Employee Number:</div>
+                            <div class="detail-value">${settlement.employee_number}</div>
+                        </div>
+
+                        <div class="detail-row">
+                            <div class="detail-label">Email:</div>
+                            <div class="detail-value">${settlement.work_email}</div>
+                        </div>
+
+                        <div class="detail-row">
+                            <div class="detail-label">Job Title:</div>
+                            <div class="detail-value">${settlement.job_title} - ${settlement.department}</div>
+                        </div>
+
+                        <div class="detail-row">
+                            <div class="detail-label">Exit Type:</div>
+                            <div class="detail-value"><strong>${settlement.exit_type}</strong></div>
+                        </div>
+
+                        <div class="detail-row">
+                            <div class="detail-label">Exit Date:</div>
+                            <div class="detail-value">${new Date(settlement.exit_date).toLocaleDateString()}</div>
+                        </div>
+
+                        <div class="detail-row">
+                            <div class="detail-label">Last Working Day:</div>
+                            <div class="detail-value">${new Date(settlement.last_working_day).toLocaleDateString()}</div>
+                        </div>
+
+                        <div class="sensitive-info-section">
+                            <strong>💰 SETTLEMENT BREAKDOWN (SENSITIVE DATA)</strong>
+                            <p style="margin: 0; font-size: 13px; color: #856404;">This information is confidential and access is logged.</p>
+                        </div>
+
+                        <div class="detail-row">
+                            <div class="detail-label">Final Salary:</div>
+                            <div class="detail-value"><strong style="color: var(--azure-blue); font-size: 16px;">₱${parseFloat(settlement.final_salary).toFixed(2).replace(/\d(?=(\d{3})+\.)/g, '$&,')}</strong></div>
+                        </div>
+
+                        <div class="detail-row">
+                            <div class="detail-label">Severance Pay:</div>
+                            <div class="detail-value"><strong style="color: #28a745; font-size: 16px;">₱${parseFloat(settlement.severance_pay).toFixed(2).replace(/\d(?=(\d{3})+\.)/g, '$&,')}</strong></div>
+                        </div>
+
+                        <div class="detail-row">
+                            <div class="detail-label">Unused Leave Payout:</div>
+                            <div class="detail-value"><strong style="color: #17a2b8; font-size: 16px;">₱${parseFloat(settlement.unused_leave_payout).toFixed(2).replace(/\d(?=(\d{3})+\.)/g, '$&,')}</strong></div>
+                        </div>
+
+                        <div class="detail-row">
+                            <div class="detail-label">Deductions:</div>
+                            <div class="detail-value"><strong style="color: #dc3545; font-size: 16px;">-₱${parseFloat(settlement.deductions).toFixed(2).replace(/\d(?=(\d{3})+\.)/g, '$&,')}</strong></div>
+                        </div>
+
+                        <div class="detail-row" style="background: linear-gradient(135deg, var(--azure-blue-pale) 0%, #fff 100%); font-weight: bold;">
+                            <div class="detail-label" style="color: var(--azure-blue-dark);">FINAL SETTLEMENT AMOUNT:</div>
+                            <div class="detail-value" style="color: var(--azure-blue); font-size: 18px;">₱${parseFloat(settlement.final_settlement_amount).toFixed(2).replace(/\d(?=(\d{3})+\.)/g, '$&,')}</div>
+                        </div>
+
+                        <div class="detail-row">
+                            <div class="detail-label">Payment Date:</div>
+                            <div class="detail-value">${settlement.payment_date ? new Date(settlement.payment_date).toLocaleDateString() : '<em>Not scheduled</em>'}</div>
+                        </div>
+
+                        <div class="detail-row">
+                            <div class="detail-label">Payment Method:</div>
+                            <div class="detail-value">${settlement.payment_method || 'Not specified'}</div>
+                        </div>
+
+                        <div class="detail-row">
+                            <div class="detail-label">Status:</div>
+                            <div class="detail-value">
+                                <span class="status-badge status-${settlement.status.toLowerCase()}">
+                                    ${settlement.status}
+                                </span>
+                            </div>
+                        </div>
+
+                        ${settlement.notes ? `
+                        <div class="detail-row">
+                            <div class="detail-label">Notes:</div>
+                            <div class="detail-value" style="white-space: pre-wrap;">${settlement.notes}</div>
+                        </div>
+                        ` : ''}
+
+                        <div style="text-align: center; margin-top: 30px; padding-top: 20px; border-top: 2px solid #e0e0e0;">
+                            <button class="btn btn-primary" onclick="closeDetailsModal()">Close</button>
+                            <button class="btn" style="background: #6c757d; color: white;" onclick="printDetails(${settlementId})">🖨️ Print</button>
+                        </div>
+                    </div>
+                `;
+                
+                modalBody.innerHTML = detailsHTML;
+                
+                // Log access
+                const formData = new FormData();
+                formData.append('action', 'view_details');
+                formData.append('settlement_id', settlementId);
+                fetch('<?php echo $_SERVER['PHP_SELF']; ?>', {
+                    method: 'POST',
+                    body: formData
+                }).catch(err => console.log('Access logged'));
+                
+                document.getElementById('detailsModal').style.display = 'block';
+                document.body.style.overflow = 'hidden';
             }
         }
 
-        function updateEmployeeFromExit() {
-            const exitSelect = document.getElementById('exit_id');
-            const employeeSelect = document.getElementById('employee_id');
-            
-            if (exitSelect.value) {
-                const selectedOption = exitSelect.options[exitSelect.selectedIndex];
-                const employeeId = selectedOption.getAttribute('data-employee-id');
-                employeeSelect.value = employeeId;
-                updateSalaryFromEmployee();
-            }
+        function closeDetailsModal() {
+            document.getElementById('detailsModal').style.display = 'none';
+            document.body.style.overflow = 'auto';
         }
 
-        function updateSalaryFromEmployee() {
-            const employeeSelect = document.getElementById('employee_id');
-            const finalSalaryInput = document.getElementById('final_salary');
-            
-            if (employeeSelect.value) {
-                const selectedOption = employeeSelect.options[employeeSelect.selectedIndex];
-                const salary = selectedOption.getAttribute('data-salary');
-                finalSalaryInput.value = salary;
-                calculateSettlement();
+        function printDetails(settlementId) {
+            const settlement = settlementsData.find(s => s.settlement_id == settlementId);
+            if (settlement) {
+                const printWindow = window.open('', '', 'width=800,height=600');
+                const printContent = `
+                    <!DOCTYPE html>
+                    <html>
+                    <head>
+                        <title>Settlement Report #${settlement.settlement_id}</title>
+                        <style>
+                            body { font-family: Arial; margin: 20px; }
+                            .header { border-bottom: 3px solid #E91E63; padding-bottom: 10px; margin-bottom: 20px; }
+                            .section { margin: 20px 0; }
+                            .label { font-weight: bold; width: 200px; display: inline-block; }
+                            .amount { color: #E91E63; font-weight: bold; }
+                            .total-row { 
+                                border-top: 2px solid #E91E63; 
+                                margin-top: 20px;
+                                padding-top: 10px;
+                                font-size: 18px;
+                                font-weight: bold;
+                            }
+                            .sensitive { background: #fff3cd; padding: 10px; margin: 10px 0; }
+                        </style>
+                    </head>
+                    <body>
+                        <div class="header">
+                            <h2>SETTLEMENT REPORT</h2>
+                            <p>Settlement ID: #${settlement.settlement_id} | Date: ${new Date().toLocaleDateString()}</p>
+                        </div>
+
+                        <div class="section">
+                            <p><span class="label">Employee:</span> ${settlement.employee_name}</p>
+                            <p><span class="label">Employee #:</span> ${settlement.employee_number}</p>
+                            <p><span class="label">Position:</span> ${settlement.job_title}</p>
+                            <p><span class="label">Exit Type:</span> ${settlement.exit_type}</p>
+                        </div>
+
+                        <div class="section sensitive">
+                            <strong>CONFIDENTIAL - Settlement Breakdown</strong>
+                            <p><span class="label">Final Salary:</span> <span class="amount">₱${parseFloat(settlement.final_salary).toFixed(2).replace(/\d(?=(\d{3})+\.)/g, '$&,')}</span></p>
+                            <p><span class="label">Severance Pay:</span> <span class="amount">₱${parseFloat(settlement.severance_pay).toFixed(2).replace(/\d(?=(\d{3})+\.)/g, '$&,')}</span></p>
+                            <p><span class="label">Leave Payout:</span> <span class="amount">₱${parseFloat(settlement.unused_leave_payout).toFixed(2).replace(/\d(?=(\d{3})+\.)/g, '$&,')}</span></p>
+                            <p><span class="label">Deductions:</span> <span class="amount">-₱${parseFloat(settlement.deductions).toFixed(2).replace(/\d(?=(\d{3})+\.)/g, '$&,')}</span></p>
+                            <p class="total-row"><span class="label">TOTAL:</span> <span class="amount">₱${parseFloat(settlement.final_settlement_amount).toFixed(2).replace(/\d(?=(\d{3})+\.)/g, '$&,')}</span></p>
+                        </div>
+
+                        <div class="section">
+                            <p><span class="label">Payment Method:</span> ${settlement.payment_method}</p>
+                            <p><span class="label">Status:</span> ${settlement.status}</p>
+                        </div>
+
+                        <p style="font-size: 12px; color: #666; margin-top: 40px;">
+                            This is a confidential document. Printed: ${new Date().toLocaleString()}
+                        </p>
+                    </body>
+                    </html>
+                `;
+                printWindow.document.write(printContent);
+                printWindow.document.close();
+                setTimeout(() => printWindow.print(), 250);
             }
         }
 
         // Close modal when clicking outside
         window.onclick = function(event) {
-            const modal = document.getElementById('settlementModal');
-            if (event.target === modal) {
-                closeModal();
-            }
+            const addModal = document.getElementById('addSettlementModal');
+            const statusModal = document.getElementById('statusModal');
+            const detailsModal = document.getElementById('detailsModal');
+            
+            if (event.target === addModal) closeAddModal();
+            if (event.target === statusModal) closeStatusModal();
+            if (event.target === detailsModal) closeDetailsModal();
         }
 
         // Form validation
