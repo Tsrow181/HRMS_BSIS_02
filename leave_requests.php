@@ -31,51 +31,57 @@ function getLeaveRequests() {
     if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         if (isset($_POST['approveRequest'])) {
             $requestId = $_POST['requestId'];
-            
-            // Get employee_id for this leave request
-            $empStmt = $conn->prepare("SELECT employee_id FROM leave_requests WHERE leave_id = ?");
-            $empStmt->execute([$requestId]);
-            $employee_id = $empStmt->fetchColumn();
-            
-            $sql = "UPDATE leave_requests SET status = 'Approved' WHERE leave_id = ?";
-            $stmt = $conn->prepare($sql);
-            $stmt->execute([$requestId]);
-            
-            // Update employee status based on leave approval
-            if ($employee_id) {
-                handleLeaveStatusChange($employee_id, 'Approved');
-            }
 
-            // Update shift status based on leave approval
-            require_once 'shift_status_functions.php';
-            updateShiftStatusOnLeaveApproval($requestId);
-            
-            error_log("Leave requests: About to log approve for request $requestId");
-            error_log("Logging activity: Leave request #$requestId approved by user ID $user_id");
-            logActivity("Leave request #$requestId approved by user ID $user_id", "leave_requests", $requestId);
+            try {
+                // Get employee_id for this leave request
+                $empStmt = $conn->prepare("SELECT employee_id FROM leave_requests WHERE leave_id = ?");
+                $empStmt->execute([$requestId]);
+                $employee_id = $empStmt->fetchColumn();
+
+                $sql = "UPDATE leave_requests SET status = 'Approved' WHERE leave_id = ?";
+                $stmt = $conn->prepare($sql);
+                $stmt->execute([$requestId]);
+
+                // Update employee status based on leave approval
+                if ($employee_id) {
+                    handleLeaveStatusChange($employee_id, 'Approved');
+                }
+
+                error_log("Leave requests: About to log approve for request $requestId");
+                error_log("Logging activity: Leave request #$requestId approved by user ID $user_id");
+                logActivity("Leave request #$requestId approved by user ID $user_id", "leave_requests", $requestId);
+            } catch (PDOException $e) {
+                error_log("Error approving leave request: " . $e->getMessage());
+                // Could set a session message here for user feedback
+            }
             // Redirect to prevent form resubmission
             header("Location: leave_requests.php");
             exit;
         } elseif (isset($_POST['rejectRequest'])) {
             $requestId = $_POST['requestId'];
-            
-            // Get employee_id for this leave request
-            $empStmt = $conn->prepare("SELECT employee_id FROM leave_requests WHERE leave_id = ?");
-            $empStmt->execute([$requestId]);
-            $employee_id = $empStmt->fetchColumn();
-            
-            $sql = "UPDATE leave_requests SET status = 'Rejected' WHERE leave_id = ?";
-            $stmt = $conn->prepare($sql);
-            $stmt->execute([$requestId]);
-            
-            // Update employee status based on leave rejection
-            if ($employee_id) {
-                handleLeaveStatusChange($employee_id, 'Rejected');
+
+            try {
+                // Get employee_id for this leave request
+                $empStmt = $conn->prepare("SELECT employee_id FROM leave_requests WHERE leave_id = ?");
+                $empStmt->execute([$requestId]);
+                $employee_id = $empStmt->fetchColumn();
+
+                $sql = "UPDATE leave_requests SET status = 'Rejected' WHERE leave_id = ?";
+                $stmt = $conn->prepare($sql);
+                $stmt->execute([$requestId]);
+
+                // Update employee status based on leave rejection
+                if ($employee_id) {
+                    handleLeaveStatusChange($employee_id, 'Rejected');
+                }
+
+                error_log("Leave requests: About to log reject for request $requestId");
+                error_log("Logging activity: Leave request #$requestId rejected by user ID $user_id");
+                logActivity("Leave request #$requestId rejected by user ID $user_id", "leave_requests", $requestId);
+            } catch (PDOException $e) {
+                error_log("Error rejecting leave request: " . $e->getMessage());
+                // Could set a session message here for user feedback
             }
-            
-            error_log("Leave requests: About to log reject for request $requestId");
-            error_log("Logging activity: Leave request #$requestId rejected by user ID $user_id");
-            logActivity("Leave request #$requestId rejected by user ID $user_id", "leave_requests", $requestId);
             // Redirect to prevent form resubmission
             header("Location: leave_requests.php");
             exit;
@@ -99,8 +105,12 @@ function getLeaveRequests() {
 
             $allowedTypes = ['application/pdf', 'image/jpeg', 'image/png'];
             if (in_array($fileType, $allowedTypes) && $fileSize < 5000000) {
+                $uploadDir = 'uploads/leave_documents/';
+                if (!is_dir($uploadDir)) {
+                    mkdir($uploadDir, 0755, true);
+                }
                 $newFileName = uniqid() . '_' . $fileName;
-                $uploadPath = 'uploads/leave_documents/' . $newFileName;
+                $uploadPath = $uploadDir . $newFileName;
                 if (move_uploaded_file($fileTmpName, $uploadPath)) {
                     $documentPath = $uploadPath;
                 }
@@ -255,14 +265,10 @@ $rejectedPercentage = $totalRequests > 0 ? ($rejectedRequests / $totalRequests) 
                                                 <td><?php echo htmlspecialchars($request['total_days']); ?></td>
                                                 <td><?php echo htmlspecialchars($request['reason']); ?></td>
                                                 <td><span class="status-badge badge-<?php echo strtolower($request['status']); ?>"><?php echo htmlspecialchars($request['status']); ?></span></td>
-<<<<<<< HEAD
-                                                <td><?php if ($request['document_path']): ?><a href="#" class="btn btn-sm btn-info view-document" data-path="<?php echo htmlspecialchars($request['document_path']); ?>" data-type="<?php echo strtolower(pathinfo($request['document_path'], PATHINFO_EXTENSION)) === 'pdf' ? 'pdf' : 'image'; ?>"><i class="fas fa-eye mr-1"></i>View</a><?php endif; ?></td>
-=======
                                                 <td><?php if ($request['document_path']): ?>
                                                     <button class="btn btn-sm btn-outline-primary mr-1" onclick="viewDocument('<?php echo htmlspecialchars($request['document_path']); ?>', '<?php echo htmlspecialchars($request['employee_name']); ?>', '<?php echo htmlspecialchars($request['leave_type_name']); ?>', '<?php echo htmlspecialchars($request['start_date']); ?> to <?php echo htmlspecialchars($request['end_date']); ?>')"><i class="fas fa-eye"></i> View</button>
                                                     <a href="<?php echo htmlspecialchars($request['document_path']); ?>" download class="btn btn-sm btn-outline-secondary"><i class="fas fa-download"></i> Download</a>
                                                 <?php endif; ?></td>
->>>>>>> 48f0fd909401d87fc7e82ce488dfd81cd0dfc6fa
                                                 <td>
                                                     <?php if ($request['status'] == 'Pending'): ?>
                                                     <form method="POST" style="display:inline;">
@@ -382,28 +388,7 @@ $rejectedPercentage = $totalRequests > 0 ? ($rejectedRequests / $totalRequests) 
         </div>
     </div>
 
-    <!-- Document Viewer Modal -->
-    <div id="documentViewerModal" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="documentViewerModalLabel" aria-hidden="true">
-        <div class="modal-dialog modal-lg" role="document">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title" id="documentViewerModalLabel">Document Viewer</h5>
-                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                        <span aria-hidden="true">&times;</span>
-                    </button>
-                </div>
-                <div class="modal-body">
-                    <div id="documentViewerContent">
-                        <!-- Document content will be loaded here -->
-                    </div>
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
-                    <a id="downloadDocumentBtn" href="#" target="_blank" class="btn btn-primary">Download Document</a>
-                </div>
-            </div>
-        </div>
-    </div>
+
 
     <!-- New Request Modal -->
     <div class="modal fade" id="newRequestModal" tabindex="-1" role="dialog" aria-labelledby="newRequestModalLabel" aria-hidden="true">
@@ -547,23 +532,6 @@ $rejectedPercentage = $totalRequests > 0 ? ($rejectedRequests / $totalRequests) 
             // Hide action buttons immediately after clicking to prevent multiple submissions
             $('button[name="approveRequest"], button[name="rejectRequest"]').on('click', function() {
                 $(this).closest('td').find('button').hide();
-            });
-
-            // Document viewer functionality
-            $('.view-document').on('click', function(e) {
-                e.preventDefault();
-                var documentPath = $(this).data('path');
-                var documentType = $(this).data('type');
-
-                $('#documentViewerContent').empty();
-
-                if (documentType === 'pdf') {
-                    $('#documentViewerContent').html('<iframe src="' + documentPath + '" width="100%" height="600px" style="border: none;"></iframe>');
-                } else if (documentType === 'image') {
-                    $('#documentViewerContent').html('<img src="' + documentPath + '" class="img-fluid" alt="Document">');
-                }
-
-                $('#documentViewerModal').modal('show');
             });
         });
     </script>

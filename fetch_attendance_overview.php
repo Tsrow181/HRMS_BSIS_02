@@ -13,7 +13,19 @@ if (!isset($_SESSION['loggedin']) || $_SESSION['loggedin'] !== true || ($_SESSIO
 require_once 'dp.php';
 
 try {
-    // Get employees with their attendance data (same query as attendance.php)
+    // Get today's date for the query
+    $today = date('Y-m-d');
+    error_log("fetch_attendance_overview: Looking for attendance on date: {$today}");
+    
+    // First, let's check what attendance records exist for today
+    $checkStmt = $conn->query("SELECT employee_id, attendance_date, clock_in, clock_out, status FROM attendance WHERE attendance_date = '{$today}'");
+    $todayRecords = $checkStmt->fetchAll(PDO::FETCH_ASSOC);
+    error_log("fetch_attendance_overview: Found " . count($todayRecords) . " attendance records for today");
+    foreach ($todayRecords as $rec) {
+        error_log("  - Employee {$rec['employee_id']}: clock_in='{$rec['clock_in']}', clock_out='{$rec['clock_out']}'");
+    }
+    
+    // Get employees with their attendance data
     $stmt = $conn->query("
         SELECT
             ep.employee_id,
@@ -27,19 +39,12 @@ try {
             a.working_hours,
             a.status,
             a.overtime_hours,
-            CASE WHEN TIME(a.clock_in) > '08:00:00' THEN TIMESTAMPDIFF(MINUTE, '08:00:00', TIME(a.clock_in)) ELSE 0 END as late_minutes
+            CASE WHEN a.clock_in IS NOT NULL AND TIME(a.clock_in) > '08:00:00' THEN TIMESTAMPDIFF(MINUTE, '08:00:00', TIME(a.clock_in)) ELSE 0 END as late_minutes
         FROM employee_profiles ep
         LEFT JOIN personal_information pi ON ep.personal_info_id = pi.personal_info_id
         LEFT JOIN job_roles jr ON ep.job_role_id = jr.job_role_id
         LEFT JOIN attendance a ON ep.employee_id = a.employee_id
-            AND a.attendance_date = DATE(NOW())
-        WHERE ep.employment_status IN ('Full-time', 'Part-time')
-        AND ep.employee_id IN (
-            SELECT employee_id FROM employment_history
-            WHERE history_id IN (
-                SELECT MAX(history_id) FROM employment_history GROUP BY employee_id
-            ) AND employment_status = 'Active'
-        )
+            AND a.attendance_date = '{$today}'
         ORDER BY pi.first_name, pi.last_name
     ");
     $employees = $stmt->fetchAll(PDO::FETCH_ASSOC);
@@ -53,6 +58,11 @@ try {
         error_log("fetch_attendance_overview: No employees fetched, but total active employees: $totalEmployees");
         echo '<tr><td colspan="8" class="text-center">No employee records found. (Debug: ' . $totalEmployees . ' active employees in DB)</td></tr>';
     } else {
+        // Debug: Log what we're getting
+        error_log("fetch_attendance_overview: Processing " . count($employees) . " employees");
+        foreach ($employees as $emp) {
+            error_log("Employee: " . $emp['employee_id'] . " - Clock In: '" . var_export($emp['clock_in'], true) . "' - Clock Out: '" . var_export($emp['clock_out'], true) . "' - Type: " . gettype($emp['clock_in']));
+        }
         foreach ($employees as $employee) {
             $fullName = htmlspecialchars($employee['first_name'] . ' ' . $employee['last_name']);
             $department = htmlspecialchars($employee['department']);
@@ -61,8 +71,38 @@ try {
             // Determine status and styling
             $status = $employee['status'] ?? ($employee['clock_in'] && $employee['clock_in'] !== '00:00:00' ? 'Present' : 'Not Recorded');
             $statusClass = 'badge-secondary';
-            $clockIn = ($employee['clock_in'] && $employee['clock_in'] !== '00:00:00' && $employee['clock_in'] !== '0000-00-00 00:00:00') ? date('h:i A', strtotime($employee['clock_in'])) : '-';
-            $clockOut = ($employee['clock_out'] && $employee['clock_out'] !== '00:00:00' && $employee['clock_out'] !== '0000-00-00 00:00:00') ? date('h:i A', strtotime($employee['clock_out'])) : '-';
+            
+            // Format clock in time
+            $clockIn = '-';
+            if (isset($employee['clock_in']) && $employee['clock_in'] !== null) {
+                $clockInValue = trim($employee['clock_in']);
+                // Skip empty strings and MySQL zero dates
+                if ($clockInValue !== '' && 
+                    $clockInValue !== '00:00:00' && 
+                    $clockInValue !== '0000-00-00 00:00:00' && 
+                    strpos($clockInValue, '0000-00-00') === false) {
+                    $timestamp = strtotime($clockInValue);
+                    if ($timestamp !== false && $timestamp > 0) {
+                        $clockIn = date('h:i A', $timestamp);
+                    }
+                }
+            }
+            
+            // Format clock out time
+            $clockOut = '-';
+            if (isset($employee['clock_out']) && $employee['clock_out'] !== null) {
+                $clockOutValue = trim($employee['clock_out']);
+                // Skip empty strings and MySQL zero dates
+                if ($clockOutValue !== '' && 
+                    $clockOutValue !== '00:00:00' && 
+                    $clockOutValue !== '0000-00-00 00:00:00' && 
+                    strpos($clockOutValue, '0000-00-00') === false) {
+                    $timestamp = strtotime($clockOutValue);
+                    if ($timestamp !== false && $timestamp > 0) {
+                        $clockOut = date('h:i A', $timestamp);
+                    }
+                }
+            }
             $hours = $employee['working_hours'] ? $employee['working_hours'] . ' hours' : '0 hours';
             $overtime = $employee['overtime_hours'] ? $employee['overtime_hours'] . ' hours' : '0 hours';
             $late = $employee['late_minutes'] ? $employee['late_minutes'] . ' mins' : '0 mins';

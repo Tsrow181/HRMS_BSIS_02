@@ -179,6 +179,38 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                 // Add overtime pay to gross pay
                 $adjusted_gross_pay += $overtime_pay;
 
+                // Calculate holiday pay based on Philippine holiday types
+                require_once 'holiday_type_mapper.php';
+                $holiday_pay = 0;
+                $holiday_sql = "SELECT ph.holiday_date, ph.holiday_name, ph.holiday_type,
+                               CASE WHEN a.attendance_id IS NOT NULL THEN 1 ELSE 0 END as worked
+                               FROM public_holidays ph
+                               LEFT JOIN attendance a ON ph.holiday_date = a.attendance_date 
+                                   AND a.employee_id = ?
+                                   AND a.status = 'Present'
+                               WHERE ph.holiday_date BETWEEN 
+                                   (SELECT pay_period_start FROM payroll_cycles WHERE payroll_cycle_id = ?)
+                                   AND (SELECT pay_period_end FROM payroll_cycles WHERE payroll_cycle_id = ?)";
+                $holiday_stmt = $conn->prepare($holiday_sql);
+                $holiday_stmt->execute([$employee['employee_id'], $payroll_cycle_id, $payroll_cycle_id]);
+                $holidays = $holiday_stmt->fetchAll(PDO::FETCH_ASSOC);
+                
+                foreach ($holidays as $holiday) {
+                    $holidayType = $holiday['holiday_type'] ?? 'Regular Holiday';
+                    $worked = (bool)$holiday['worked'];
+                    $multiplier = getHolidayPayMultiplier($holidayType, $worked);
+                    
+                    // Calculate holiday pay: daily_rate * multiplier
+                    // For regular holidays not worked: 100% of daily rate
+                    // For regular holidays worked: 200% of daily rate
+                    // For special non-working worked: 130% of daily rate
+                    // For special non-working not worked: 0% (no work no pay)
+                    $holiday_pay += $daily_rate * $multiplier;
+                }
+                
+                // Add holiday pay to gross pay
+                $adjusted_gross_pay += $holiday_pay;
+
                 // Calculate tax deductions from tax_deductions table
                 $tax_deductions = 0;
                 $tax_sql = "SELECT SUM(CASE

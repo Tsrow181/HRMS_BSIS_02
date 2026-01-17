@@ -16,7 +16,7 @@ require_once 'dp.php';
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     if (isset($_POST['addLeaveType'])) {
         // Add new leave type
-        $name = $_POST['leaveTypeName'];
+        $name = trim($_POST['leaveTypeName']);
         $description = $_POST['leaveDescription'];
         $paid = isset($_POST['paid']) ? 1 : 0;
         $default_days = $_POST['defaultDays'];
@@ -24,20 +24,29 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $max_carry_forward_days = $_POST['maxCarryForwardDays'];
 
         try {
-            $sql = "INSERT INTO leave_types (leave_type_name, description, paid, default_days, carry_forward, max_carry_forward_days) VALUES (?, ?, ?, ?, ?, ?)";
-            $stmt = $conn->prepare($sql);
-            $stmt->execute([$name, $description, $paid, $default_days, $carry_forward, $max_carry_forward_days]);
-            
-            // Redirect to refresh the page and show the new leave type
-            header("Location: leave_types.php");
-            exit;
+            // Check if leave type already exists (case-insensitive)
+            $checkSql = "SELECT COUNT(*) FROM leave_types WHERE LOWER(leave_type_name) = LOWER(?)";
+            $checkStmt = $conn->prepare($checkSql);
+            $checkStmt->execute([$name]);
+
+            if ($checkStmt->fetchColumn() > 0) {
+                $error = "Error: Leave type '$name' already exists.";
+            } else {
+                $sql = "INSERT INTO leave_types (leave_type_name, description, paid, default_days, carry_forward, max_carry_forward_days) VALUES (?, ?, ?, ?, ?, ?)";
+                $stmt = $conn->prepare($sql);
+                $stmt->execute([$name, $description, $paid, $default_days, $carry_forward, $max_carry_forward_days]);
+                
+                // Redirect to refresh the page and show the new leave type
+                header("Location: leave_types.php");
+                exit;
+            }
         } catch (PDOException $e) {
             $error = "Error adding leave type: " . $e->getMessage();
         }
     } elseif (isset($_POST['editLeaveType'])) {
         // Edit existing leave type
         $id = $_POST['leaveTypeId'];
-        $name = $_POST['leaveTypeName'];
+        $name = trim($_POST['leaveTypeName']);
         $description = $_POST['leaveDescription'];
         $paid = isset($_POST['paid']) ? 1 : 0;
         $default_days = $_POST['defaultDays'];
@@ -45,13 +54,22 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $max_carry_forward_days = $_POST['maxCarryForwardDays'];
 
         try {
-            $sql = "UPDATE leave_types SET leave_type_name = ?, description = ?, paid = ?, default_days = ?, carry_forward = ?, max_carry_forward_days = ? WHERE leave_type_id = ?";
-            $stmt = $conn->prepare($sql);
-            $stmt->execute([$name, $description, $paid, $default_days, $carry_forward, $max_carry_forward_days, $id]);
-            
-            // Redirect to refresh the page
-            header("Location: leave_types.php");
-            exit;
+            // Check if leave type already exists (excluding current record)
+            $checkSql = "SELECT COUNT(*) FROM leave_types WHERE LOWER(leave_type_name) = LOWER(?) AND leave_type_id != ?";
+            $checkStmt = $conn->prepare($checkSql);
+            $checkStmt->execute([$name, $id]);
+
+            if ($checkStmt->fetchColumn() > 0) {
+                $error = "Error: Leave type '$name' already exists.";
+            } else {
+                $sql = "UPDATE leave_types SET leave_type_name = ?, description = ?, paid = ?, default_days = ?, carry_forward = ?, max_carry_forward_days = ? WHERE leave_type_id = ?";
+                $stmt = $conn->prepare($sql);
+                $stmt->execute([$name, $description, $paid, $default_days, $carry_forward, $max_carry_forward_days, $id]);
+                
+                // Redirect to refresh the page
+                header("Location: leave_types.php");
+                exit;
+            }
         } catch (PDOException $e) {
             $error = "Error updating leave type: " . $e->getMessage();
         }
@@ -123,14 +141,25 @@ $leaveTypes = getLeaveTypes();
             <div class="main-content">
                 <h2 class="section-title">Leave Types Management</h2>
                 
+                <?php if (isset($error)): ?>
+                    <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                        <?php echo $error; ?>
+                        <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                            <span aria-hidden="true">&times;</span>
+                        </button>
+                    </div>
+                <?php endif; ?>
+                
                 <div class="row mb-4">
                     <div class="col-md-12">
                         <div class="card">
                             <div class="card-header d-flex justify-content-between align-items-center">
                                 <h5 class="mb-0"><i class="fas fa-list-alt mr-2"></i>Leave Types</h5>
-                                <button class="btn btn-primary" data-toggle="modal" data-target="#addLeaveTypeModal">
-                                    <i class="fas fa-plus mr-2"></i>Add Leave Type
-                                </button>
+                                <div>
+                                    <button class="btn btn-primary" data-toggle="modal" data-target="#addLeaveTypeModal">
+                                        <i class="fas fa-plus mr-2"></i>Add Leave Type
+                                    </button>
+                                </div>
                             </div>
                             <div class="card-body">
                                 <div class="table-responsive">
