@@ -21,17 +21,37 @@ require_once 'dp.php'; // database connection
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.1/css/all.min.css">
   <link rel="stylesheet" href="styles.css">
   <style>
-    .container { max-width: 85%; margin-left: 265px; padding-top: 3.5rem; }
-    .section-title { color: var(--primary-color); margin-bottom: 1.5rem; font-weight:600 }
-    .stat-card { min-height:100px }
-    table th, table td { vertical-align: middle }
-    @media print {
-      .container { max-width: 100%; margin-left: 0; padding-top: 0; }
-      .btn, .modal, nav, .row.g-3, .d-flex.justify-content-between.align-items-center { display: none !important; }
-      .table-responsive { overflow: visible; }
-      table { width: 100%; font-size: 12px; }
-      .card { border: 1px solid #000; margin-bottom: 10px; }
-      .stat-card h3 { font-size: 18px; }
+    .section-title {
+      color: var(--primary-color);
+      margin-bottom: 30px;
+      font-weight: 600;
+    }
+    .container-fluid { padding: 0; }
+    .row { margin: 0; }
+    .container { max-width: 85%; margin-left: 265px; padding-top:100px; }
+    table { width: 100%; border-collapse: collapse; margin-top: 15px; }
+    th, td { border: 1px solid #ccc; padding: 8px; text-align: left; }
+
+    /* Custom styles for search input and button */
+    .search-input {
+      border: 1px solid var(--primary-color);
+      border-radius: 6px 0 0 6px;
+    } 
+    .search-input:focus {
+      border-color: var(--primary-color);
+      box-shadow: 0 0 0 0.2rem rgba(233, 30, 99, 0.25);
+    }
+    .search-btn {
+      background: linear-gradient(135deg, var(--primary-color) 0%, var(--primary-dark) 100%);
+      border: 1px solid var(--primary-color);
+      border-radius: 0 6px 6px 0;
+      color: var(--text-white);
+      transition: all 0.3s;
+    }
+    .search-btn:hover {
+      background: linear-gradient(135deg, var(--primary-dark) 0%, var(--primary-color) 100%);
+      transform: translateY(-1px);
+      box-shadow: 0 4px 12px var(--shadow-medium);
     }
   </style>
 </head>
