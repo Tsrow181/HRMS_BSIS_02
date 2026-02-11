@@ -57,8 +57,36 @@ $stats['rejected'] = $stmt->fetch(PDO::FETCH_ASSOC)['count'];
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.1/css/all.min.css">
     <link rel="stylesheet" href="styles.css?v=rose">
+    <style>
+        /* Toast Notification Styles */
+        .toast-container {
+            position: fixed;
+            top: 80px;
+            right: 20px;
+            z-index: 9999;
+        }
+        .custom-toast {
+            min-width: 300px;
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+            margin-bottom: 10px;
+            animation: slideIn 0.3s ease;
+        }
+        @keyframes slideIn {
+            from { transform: translateX(400px); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
+        }
+        .toast-success { border-left: 4px solid #28a745; }
+        .toast-error { border-left: 4px solid #dc3545; }
+        .toast-warning { border-left: 4px solid #ffc107; }
+        .toast-info { border-left: 4px solid #17a2b8; }
+    </style>
 </head>
 <body>
+    <!-- Toast Container -->
+    <div class="toast-container" id="toastContainer"></div>
+    
     <div class="container-fluid">
         <?php include 'navigation.php'; ?>
         <div class="row">
@@ -229,6 +257,36 @@ $stats['rejected'] = $stmt->fetch(PDO::FETCH_ASSOC)['count'];
         </div>
     </div>
 
+    <!-- Approve Confirmation Modal -->
+    <div class="modal fade" id="approveConfirmModal" tabindex="-1" role="dialog">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header bg-success text-white">
+                    <h5 class="modal-title"><i class="fas fa-check-circle mr-2"></i>Approve Job</h5>
+                    <button type="button" class="close text-white" data-dismiss="modal">
+                        <span>&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <h6 class="mb-3">Approve and publish this job opening?</h6>
+                    <div class="alert alert-success">
+                        <strong id="jobTitleToApprove"></strong>
+                    </div>
+                    <p class="text-muted">
+                        <i class="fas fa-info-circle mr-1"></i>
+                        This job will be immediately published and visible to candidates.
+                    </p>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
+                    <button type="button" class="btn btn-success" id="confirmApprove">
+                        <i class="fas fa-check-circle mr-1"></i>Approve & Publish
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <!-- Vacancy Limit Management Modal -->
     <div class="modal fade" id="vacancyLimitModal" tabindex="-1" role="dialog">
         <div class="modal-dialog modal-lg" role="document">
@@ -303,6 +361,42 @@ $stats['rejected'] = $stmt->fetch(PDO::FETCH_ASSOC)['count'];
     <script>
     let currentJobId = null;
     let currentJobTitle = '';
+    
+    // Toast Notification Function
+    function showToast(message, type = 'success') {
+        const toastId = 'toast-' + Date.now();
+        const iconMap = {
+            'success': 'fa-check-circle',
+            'error': 'fa-times-circle',
+            'warning': 'fa-exclamation-triangle',
+            'info': 'fa-info-circle'
+        };
+        const icon = iconMap[type] || iconMap['info'];
+        
+        const toast = $(`
+            <div class="custom-toast toast-${type}" id="${toastId}">
+                <div class="toast-header">
+                    <i class="fas ${icon} mr-2"></i>
+                    <strong class="mr-auto">${type.charAt(0).toUpperCase() + type.slice(1)}</strong>
+                    <button type="button" class="ml-2 mb-1 close" onclick="$('#${toastId}').fadeOut(300, function(){ $(this).remove(); })">
+                        <span>&times;</span>
+                    </button>
+                </div>
+                <div class="toast-body">
+                    ${message}
+                </div>
+            </div>
+        `);
+        
+        $('#toastContainer').append(toast);
+        
+        // Auto remove after 5 seconds
+        setTimeout(function() {
+            $('#' + toastId).fadeOut(300, function() {
+                $(this).remove();
+            });
+        }, 5000);
+    }
     
     function viewJobDetails(button) {
         const job = JSON.parse(button.getAttribute('data-job'));
@@ -389,9 +483,14 @@ $stats['rejected'] = $stmt->fetch(PDO::FETCH_ASSOC)['count'];
     $('#approveFromModal').on('click', function() {
         if (!currentJobId) return;
         
-        if (!confirm('Approve this job: ' + currentJobTitle + '?')) {
-            return;
-        }
+        // Close the view modal and show approve confirmation
+        $('#viewJobModal').modal('hide');
+        $('#jobTitleToApprove').text(currentJobTitle);
+        $('#approveConfirmModal').modal('show');
+    });
+    
+    $('#confirmApprove').on('click', function() {
+        if (!currentJobId) return;
         
         var $btn = $(this);
         $btn.prop('disabled', true).html('<i class="fas fa-spinner fa-spin mr-1"></i>Approving...');
@@ -406,15 +505,19 @@ $stats['rejected'] = $stmt->fetch(PDO::FETCH_ASSOC)['count'];
             dataType: 'json',
             success: function(response){
                 if(response.success){
-                    location.reload();
+                    $('#approveConfirmModal').modal('hide');
+                    showToast('✅ Job approved and published successfully!', 'success');
+                    setTimeout(function() {
+                        location.reload();
+                    }, 1500);
                 } else {
-                    alert(response.error);
-                    $btn.prop('disabled', false).html('<i class="fas fa-check-circle mr-1"></i>Approve');
+                    showToast(response.error, 'error');
+                    $btn.prop('disabled', false).html('<i class="fas fa-check-circle mr-1"></i>Approve & Publish');
                 }
             },
             error: function(){
-                alert('Failed to approve job. Please try again.');
-                $btn.prop('disabled', false).html('<i class="fas fa-check-circle mr-1"></i>Approve');
+                showToast('Failed to approve job. Please try again.', 'error');
+                $btn.prop('disabled', false).html('<i class="fas fa-check-circle mr-1"></i>Approve & Publish');
             }
         });
     });
@@ -422,6 +525,7 @@ $stats['rejected'] = $stmt->fetch(PDO::FETCH_ASSOC)['count'];
     $('#rejectFromModal').on('click', function() {
         if (!currentJobId) return;
         
+        // Close the view modal and show reject modal
         $('#viewJobModal').modal('hide');
         $('#jobTitleToReject').text(currentJobTitle);
         $('#rejectionReason').val('');
@@ -433,7 +537,7 @@ $stats['rejected'] = $stmt->fetch(PDO::FETCH_ASSOC)['count'];
         
         var reason = $('#rejectionReason').val().trim();
         if(!reason){
-            alert('Please provide a reason for rejection.');
+            showToast('Please provide a reason for rejection.', 'warning');
             return;
         }
         
@@ -451,14 +555,17 @@ $stats['rejected'] = $stmt->fetch(PDO::FETCH_ASSOC)['count'];
             dataType: 'json',
             success: function(response){
                 if(response.success){
-                    location.reload();
+                    showToast('❌ Job rejected successfully!', 'success');
+                    setTimeout(function() {
+                        location.reload();
+                    }, 1500);
                 } else {
-                    alert(response.error);
+                    showToast(response.error, 'error');
                     $btn.prop('disabled', false).html('<i class="fas fa-times-circle mr-1"></i>Reject Job');
                 }
             },
             error: function(){
-                alert('Failed to reject job. Please try again.');
+                showToast('Failed to reject job. Please try again.', 'error');
                 $btn.prop('disabled', false).html('<i class="fas fa-times-circle mr-1"></i>Reject Job');
             }
         });
@@ -486,15 +593,17 @@ $stats['rejected'] = $stmt->fetch(PDO::FETCH_ASSOC)['count'];
             dataType: 'json',
             success: function(response) {
                 if(response.success) {
-                    alert('✅ Vacancy limits updated successfully!');
-                    location.reload();
+                    showToast('✅ Vacancy limits updated successfully!', 'success');
+                    setTimeout(function() {
+                        location.reload();
+                    }, 1500);
                 } else {
-                    alert('Error: ' + response.error);
+                    showToast('Error: ' + response.error, 'error');
                     $btn.prop('disabled', false).html('<i class="fas fa-save mr-1"></i>Save Limits');
                 }
             },
             error: function() {
-                alert('Failed to save vacancy limits. Please try again.');
+                showToast('Failed to save vacancy limits. Please try again.', 'error');
                 $btn.prop('disabled', false).html('<i class="fas fa-save mr-1"></i>Save Limits');
             }
         });

@@ -307,8 +307,36 @@ function callOpenAI(\$prompt) {
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.1/css/all.min.css">
     <link rel="stylesheet" href="styles.css?v=rose">
+    <style>
+        /* Toast Notification Styles */
+        .toast-container {
+            position: fixed;
+            top: 80px;
+            right: 20px;
+            z-index: 9999;
+        }
+        .custom-toast {
+            min-width: 300px;
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+            margin-bottom: 10px;
+            animation: slideIn 0.3s ease;
+        }
+        @keyframes slideIn {
+            from { transform: translateX(400px); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
+        }
+        .toast-success { border-left: 4px solid #28a745; }
+        .toast-error { border-left: 4px solid #dc3545; }
+        .toast-warning { border-left: 4px solid #ffc107; }
+        .toast-info { border-left: 4px solid #17a2b8; }
+    </style>
 </head>
 <body>
+    <!-- Toast Container -->
+    <div class="toast-container" id="toastContainer"></div>
+    
     <div class="container-fluid">
         <?php include 'navigation.php'; ?>
         <div class="row">
@@ -447,7 +475,52 @@ function callOpenAI(\$prompt) {
     <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.1/dist/umd/popper.min.js"></script>
     <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
     <script>
+    // Toast Notification Function
+    function showToast(message, type = 'success') {
+        const toastId = 'toast-' + Date.now();
+        const iconMap = {
+            'success': 'fa-check-circle',
+            'error': 'fa-times-circle',
+            'warning': 'fa-exclamation-triangle',
+            'info': 'fa-info-circle'
+        };
+        const icon = iconMap[type] || iconMap['info'];
+        
+        const toast = $(`
+            <div class="custom-toast toast-${type}" id="${toastId}">
+                <div class="toast-header">
+                    <i class="fas ${icon} mr-2"></i>
+                    <strong class="mr-auto">${type.charAt(0).toUpperCase() + type.slice(1)}</strong>
+                    <button type="button" class="ml-2 mb-1 close" onclick="$('#${toastId}').fadeOut(300, function(){ $(this).remove(); })">
+                        <span>&times;</span>
+                    </button>
+                </div>
+                <div class="toast-body">
+                    ${message}
+                </div>
+            </div>
+        `);
+        
+        $('#toastContainer').append(toast);
+        
+        // Auto remove after 5 seconds
+        setTimeout(function() {
+            $('#' + toastId).fadeOut(300, function() {
+                $(this).remove();
+            });
+        }, 5000);
+    }
+    
     $(document).ready(function(){
+        // Show toast for success/error messages
+        <?php if ($success_message): ?>
+            showToast('<?php echo addslashes($success_message); ?>', 'success');
+        <?php endif; ?>
+        
+        <?php if ($error_message): ?>
+            showToast('<?php echo addslashes($error_message); ?>', 'error');
+        <?php endif; ?>
+        
         function toggleProviderConfig() {
             var provider = $('#provider').val();
             $('#mock_config, #gemini_config, #openai_config').hide();
