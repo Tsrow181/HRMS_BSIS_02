@@ -218,6 +218,18 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         
         $conn->exec("SET FOREIGN_KEY_CHECKS = 1");
         
+        // Trigger resume extraction (non-blocking)
+        if ($resumePath) {
+            try {
+                require_once 'resume_extraction/ResumeExtractionService.php';
+                $extractionService = new ResumeExtractionService($conn);
+                $extractionService->extractAndStore($candidateId, $resumePath);
+            } catch (Exception $extractionError) {
+                // Log but don't fail the application
+                error_log("Resume extraction failed for candidate $candidateId: " . $extractionError->getMessage());
+            }
+        }
+        
         $success = true;
         
     } catch (Exception $e) {

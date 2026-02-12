@@ -636,6 +636,16 @@ $stats = [
                     </div>
                 </div>
                 
+                <!-- Extracted Resume Data Section -->
+                <div class="row mt-4">
+                    <div class="col-12">
+                        <h6><i class="fas fa-robot mr-2"></i>AI Extracted Resume Data</h6>
+                        <div id="extractedDataSection">
+                            <!-- Extracted data will be loaded here -->
+                        </div>
+                    </div>
+                </div>
+                
                 <hr>
                 
                 <div class="d-flex justify-content-end">
@@ -689,6 +699,9 @@ $stats = [
             
             // Load documents for this candidate
             loadCandidateDocuments(app.candidate_id);
+            
+            // Load extracted resume data
+            loadExtractedResumeData(app.candidate_id);
             
             // Initialize star rating system
             setTimeout(() => {
@@ -898,6 +911,147 @@ $stats = [
         function flagDocument(filePath) {
             alert('Document flagged for review!');
             $('#documentPreviewModal').modal('hide');
+        }
+        
+        function loadExtractedResumeData(candidateId) {
+            // AJAX call to fetch extracted resume data
+            $.ajax({
+                url: 'get_extracted_resume_data.php',
+                method: 'POST',
+                data: { candidate_id: candidateId },
+                dataType: 'json',
+                success: function(data) {
+                    displayExtractedData(data);
+                },
+                error: function() {
+                    document.getElementById('extractedDataSection').innerHTML = `
+                        <div class="alert alert-warning">
+                            <i class="fas fa-exclamation-triangle mr-2"></i>
+                            No extracted data available yet. Resume extraction may still be processing.
+                        </div>
+                    `;
+                }
+            });
+        }
+        
+        function displayExtractedData(data) {
+            if (!data || (!data.education.length && !data.skills.length && !data.experience.length && !data.certifications.length)) {
+                document.getElementById('extractedDataSection').innerHTML = `
+                    <div class="alert alert-info">
+                        <i class="fas fa-info-circle mr-2"></i>
+                        No extracted data available. Resume extraction may still be processing.
+                    </div>
+                `;
+                return;
+            }
+            
+            let html = '<div class="row">';
+            
+            // Education
+            if (data.education && data.education.length > 0) {
+                html += `
+                    <div class="col-md-6 mb-3">
+                        <div class="card">
+                            <div class="card-header bg-primary text-white">
+                                <i class="fas fa-graduation-cap mr-2"></i>Education
+                            </div>
+                            <div class="card-body" style="max-height: 200px; overflow-y: auto;">
+                `;
+                data.education.forEach(edu => {
+                    html += `
+                        <div class="mb-2 pb-2 border-bottom">
+                            <strong>${edu.degree || 'N/A'}</strong><br>
+                            <small>${edu.institution || 'N/A'}</small><br>
+                            <small class="text-muted">${edu.field_of_study || ''} ${edu.start_date ? '(' + edu.start_date + ' - ' + (edu.end_date || 'Present') + ')' : ''}</small>
+                            ${edu.grade ? '<br><small class="badge badge-info">' + edu.grade + '</small>' : ''}
+                        </div>
+                    `;
+                });
+                html += `</div></div></div>`;
+            }
+            
+            // Skills
+            if (data.skills && data.skills.length > 0) {
+                html += `
+                    <div class="col-md-6 mb-3">
+                        <div class="card">
+                            <div class="card-header bg-success text-white">
+                                <i class="fas fa-tools mr-2"></i>Skills
+                            </div>
+                            <div class="card-body" style="max-height: 200px; overflow-y: auto;">
+                `;
+                const skillsByLevel = {
+                    'Expert': [],
+                    'Advanced': [],
+                    'Intermediate': [],
+                    'Beginner': []
+                };
+                data.skills.forEach(skill => {
+                    const level = skill.proficiency_level || 'Intermediate';
+                    if (!skillsByLevel[level]) skillsByLevel[level] = [];
+                    skillsByLevel[level].push(skill);
+                });
+                
+                Object.keys(skillsByLevel).forEach(level => {
+                    if (skillsByLevel[level].length > 0) {
+                        html += `<div class="mb-2"><strong>${level}:</strong><br>`;
+                        skillsByLevel[level].forEach(skill => {
+                            html += `<span class="badge badge-secondary mr-1 mb-1">${skill.skill_name}${skill.years_of_experience ? ' (' + skill.years_of_experience + 'y)' : ''}</span>`;
+                        });
+                        html += `</div>`;
+                    }
+                });
+                html += `</div></div></div>`;
+            }
+            
+            // Work Experience
+            if (data.experience && data.experience.length > 0) {
+                html += `
+                    <div class="col-md-6 mb-3">
+                        <div class="card">
+                            <div class="card-header bg-info text-white">
+                                <i class="fas fa-briefcase mr-2"></i>Work Experience
+                            </div>
+                            <div class="card-body" style="max-height: 200px; overflow-y: auto;">
+                `;
+                data.experience.forEach(exp => {
+                    html += `
+                        <div class="mb-2 pb-2 border-bottom">
+                            <strong>${exp.job_title || 'N/A'}</strong> @ ${exp.company || 'N/A'}<br>
+                            <small class="text-muted">${exp.start_date || ''} - ${exp.end_date || 'Present'}</small><br>
+                            ${exp.responsibilities ? '<small>' + exp.responsibilities.substring(0, 100) + '...</small>' : ''}
+                        </div>
+                    `;
+                });
+                html += `</div></div></div>`;
+            }
+            
+            // Certifications
+            if (data.certifications && data.certifications.length > 0) {
+                html += `
+                    <div class="col-md-6 mb-3">
+                        <div class="card">
+                            <div class="card-header bg-warning text-dark">
+                                <i class="fas fa-certificate mr-2"></i>Certifications
+                            </div>
+                            <div class="card-body" style="max-height: 200px; overflow-y: auto;">
+                `;
+                data.certifications.forEach(cert => {
+                    const isExpired = cert.expiry_date && new Date(cert.expiry_date) < new Date();
+                    const statusBadge = cert.expiry_date ? (isExpired ? '<span class="badge badge-danger">Expired</span>' : '<span class="badge badge-success">Active</span>') : '<span class="badge badge-secondary">No Expiry</span>';
+                    html += `
+                        <div class="mb-2 pb-2 border-bottom">
+                            <strong>${cert.certification_name || 'N/A'}</strong> ${statusBadge}<br>
+                            <small>${cert.issuing_organization || 'N/A'}</small><br>
+                            <small class="text-muted">Issued: ${cert.issue_date || 'N/A'}${cert.expiry_date ? ' | Expires: ' + cert.expiry_date : ''}</small>
+                        </div>
+                    `;
+                });
+                html += `</div></div></div>`;
+            }
+            
+            html += '</div>';
+            document.getElementById('extractedDataSection').innerHTML = html;
         }
 
     </script>

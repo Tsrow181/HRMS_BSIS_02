@@ -1945,3 +1945,91 @@ FOREIGN KEY (approved_by) REFERENCES users(user_id) ON DELETE SET NULL;
 -- Add vacancy_limit column to departments table
 ALTER TABLE departments 
 ADD COLUMN IF NOT EXISTS vacancy_limit INT DEFAULT NULL COMMENT 'Maximum number of open job vacancies allowed for this department';
+
+
+-- ===============================
+-- AI RESUME EXTRACTION TABLES
+-- ===============================
+
+-- 1. Create candidate_education table
+CREATE TABLE IF NOT EXISTS candidate_education (
+    education_id INT AUTO_INCREMENT PRIMARY KEY,
+    candidate_id INT NOT NULL,
+    institution VARCHAR(255) NOT NULL,
+    degree VARCHAR(100) NOT NULL,
+    field_of_study VARCHAR(100),
+    start_date DATE,
+    end_date DATE,
+    grade VARCHAR(50),
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    FOREIGN KEY (candidate_id) REFERENCES candidates(candidate_id) ON DELETE CASCADE,
+    INDEX idx_candidate_education (candidate_id)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+-- 2. Create candidate_skills table
+CREATE TABLE IF NOT EXISTS candidate_skills (
+    skill_id INT AUTO_INCREMENT PRIMARY KEY,
+    candidate_id INT NOT NULL,
+    skill_name VARCHAR(100) NOT NULL,
+    proficiency_level ENUM('Beginner', 'Intermediate', 'Advanced', 'Expert') DEFAULT 'Intermediate',
+    years_of_experience INT,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    FOREIGN KEY (candidate_id) REFERENCES candidates(candidate_id) ON DELETE CASCADE,
+    INDEX idx_candidate_skills (candidate_id),
+    INDEX idx_skill_name (skill_name)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+-- 3. Create candidate_work_experience table
+CREATE TABLE IF NOT EXISTS candidate_work_experience (
+    experience_id INT AUTO_INCREMENT PRIMARY KEY,
+    candidate_id INT NOT NULL,
+    company VARCHAR(255) NOT NULL,
+    job_title VARCHAR(100) NOT NULL,
+    start_date DATE,
+    end_date DATE,
+    responsibilities TEXT,
+    achievements TEXT,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    FOREIGN KEY (candidate_id) REFERENCES candidates(candidate_id) ON DELETE CASCADE,
+    INDEX idx_candidate_experience (candidate_id)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+-- 4. Create candidate_certifications table
+CREATE TABLE IF NOT EXISTS candidate_certifications (
+    certification_id INT AUTO_INCREMENT PRIMARY KEY,
+    candidate_id INT NOT NULL,
+    certification_name VARCHAR(255) NOT NULL,
+    issuing_organization VARCHAR(255) NOT NULL,
+    issue_date DATE,
+    expiry_date DATE,
+    credential_id VARCHAR(100),
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    FOREIGN KEY (candidate_id) REFERENCES candidates(candidate_id) ON DELETE CASCADE,
+    INDEX idx_candidate_certifications (candidate_id)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+-- 5. Create candidate_parsed_resumes table (audit log)
+CREATE TABLE IF NOT EXISTS candidate_parsed_resumes (
+    parse_id INT AUTO_INCREMENT PRIMARY KEY,
+    candidate_id INT NOT NULL,
+    resume_file_path VARCHAR(255) NOT NULL,
+    parser_response JSON NOT NULL,
+    extraction_status ENUM('completed', 'failed') NOT NULL,
+    error_message TEXT,
+    parsed_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (candidate_id) REFERENCES candidates(candidate_id) ON DELETE CASCADE,
+    INDEX idx_candidate_parsed (candidate_id)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+-- 6. Add extraction tracking columns to candidates table
+ALTER TABLE candidates 
+ADD COLUMN IF NOT EXISTS extraction_status ENUM('pending', 'processing', 'completed', 'failed') DEFAULT 'pending',
+ADD COLUMN IF NOT EXISTS extraction_attempted_at TIMESTAMP NULL,
+ADD COLUMN IF NOT EXISTS extraction_error TEXT NULL;
+
+-- Create index on extraction_status for filtering
+CREATE INDEX IF NOT EXISTS idx_extraction_status ON candidates(extraction_status);
