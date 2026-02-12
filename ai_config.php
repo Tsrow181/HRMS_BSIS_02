@@ -4,11 +4,65 @@
 
 // AI Provider: 'mock', 'gemini' or 'openai'
 // Use 'mock' for testing without API keys
-define('AI_PROVIDER', 'mock');
+define('AI_PROVIDER', 'gemini');
 
 // Google Gemini Configuration (FREE tier)
-define('GEMINI_API_KEY', 'YOUR_GEMINI_API_KEY_HERE'); // Get from: https://makersuite.google.com/app/apikey
-define('GEMINI_API_URL', 'https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent');
+define('GEMINI_API_KEY', 'AIzaSyCAH7X-x31enepbzVcOLS0laeN37a6zFbw'); // Get from: https://makersuite.google.com/app/apikey
+
+// Available Gemini Models (all support generateContent):
+// 
+// RECOMMENDED FOR PRODUCTION (v1 API - Stable):
+//   - gemini-2.5-flash (Latest, fastest, best for most tasks) ⭐ CURRENT
+//   - gemini-2.5-pro (Latest, highest quality, slower)
+//   - gemini-2.0-flash (Stable, fast)
+//   - gemini-2.0-flash-001 (Specific version)
+// 
+// LIGHTWEIGHT OPTIONS (v1 API):
+//   - gemini-2.5-flash-lite (Lighter version of 2.5 flash)
+//   - gemini-2.0-flash-lite (Lighter version of 2.0 flash)
+//   - gemini-2.0-flash-lite-001 (Specific lite version)
+// 
+// LATEST POINTERS (v1beta API - Auto-updates):
+//   - gemini-flash-latest (Always points to latest flash model)
+//   - gemini-flash-lite-latest (Always points to latest lite model)
+//   - gemini-pro-latest (Always points to latest pro model)
+// 
+// EXPERIMENTAL/PREVIEW (v1beta API - Cutting edge features):
+//   - gemini-3-pro-preview (Next generation pro)
+//   - gemini-3-flash-preview (Next generation flash)
+//   - gemini-exp-1206 (Experimental build from Dec 6)
+//   - gemini-2.5-flash-preview-09-2025 (September 2025 preview)
+//   - gemini-2.5-flash-lite-preview-09-2025 (Lite preview)
+//   - deep-research-pro-preview-12-2025 (Research-focused)
+// 
+// SPECIALIZED MODELS (v1beta API):
+//   - gemini-2.5-flash-preview-tts (Text-to-speech support)
+//   - gemini-2.5-pro-preview-tts (Pro with TTS)
+//   - gemini-2.0-flash-exp-image-generation (Image generation)
+//   - gemini-2.5-flash-image (Image processing)
+//   - gemini-3-pro-image-preview / nano-banana-pro-preview (Image models)
+//   - gemini-2.5-computer-use-preview-10-2025 (Computer interaction)
+//   - gemini-robotics-er-1.5-preview (Robotics applications)
+// 
+// SMALL MODELS (v1beta API - Lower resource usage):
+//   - gemma-3-27b-it (27 billion parameters)
+//   - gemma-3-12b-it (12 billion parameters)
+//   - gemma-3-4b-it (4 billion parameters)
+//   - gemma-3-1b-it (1 billion parameters)
+//   - gemma-3n-e4b-it (Efficient 4B)
+//   - gemma-3n-e2b-it (Efficient 2B)
+// 
+// AUDIO MODELS (v1beta API - Native audio support):
+//   - gemini-2.5-flash-native-audio-latest
+//   - gemini-2.5-flash-native-audio-preview-09-2025
+//   - gemini-2.5-flash-native-audio-preview-12-2025
+// 
+// NOTE: Models in v1 API are more stable. Models in v1beta may have breaking changes.
+//       For production use, stick with v1 API models (gemini-2.5-flash, gemini-2.5-pro, etc.)
+
+define('GEMINI_MODEL', 'gemini-2.5-flash'); // Using latest stable model
+define('GEMINI_API_VERSION', 'v1'); // v1 or v1beta
+define('GEMINI_API_URL', 'https://generativelanguage.googleapis.com/' . GEMINI_API_VERSION . '/models/' . GEMINI_MODEL . ':generateContent');
 
 // OpenAI Configuration (Paid - better quality)
 define('OPENAI_API_KEY', 'YOUR_OPENAI_API_KEY_HERE'); // Get from: https://platform.openai.com/api-keys
@@ -92,7 +146,9 @@ Department: {$departmentName}
 Employment Type: {$employmentType}
 Role Description: {$jobRoleDescription}{$salaryInfo}
 
-Create a comprehensive job opening with the following sections. Return ONLY valid JSON with no markdown formatting:
+CRITICAL: You must respond with ONLY a valid JSON object. Do not include any markdown formatting, code blocks, or explanatory text. Start your response with { and end with }.
+
+Create a comprehensive job opening with the following JSON structure:
 
 {
   \"title\": \"Professional job title (e.g., 'Senior Software Developer - IT Department')\",
@@ -103,7 +159,7 @@ Create a comprehensive job opening with the following sections. Return ONLY vali
   \"education_requirements\": \"Specific educational qualifications needed (e.g., 'Bachelor's degree in Computer Science or related field')\"
 }
 
-Make it professional, clear, and attractive to qualified candidates. Use proper grammar and formatting.";
+Make it professional, clear, and attractive to qualified candidates. Use proper grammar and formatting. Remember: respond with ONLY the JSON object, nothing else.";
 
     return $prompt;
 }
@@ -149,17 +205,25 @@ function callGeminiAPI($prompt) {
     
     if (isset($result['candidates'][0]['content']['parts'][0]['text'])) {
         $text = $result['candidates'][0]['content']['parts'][0]['text'];
-        // Clean up markdown code blocks if present
-        $text = preg_replace('/```json\s*/', '', $text);
-        $text = preg_replace('/```\s*$/', '', $text);
+        
+        // More aggressive cleanup of markdown and extra formatting
+        $text = preg_replace('/```json\s*/i', '', $text);  // Remove ```json
+        $text = preg_replace('/```\s*$/s', '', $text);      // Remove trailing ```
+        $text = preg_replace('/^```\s*/s', '', $text);      // Remove leading ```
         $text = trim($text);
+        
+        // Try to extract JSON if it's embedded in other text
+        if (preg_match('/\{[\s\S]*\}/s', $text, $matches)) {
+            $text = $matches[0];
+        }
         
         $jobData = json_decode($text, true);
         
         if (json_last_error() === JSON_ERROR_NONE) {
             return ['success' => true, 'data' => $jobData];
         } else {
-            return ['error' => 'Failed to parse AI response: ' . json_last_error_msg()];
+            // Return more detailed error with the actual text for debugging
+            return ['error' => 'Failed to parse AI response: ' . json_last_error_msg() . '. Raw text: ' . substr($text, 0, 200)];
         }
     }
     

@@ -18,6 +18,8 @@ $error_message = '';
 $current_config = [
     'provider' => 'mock',
     'gemini_key' => '',
+    'gemini_model' => 'gemini-2.5-flash',
+    'gemini_api_version' => 'v1',
     'openai_key' => '',
     'openai_model' => 'gpt-3.5-turbo'
 ];
@@ -32,6 +34,12 @@ if (file_exists($config_file)) {
     if (preg_match("/define\('GEMINI_API_KEY',\s*'([^']+)'\)/", $content, $matches)) {
         $current_config['gemini_key'] = $matches[1];
     }
+    if (preg_match("/define\('GEMINI_MODEL',\s*'([^']+)'\)/", $content, $matches)) {
+        $current_config['gemini_model'] = $matches[1];
+    }
+    if (preg_match("/define\('GEMINI_API_VERSION',\s*'([^']+)'\)/", $content, $matches)) {
+        $current_config['gemini_api_version'] = $matches[1];
+    }
     if (preg_match("/define\('OPENAI_API_KEY',\s*'([^']+)'\)/", $content, $matches)) {
         $current_config['openai_key'] = $matches[1];
     }
@@ -44,6 +52,8 @@ if (file_exists($config_file)) {
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $provider = $_POST['provider'] ?? 'gemini';
     $gemini_key = $_POST['gemini_key'] ?? '';
+    $gemini_model = $_POST['gemini_model'] ?? 'gemini-2.5-flash';
+    $gemini_api_version = $_POST['gemini_api_version'] ?? 'v1';
     $openai_key = $_POST['openai_key'] ?? '';
     $openai_model = $_POST['openai_model'] ?? 'gpt-3.5-turbo';
     
@@ -53,242 +63,48 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     } elseif ($provider === 'openai' && empty($openai_key)) {
         $error_message = 'Please provide an OpenAI API key';
     } else {
-        // Generate new config file content
-        $new_content = "<?php
-// AI Configuration File
-// Switch between different AI providers easily
-
-// AI Provider: 'mock', 'gemini' or 'openai'
-// Use 'mock' for testing without API keys
-define('AI_PROVIDER', '{$provider}');
-
-// Google Gemini Configuration (FREE tier)
-define('GEMINI_API_KEY', '{$gemini_key}'); // Get from: https://makersuite.google.com/app/apikey
-define('GEMINI_API_URL', 'https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent');
-
-// OpenAI Configuration (Paid - better quality)
-define('OPENAI_API_KEY', '{$openai_key}'); // Get from: https://platform.openai.com/api-keys
-define('OPENAI_API_URL', 'https://api.openai.com/v1/chat/completions');
-define('OPENAI_MODEL', '{$openai_model}'); // or 'gpt-4' for better quality
-
-/**
- * Generate job description using AI
- */
-function generateJobWithAI(\$jobRoleTitle, \$jobRoleDescription, \$departmentName, \$employmentType = 'Full-time', \$salaryMin = null, \$salaryMax = null) {
-    \$prompt = buildJobPrompt(\$jobRoleTitle, \$jobRoleDescription, \$departmentName, \$employmentType, \$salaryMin, \$salaryMax);
-    
-    if (AI_PROVIDER === 'mock') {
-        return generateMockJob(\$jobRoleTitle, \$jobRoleDescription, \$departmentName, \$employmentType);
-    } elseif (AI_PROVIDER === 'gemini') {
-        return callGeminiAPI(\$prompt);
-    } else {
-        return callOpenAI(\$prompt);
-    }
-}
-
-/**
- * Generate mock job data (no API needed - for testing)
- */
-function generateMockJob(\$jobRoleTitle, \$jobRoleDescription, \$departmentName, \$employmentType) {
-    // Generate realistic job data without calling any API
-    \$title = \$jobRoleTitle . \" - \" . \$departmentName;
-    
-    \$description = \"We are seeking a qualified {\$jobRoleTitle} to join our {\$departmentName}. \" .
-                   \"This {\$employmentType} position offers an excellent opportunity to contribute to our municipal operations. \" .
-                   \"The ideal candidate will work collaboratively with our team to deliver high-quality services to our community. \" .
-                   \"{\$jobRoleDescription}\";
-    
-    \$requirements = \"• Bachelor's degree in relevant field or equivalent experience\\n\" .
-                   \"• Minimum 2 years of professional experience in related role\\n\" .
-                   \"• Strong communication and interpersonal skills\\n\" .
-                   \"• Proficiency in Microsoft Office Suite (Word, Excel, PowerPoint)\\n\" .
-                   \"• Excellent organizational and time management abilities\\n\" .
-                   \"• Ability to work independently and as part of a team\\n\" .
-                   \"• Strong problem-solving and analytical skills\\n\" .
-                   \"• Commitment to public service and community development\";
-    
-    \$responsibilities = \"• Perform daily tasks and responsibilities as assigned by the department head\\n\" .
-                       \"• Collaborate with team members to achieve departmental goals\\n\" .
-                       \"• Maintain accurate records and documentation\\n\" .
-                       \"• Prepare reports and presentations as required\\n\" .
-                       \"• Respond to inquiries from the public and other departments\\n\" .
-                       \"• Participate in meetings and training sessions\\n\" .
-                       \"• Ensure compliance with municipal policies and procedures\\n\" .
-                       \"• Contribute to continuous improvement initiatives\";
-    
-    \$experienceLevel = \"Mid-Level\";
-    \$educationRequirements = \"Bachelor's degree in relevant field or equivalent combination of education and experience\";
-    
-    return [
-        'success' => true,
-        'data' => [
-            'title' => \$title,
-            'description' => \$description,
-            'requirements' => \$requirements,
-            'responsibilities' => \$responsibilities,
-            'experience_level' => \$experienceLevel,
-            'education_requirements' => \$educationRequirements
-        ]
-    ];
-}
-
-/**
- * Build the prompt for AI
- */
-function buildJobPrompt(\$jobRoleTitle, \$jobRoleDescription, \$departmentName, \$employmentType, \$salaryMin, \$salaryMax) {
-    \$salaryInfo = '';
-    if (\$salaryMin && \$salaryMax) {
-        \$salaryInfo = \"\\nSalary Range: ₱\" . number_format(\$salaryMin) . \" - ₱\" . number_format(\$salaryMax);
-    }
-    
-    \$prompt = \"You are an expert HR professional creating a job opening for a government/municipal office.
-
-Job Role: {\$jobRoleTitle}
-Department: {\$departmentName}
-Employment Type: {\$employmentType}
-Role Description: {\$jobRoleDescription}{\$salaryInfo}
-
-Create a comprehensive job opening with the following sections. Return ONLY valid JSON with no markdown formatting:
-
-{
-  \\\"title\\\": \\\"Professional job title (e.g., 'Senior Software Developer - IT Department')\\\",
-  \\\"description\\\": \\\"Compelling 2-3 paragraph job description that explains the role, its importance, and what the candidate will do\\\",
-  \\\"requirements\\\": \\\"Detailed bullet-point list of qualifications, skills, and experience needed. Include education, certifications, technical skills, and soft skills. Format as bullet points with • symbol\\\",
-  \\\"responsibilities\\\": \\\"Detailed bullet-point list of key duties and day-to-day responsibilities. Be specific and actionable. Format as bullet points with • symbol\\\",
-  \\\"experience_level\\\": \\\"Entry Level, Mid-Level, Senior Level, or Executive\\\",
-  \\\"education_requirements\\\": \\\"Specific educational qualifications needed (e.g., 'Bachelor's degree in Computer Science or related field')\\\"
-}
-
-Make it professional, clear, and attractive to qualified candidates. Use proper grammar and formatting.\";
-
-    return \$prompt;
-}
-
-/**
- * Call Google Gemini API
- */
-function callGeminiAPI(\$prompt) {
-    \$apiKey = GEMINI_API_KEY;
-    \$url = GEMINI_API_URL . '?key=' . \$apiKey;
-    
-    \$data = [
-        'contents' => [
-            [
-                'parts' => [
-                    ['text' => \$prompt]
-                ]
-            ]
-        ],
-        'generationConfig' => [
-            'temperature' => 0.7,
-            'maxOutputTokens' => 2048,
-        ]
-    ];
-    
-    \$ch = curl_init(\$url);
-    curl_setopt(\$ch, CURLOPT_RETURNTRANSFER, true);
-    curl_setopt(\$ch, CURLOPT_POST, true);
-    curl_setopt(\$ch, CURLOPT_POSTFIELDS, json_encode(\$data));
-    curl_setopt(\$ch, CURLOPT_HTTPHEADER, [
-        'Content-Type: application/json'
-    ]);
-    
-    \$response = curl_exec(\$ch);
-    \$httpCode = curl_getinfo(\$ch, CURLINFO_HTTP_CODE);
-    curl_close(\$ch);
-    
-    if (\$httpCode !== 200) {
-        return ['error' => 'Gemini API Error: ' . \$response];
-    }
-    
-    \$result = json_decode(\$response, true);
-    
-    if (isset(\$result['candidates'][0]['content']['parts'][0]['text'])) {
-        \$text = \$result['candidates'][0]['content']['parts'][0]['text'];
-        // Clean up markdown code blocks if present
-        \$text = preg_replace('/```json\\s*/', '', \$text);
-        \$text = preg_replace('/```\\s*$/', '', \$text);
-        \$text = trim(\$text);
+        // Read the current ai_config.php to preserve all functions
+        $template_content = file_get_contents($config_file);
         
-        \$jobData = json_decode(\$text, true);
+        // Update only the configuration constants
+        $template_content = preg_replace(
+            "/define\('AI_PROVIDER',\s*'[^']+'\)/",
+            "define('AI_PROVIDER', '{$provider}')",
+            $template_content
+        );
+        $template_content = preg_replace(
+            "/define\('GEMINI_API_KEY',\s*'[^']+'\)/",
+            "define('GEMINI_API_KEY', '{$gemini_key}')",
+            $template_content
+        );
+        $template_content = preg_replace(
+            "/define\('GEMINI_MODEL',\s*'[^']+'\)/",
+            "define('GEMINI_MODEL', '{$gemini_model}')",
+            $template_content
+        );
+        $template_content = preg_replace(
+            "/define\('GEMINI_API_VERSION',\s*'[^']+'\)/",
+            "define('GEMINI_API_VERSION', '{$gemini_api_version}')",
+            $template_content
+        );
+        $template_content = preg_replace(
+            "/define\('OPENAI_API_KEY',\s*'[^']+'\)/",
+            "define('OPENAI_API_KEY', '{$openai_key}')",
+            $template_content
+        );
+        $template_content = preg_replace(
+            "/define\('OPENAI_MODEL',\s*'[^']+'\)/",
+            "define('OPENAI_MODEL', '{$openai_model}')",
+            $template_content
+        );
         
-        if (json_last_error() === JSON_ERROR_NONE) {
-            return ['success' => true, 'data' => \$jobData];
-        } else {
-            return ['error' => 'Failed to parse AI response: ' . json_last_error_msg()];
-        }
-    }
-    
-    return ['error' => 'Invalid response from Gemini API'];
-}
-
-/**
- * Call OpenAI API
- */
-function callOpenAI(\$prompt) {
-    \$apiKey = OPENAI_API_KEY;
-    \$url = OPENAI_API_URL;
-    
-    \$data = [
-        'model' => OPENAI_MODEL,
-        'messages' => [
-            [
-                'role' => 'system',
-                'content' => 'You are an expert HR professional. Always respond with valid JSON only, no markdown formatting.'
-            ],
-            [
-                'role' => 'user',
-                'content' => \$prompt
-            ]
-        ],
-        'temperature' => 0.7,
-        'max_tokens' => 2000
-    ];
-    
-    \$ch = curl_init(\$url);
-    curl_setopt(\$ch, CURLOPT_RETURNTRANSFER, true);
-    curl_setopt(\$ch, CURLOPT_POST, true);
-    curl_setopt(\$ch, CURLOPT_POSTFIELDS, json_encode(\$data));
-    curl_setopt(\$ch, CURLOPT_HTTPHEADER, [
-        'Content-Type: application/json',
-        'Authorization: Bearer ' . \$apiKey
-    ]);
-    
-    \$response = curl_exec(\$ch);
-    \$httpCode = curl_getinfo(\$ch, CURLINFO_HTTP_CODE);
-    curl_close(\$ch);
-    
-    if (\$httpCode !== 200) {
-        return ['error' => 'OpenAI API Error: ' . \$response];
-    }
-    
-    \$result = json_decode(\$response, true);
-    
-    if (isset(\$result['choices'][0]['message']['content'])) {
-        \$text = \$result['choices'][0]['message']['content'];
-        // Clean up markdown code blocks if present
-        \$text = preg_replace('/```json\\s*/', '', \$text);
-        \$text = preg_replace('/```\\s*$/', '', \$text);
-        \$text = trim(\$text);
-        
-        \$jobData = json_decode(\$text, true);
-        
-        if (json_last_error() === JSON_ERROR_NONE) {
-            return ['success' => true, 'data' => \$jobData];
-        } else {
-            return ['error' => 'Failed to parse AI response: ' . json_last_error_msg()];
-        }
-    }
-    
-    return ['error' => 'Invalid response from OpenAI API'];
-}
-?>";
-        
-        if (file_put_contents($config_file, $new_content)) {
+        if (file_put_contents($config_file, $template_content)) {
             $success_message = '✅ AI configuration saved successfully!';
             $current_config = [
                 'provider' => $provider,
                 'gemini_key' => $gemini_key,
+                'gemini_model' => $gemini_model,
+                'gemini_api_version' => $gemini_api_version,
                 'openai_key' => $openai_key,
                 'openai_model' => $openai_model
             ];
@@ -418,6 +234,58 @@ function callOpenAI(\$prompt) {
                                     <label class="font-weight-bold"><i class="fas fa-key mr-1"></i>Gemini API Key</label>
                                     <input type="text" name="gemini_key" class="form-control" value="<?php echo htmlspecialchars($current_config['gemini_key']); ?>" placeholder="AIzaSy...">
                                     <small class="text-muted">Your Google Gemini API key</small>
+                                </div>
+                                
+                                <div class="form-group">
+                                    <label class="font-weight-bold"><i class="fas fa-brain mr-1"></i>Gemini Model</label>
+                                    <select name="gemini_model" id="gemini_model" class="form-control">
+                                        <optgroup label="⭐ Recommended for Production (v1 API - Stable)">
+                                            <option value="gemini-2.5-flash" <?php echo $current_config['gemini_model'] === 'gemini-2.5-flash' ? 'selected' : ''; ?>>gemini-2.5-flash (Latest, fastest, best for most tasks) ⭐</option>
+                                            <option value="gemini-2.5-pro" <?php echo $current_config['gemini_model'] === 'gemini-2.5-pro' ? 'selected' : ''; ?>>gemini-2.5-pro (Highest quality, slower)</option>
+                                            <option value="gemini-2.0-flash" <?php echo $current_config['gemini_model'] === 'gemini-2.0-flash' ? 'selected' : ''; ?>>gemini-2.0-flash (Stable, fast)</option>
+                                            <option value="gemini-2.0-flash-001" <?php echo $current_config['gemini_model'] === 'gemini-2.0-flash-001' ? 'selected' : ''; ?>>gemini-2.0-flash-001 (Specific version)</option>
+                                        </optgroup>
+                                        <optgroup label="💡 Lightweight Options (v1 API)">
+                                            <option value="gemini-2.5-flash-lite" <?php echo $current_config['gemini_model'] === 'gemini-2.5-flash-lite' ? 'selected' : ''; ?>>gemini-2.5-flash-lite (Lighter 2.5)</option>
+                                            <option value="gemini-2.0-flash-lite" <?php echo $current_config['gemini_model'] === 'gemini-2.0-flash-lite' ? 'selected' : ''; ?>>gemini-2.0-flash-lite (Lighter 2.0)</option>
+                                            <option value="gemini-2.0-flash-lite-001" <?php echo $current_config['gemini_model'] === 'gemini-2.0-flash-lite-001' ? 'selected' : ''; ?>>gemini-2.0-flash-lite-001</option>
+                                        </optgroup>
+                                        <optgroup label="🔄 Latest Pointers (v1beta - Auto-updates)">
+                                            <option value="gemini-flash-latest" <?php echo $current_config['gemini_model'] === 'gemini-flash-latest' ? 'selected' : ''; ?>>gemini-flash-latest (Always latest flash)</option>
+                                            <option value="gemini-flash-lite-latest" <?php echo $current_config['gemini_model'] === 'gemini-flash-lite-latest' ? 'selected' : ''; ?>>gemini-flash-lite-latest (Always latest lite)</option>
+                                            <option value="gemini-pro-latest" <?php echo $current_config['gemini_model'] === 'gemini-pro-latest' ? 'selected' : ''; ?>>gemini-pro-latest (Always latest pro)</option>
+                                        </optgroup>
+                                        <optgroup label="🧪 Experimental/Preview (v1beta - Cutting edge)">
+                                            <option value="gemini-3-pro-preview" <?php echo $current_config['gemini_model'] === 'gemini-3-pro-preview' ? 'selected' : ''; ?>>gemini-3-pro-preview (Next gen pro)</option>
+                                            <option value="gemini-3-flash-preview" <?php echo $current_config['gemini_model'] === 'gemini-3-flash-preview' ? 'selected' : ''; ?>>gemini-3-flash-preview (Next gen flash)</option>
+                                            <option value="gemini-exp-1206" <?php echo $current_config['gemini_model'] === 'gemini-exp-1206' ? 'selected' : ''; ?>>gemini-exp-1206 (Experimental Dec 6)</option>
+                                            <option value="gemini-2.5-flash-preview-09-2025" <?php echo $current_config['gemini_model'] === 'gemini-2.5-flash-preview-09-2025' ? 'selected' : ''; ?>>gemini-2.5-flash-preview-09-2025</option>
+                                            <option value="deep-research-pro-preview-12-2025" <?php echo $current_config['gemini_model'] === 'deep-research-pro-preview-12-2025' ? 'selected' : ''; ?>>deep-research-pro-preview-12-2025</option>
+                                        </optgroup>
+                                        <optgroup label="🎯 Specialized Models (v1beta)">
+                                            <option value="gemini-2.5-flash-preview-tts" <?php echo $current_config['gemini_model'] === 'gemini-2.5-flash-preview-tts' ? 'selected' : ''; ?>>gemini-2.5-flash-preview-tts (Text-to-speech)</option>
+                                            <option value="gemini-2.5-pro-preview-tts" <?php echo $current_config['gemini_model'] === 'gemini-2.5-pro-preview-tts' ? 'selected' : ''; ?>>gemini-2.5-pro-preview-tts (Pro with TTS)</option>
+                                            <option value="gemini-2.0-flash-exp-image-generation" <?php echo $current_config['gemini_model'] === 'gemini-2.0-flash-exp-image-generation' ? 'selected' : ''; ?>>gemini-2.0-flash-exp-image-generation</option>
+                                            <option value="gemini-2.5-flash-image" <?php echo $current_config['gemini_model'] === 'gemini-2.5-flash-image' ? 'selected' : ''; ?>>gemini-2.5-flash-image (Image processing)</option>
+                                            <option value="gemini-2.5-computer-use-preview-10-2025" <?php echo $current_config['gemini_model'] === 'gemini-2.5-computer-use-preview-10-2025' ? 'selected' : ''; ?>>gemini-2.5-computer-use-preview-10-2025</option>
+                                        </optgroup>
+                                        <optgroup label="📦 Small Models (v1beta - Lower resources)">
+                                            <option value="gemma-3-27b-it" <?php echo $current_config['gemini_model'] === 'gemma-3-27b-it' ? 'selected' : ''; ?>>gemma-3-27b-it (27B parameters)</option>
+                                            <option value="gemma-3-12b-it" <?php echo $current_config['gemini_model'] === 'gemma-3-12b-it' ? 'selected' : ''; ?>>gemma-3-12b-it (12B parameters)</option>
+                                            <option value="gemma-3-4b-it" <?php echo $current_config['gemini_model'] === 'gemma-3-4b-it' ? 'selected' : ''; ?>>gemma-3-4b-it (4B parameters)</option>
+                                            <option value="gemma-3-1b-it" <?php echo $current_config['gemini_model'] === 'gemma-3-1b-it' ? 'selected' : ''; ?>>gemma-3-1b-it (1B parameters)</option>
+                                        </optgroup>
+                                    </select>
+                                    <small class="text-muted">Choose the AI model for job generation. Recommended: gemini-2.5-flash</small>
+                                </div>
+                                
+                                <div class="form-group">
+                                    <label class="font-weight-bold"><i class="fas fa-code-branch mr-1"></i>API Version</label>
+                                    <select name="gemini_api_version" id="gemini_api_version" class="form-control">
+                                        <option value="v1" <?php echo $current_config['gemini_api_version'] === 'v1' ? 'selected' : ''; ?>>v1 (Stable - Recommended)</option>
+                                        <option value="v1beta" <?php echo $current_config['gemini_api_version'] === 'v1beta' ? 'selected' : ''; ?>>v1beta (Beta - More features, may have breaking changes)</option>
+                                    </select>
+                                    <small class="text-muted">v1 is stable. v1beta has more models but may change.</small>
                                 </div>
                             </div>
                             
