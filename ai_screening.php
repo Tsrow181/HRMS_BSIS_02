@@ -249,6 +249,12 @@ function generateMockScreening($candidate, $job) {
  */
 function callGeminiScreening($prompt) {
     $apiKey = GEMINI_API_KEY;
+    
+    // Check if API key is set
+    if (empty($apiKey)) {
+        return ['error' => 'Gemini API key is not configured. Please visit ai_keys_setup.php to add your API key.'];
+    }
+    
     $url = GEMINI_API_URL . '?key=' . $apiKey;
     
     $data = [

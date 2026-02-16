@@ -18,41 +18,44 @@ $error_message = '';
 $current_config = [
     'provider' => 'mock',
     'gemini_key' => '',
-    'gemini_model' => 'gemini-2.5-flash',
+    'gemini_model' => 'gemini-1.5-flash',
     'gemini_api_version' => 'v1',
     'openai_key' => '',
     'openai_model' => 'gpt-3.5-turbo'
 ];
 
-if (file_exists($config_file)) {
-    $content = file_get_contents($config_file);
-    
-    // Extract current values
-    if (preg_match("/define\('AI_PROVIDER',\s*'([^']+)'\)/", $content, $matches)) {
-        $current_config['provider'] = $matches[1];
+// Load AI config to get provider
+require_once 'ai_config.php';
+$current_config['provider'] = AI_PROVIDER;
+
+// Load API keys from ai_keys.php
+$keysFile = __DIR__ . '/ai_keys.php';
+if (file_exists($keysFile)) {
+    require_once $keysFile;
+    if (defined('GEMINI_API_KEY')) {
+        $current_config['gemini_key'] = GEMINI_API_KEY;
     }
-    if (preg_match("/define\('GEMINI_API_KEY',\s*'([^']+)'\)/", $content, $matches)) {
-        $current_config['gemini_key'] = $matches[1];
+    if (defined('OPENAI_API_KEY')) {
+        $current_config['openai_key'] = OPENAI_API_KEY;
     }
-    if (preg_match("/define\('GEMINI_MODEL',\s*'([^']+)'\)/", $content, $matches)) {
-        $current_config['gemini_model'] = $matches[1];
-    }
-    if (preg_match("/define\('GEMINI_API_VERSION',\s*'([^']+)'\)/", $content, $matches)) {
-        $current_config['gemini_api_version'] = $matches[1];
-    }
-    if (preg_match("/define\('OPENAI_API_KEY',\s*'([^']+)'\)/", $content, $matches)) {
-        $current_config['openai_key'] = $matches[1];
-    }
-    if (preg_match("/define\('OPENAI_MODEL',\s*'([^']+)'\)/", $content, $matches)) {
-        $current_config['openai_model'] = $matches[1];
-    }
+}
+
+// Load model settings from ai_config.php
+if (defined('GEMINI_MODEL')) {
+    $current_config['gemini_model'] = GEMINI_MODEL;
+}
+if (defined('GEMINI_API_VERSION')) {
+    $current_config['gemini_api_version'] = GEMINI_API_VERSION;
+}
+if (defined('OPENAI_MODEL')) {
+    $current_config['openai_model'] = OPENAI_MODEL;
 }
 
 // Handle form submission
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $provider = $_POST['provider'] ?? 'gemini';
     $gemini_key = $_POST['gemini_key'] ?? '';
-    $gemini_model = $_POST['gemini_model'] ?? 'gemini-2.5-flash';
+    $gemini_model = $_POST['gemini_model'] ?? 'gemini-1.5-flash';
     $gemini_api_version = $_POST['gemini_api_version'] ?? 'v1';
     $openai_key = $_POST['openai_key'] ?? '';
     $openai_model = $_POST['openai_model'] ?? 'gpt-3.5-turbo';
@@ -63,53 +66,59 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     } elseif ($provider === 'openai' && empty($openai_key)) {
         $error_message = 'Please provide an OpenAI API key';
     } else {
-        // Read the current ai_config.php to preserve all functions
-        $template_content = file_get_contents($config_file);
+        // Save API keys to ai_keys.php
+        $keysContent = "<?php\n";
+        $keysContent .= "/**\n";
+        $keysContent .= " * AI API Keys Configuration\n";
+        $keysContent .= " * Generated: " . date('Y-m-d H:i:s') . "\n";
+        $keysContent .= " * IMPORTANT: This file is not tracked in git for security\n";
+        $keysContent .= " */\n\n";
+        $keysContent .= "// Google Gemini API Key\n";
+        $keysContent .= "define('GEMINI_API_KEY', '" . addslashes($gemini_key) . "');\n\n";
+        $keysContent .= "// OpenAI API Key\n";
+        $keysContent .= "define('OPENAI_API_KEY', '" . addslashes($openai_key) . "');\n";
+        $keysContent .= "?>\n";
         
-        // Update only the configuration constants
-        $template_content = preg_replace(
-            "/define\('AI_PROVIDER',\s*'[^']+'\)/",
-            "define('AI_PROVIDER', '{$provider}')",
-            $template_content
-        );
-        $template_content = preg_replace(
-            "/define\('GEMINI_API_KEY',\s*'[^']+'\)/",
-            "define('GEMINI_API_KEY', '{$gemini_key}')",
-            $template_content
-        );
-        $template_content = preg_replace(
-            "/define\('GEMINI_MODEL',\s*'[^']+'\)/",
-            "define('GEMINI_MODEL', '{$gemini_model}')",
-            $template_content
-        );
-        $template_content = preg_replace(
-            "/define\('GEMINI_API_VERSION',\s*'[^']+'\)/",
-            "define('GEMINI_API_VERSION', '{$gemini_api_version}')",
-            $template_content
-        );
-        $template_content = preg_replace(
-            "/define\('OPENAI_API_KEY',\s*'[^']+'\)/",
-            "define('OPENAI_API_KEY', '{$openai_key}')",
-            $template_content
-        );
-        $template_content = preg_replace(
-            "/define\('OPENAI_MODEL',\s*'[^']+'\)/",
-            "define('OPENAI_MODEL', '{$openai_model}')",
-            $template_content
-        );
-        
-        if (file_put_contents($config_file, $template_content)) {
-            $success_message = '✅ AI configuration saved successfully!';
-            $current_config = [
-                'provider' => $provider,
-                'gemini_key' => $gemini_key,
-                'gemini_model' => $gemini_model,
-                'gemini_api_version' => $gemini_api_version,
-                'openai_key' => $openai_key,
-                'openai_model' => $openai_model
-            ];
+        if (!file_put_contents($keysFile, $keysContent)) {
+            $error_message = '❌ Failed to save API keys. Check file permissions.';
         } else {
-            $error_message = '❌ Failed to save configuration file. Check file permissions.';
+            // Update provider and model settings in ai_config.php
+            $template_content = file_get_contents($config_file);
+            
+            $template_content = preg_replace(
+                "/define\('AI_PROVIDER',\s*'[^']+'\);/",
+                "define('AI_PROVIDER', '{$provider}');",
+                $template_content
+            );
+            $template_content = preg_replace(
+                "/define\('GEMINI_MODEL',\s*'[^']+'\);/",
+                "define('GEMINI_MODEL', '{$gemini_model}');",
+                $template_content
+            );
+            $template_content = preg_replace(
+                "/define\('GEMINI_API_VERSION',\s*'[^']+'\);/",
+                "define('GEMINI_API_VERSION', '{$gemini_api_version}');",
+                $template_content
+            );
+            $template_content = preg_replace(
+                "/define\('OPENAI_MODEL',\s*'[^']+'\);/",
+                "define('OPENAI_MODEL', '{$openai_model}');",
+                $template_content
+            );
+            
+            if (file_put_contents($config_file, $template_content)) {
+                $success_message = '✅ AI configuration saved successfully!';
+                $current_config = [
+                    'provider' => $provider,
+                    'gemini_key' => $gemini_key,
+                    'gemini_model' => $gemini_model,
+                    'gemini_api_version' => $gemini_api_version,
+                    'openai_key' => $openai_key,
+                    'openai_model' => $openai_model
+                ];
+            } else {
+                $error_message = '❌ Failed to save configuration file. Check file permissions.';
+            }
         }
     }
 }
@@ -173,6 +182,19 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                         <button type="button" class="close" data-dismiss="alert">&times;</button>
                     </div>
                 <?php endif; ?>
+                
+                <div class="alert alert-danger">
+                    <h6><i class="fas fa-exclamation-triangle mr-2"></i>SECURITY WARNING</h6>
+                    <p class="mb-2">
+                        <strong>Your API key was previously exposed in GitHub!</strong> You should:
+                    </p>
+                    <ol class="mb-0">
+                        <li>Go to <a href="https://makersuite.google.com/app/apikey" target="_blank" class="text-white"><u>Google AI Studio</u></a></li>
+                        <li>Delete the exposed API key immediately</li>
+                        <li>Generate a new API key</li>
+                        <li>Enter the new key below and save</li>
+                    </ol>
+                </div>
                 
                 <div class="card">
                     <div class="card-header bg-primary text-white">
@@ -240,9 +262,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                                     <label class="font-weight-bold"><i class="fas fa-brain mr-1"></i>Gemini Model</label>
                                     <select name="gemini_model" id="gemini_model" class="form-control">
                                         <optgroup label="⭐ Recommended for Production (v1 API - Stable)">
-                                            <option value="gemini-2.5-flash" <?php echo $current_config['gemini_model'] === 'gemini-2.5-flash' ? 'selected' : ''; ?>>gemini-2.5-flash (Latest, fastest, best for most tasks) ⭐</option>
-                                            <option value="gemini-2.5-pro" <?php echo $current_config['gemini_model'] === 'gemini-2.5-pro' ? 'selected' : ''; ?>>gemini-2.5-pro (Highest quality, slower)</option>
-                                            <option value="gemini-2.0-flash" <?php echo $current_config['gemini_model'] === 'gemini-2.0-flash' ? 'selected' : ''; ?>>gemini-2.0-flash (Stable, fast)</option>
+                                            <option value="gemini-1.5-flash" <?php echo $current_config['gemini_model'] === 'gemini-1.5-flash' ? 'selected' : ''; ?>>gemini-1.5-flash (Stable, fast, recommended) ⭐</option>
+                                            <option value="gemini-1.5-pro" <?php echo $current_config['gemini_model'] === 'gemini-1.5-pro' ? 'selected' : ''; ?>>gemini-1.5-pro (Higher quality, slower)</option>
+                                            <option value="gemini-1.0-pro" <?php echo $current_config['gemini_model'] === 'gemini-1.0-pro' ? 'selected' : ''; ?>>gemini-1.0-pro (Older stable version)</option>
+                                        </optgroup>
+                                        <optgroup label="🔄 Latest Pointers (v1 API - Auto-updates)">
+                                            <option value="gemini-2.5-flash" <?php echo $current_config['gemini_model'] === 'gemini-2.5-flash' ? 'selected' : ''; ?>>gemini-2.5-flash (Latest, may require v1beta)</option>
+                                            <option value="gemini-2.5-pro" <?php echo $current_config['gemini_model'] === 'gemini-2.5-pro' ? 'selected' : ''; ?>>gemini-2.5-pro (Latest pro, may require v1beta)</option>
+                                            <option value="gemini-2.0-flash" <?php echo $current_config['gemini_model'] === 'gemini-2.0-flash' ? 'selected' : ''; ?>>gemini-2.0-flash (Newer, may require v1beta)</option>
                                             <option value="gemini-2.0-flash-001" <?php echo $current_config['gemini_model'] === 'gemini-2.0-flash-001' ? 'selected' : ''; ?>>gemini-2.0-flash-001 (Specific version)</option>
                                         </optgroup>
                                         <optgroup label="💡 Lightweight Options (v1 API)">

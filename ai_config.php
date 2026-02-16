@@ -4,7 +4,7 @@
 
 // AI Provider: 'mock', 'gemini' or 'openai'
 // Use 'mock' for testing without API keys
-define('AI_PROVIDER', 'mock');
+define('AI_PROVIDER', 'gemini');
 
 // Load API keys from secure config file (not tracked in git)
 $apiKeysFile = __DIR__ . '/ai_keys.php';
@@ -67,7 +67,7 @@ if (file_exists($apiKeysFile)) {
 // NOTE: Models in v1 API are more stable. Models in v1beta may have breaking changes.
 //       For production use, stick with v1 API models (gemini-2.5-flash, gemini-2.5-pro, etc.)
 
-define('GEMINI_MODEL', 'gemini-2.5-flash'); // Using latest stable model
+define('GEMINI_MODEL', 'gemini-1.5-flash'); // Using stable v1 API model
 define('GEMINI_API_VERSION', 'v1'); // v1 or v1beta
 define('GEMINI_API_URL', 'https://generativelanguage.googleapis.com/' . GEMINI_API_VERSION . '/models/' . GEMINI_MODEL . ':generateContent');
 
