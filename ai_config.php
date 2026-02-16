@@ -4,10 +4,17 @@
 
 // AI Provider: 'mock', 'gemini' or 'openai'
 // Use 'mock' for testing without API keys
-define('AI_PROVIDER', 'gemini');
+define('AI_PROVIDER', 'mock');
 
-// Google Gemini Configuration (FREE tier)
-define('GEMINI_API_KEY', 'AIzaSyCAH7X-x31enepbzVcOLS0laeN37a6zFbw'); // Get from: https://makersuite.google.com/app/apikey
+// Load API keys from secure config file (not tracked in git)
+$apiKeysFile = __DIR__ . '/ai_keys.php';
+if (file_exists($apiKeysFile)) {
+    require_once $apiKeysFile;
+} else {
+    // Default empty keys if file doesn't exist
+    define('GEMINI_API_KEY', '');
+    define('OPENAI_API_KEY', '');
+}
 
 // Available Gemini Models (all support generateContent):
 // 
@@ -65,7 +72,7 @@ define('GEMINI_API_VERSION', 'v1'); // v1 or v1beta
 define('GEMINI_API_URL', 'https://generativelanguage.googleapis.com/' . GEMINI_API_VERSION . '/models/' . GEMINI_MODEL . ':generateContent');
 
 // OpenAI Configuration (Paid - better quality)
-define('OPENAI_API_KEY', 'YOUR_OPENAI_API_KEY_HERE'); // Get from: https://platform.openai.com/api-keys
+// Keys are now stored in ai_keys.php (not tracked in git)
 define('OPENAI_API_URL', 'https://api.openai.com/v1/chat/completions');
 define('OPENAI_MODEL', 'gpt-3.5-turbo'); // or 'gpt-4' for better quality
 
