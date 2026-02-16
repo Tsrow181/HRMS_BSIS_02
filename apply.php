@@ -82,25 +82,59 @@ if (isset($_GET['confirm']) && isset($_GET['token'])) {
 // Process application submission
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     try {
-        // Check if email is verified
-        session_start();
-        $email = $_POST['email'] ?? '';
-        if (!isset($_SESSION['verified_emails'][$email])) {
-            throw new Exception('Please verify your email address before submitting the application.');
-        }
+        // Email verification removed - direct application
         // Create uploads directories if not exist
         $resumeDir = 'uploads/resumes/';
         $coverLetterDir = 'uploads/cover_letters/';
-        $pdsDir = 'uploads/pds/';
         
         if (!file_exists($resumeDir)) mkdir($resumeDir, 0777, true);
         if (!file_exists($coverLetterDir)) mkdir($coverLetterDir, 0777, true);
-        if (!file_exists($pdsDir)) mkdir($pdsDir, 0777, true);
         
         // Handle file uploads
         $resumePath = null;
         $coverLetterPath = null;
-        $pdsPath = null;
+        
+        // Handle PDS upload - Store file in database as BLOB
+        $pdsFileBlob = null;
+        $pdsFileName = null;
+        $pdsFileType = null;
+        $pdsFileSize = null;
+        $pdsValidated = false;
+        
+        if (isset($_FILES['pds']) && $_FILES['pds']['error'] === UPLOAD_ERR_OK) {
+            $fileExt = strtolower(pathinfo($_FILES['pds']['name'], PATHINFO_EXTENSION));
+            $pdsFileName = $_FILES['pds']['name'];
+            $pdsFileType = $_FILES['pds']['type'];
+            $pdsFileSize = $_FILES['pds']['size'];
+            
+            // Read file content into BLOB
+            $pdsFileBlob = file_get_contents($_FILES['pds']['tmp_name']);
+            
+            // Validate PDS if it's JSON format
+            if ($fileExt === 'json') {
+                $pdsData = json_decode($pdsFileBlob, true);
+                
+                // Validate JSON structure - check for required PDS fields
+                if ($pdsData && isset($pdsData['first_name']) && isset($pdsData['last_name']) && isset($pdsData['email'])) {
+                    $pdsValidated = true;
+                    
+                    // Optional: Override form data with PDS data if provided
+                    $_POST['first_name'] = $pdsData['first_name'] ?? $_POST['first_name'];
+                    $_POST['last_name'] = $pdsData['last_name'] ?? $_POST['last_name'];
+                    $_POST['email'] = $pdsData['email'] ?? $_POST['email'];
+                    $_POST['phone'] = $pdsData['phone'] ?? $_POST['phone'];
+                } else {
+                    throw new Exception('Invalid PDS JSON format - missing required fields (first_name, last_name, email)');
+                }
+            } else if (in_array($fileExt, ['pdf', 'doc', 'docx'])) {
+                // For PDF/DOC files, just mark as uploaded (AI will extract later)
+                $pdsValidated = true;
+            } else {
+                throw new Exception('Invalid PDS file format. Only JSON, PDF, DOC, DOCX are accepted.');
+            }
+        } else {
+            throw new Exception('PDS file is required');
+        }
         
         if (isset($_FILES['resume']) && $_FILES['resume']['error'] === UPLOAD_ERR_OK) {
             $fileName = time() . '_resume_' . $_FILES['resume']['name'];
@@ -118,13 +152,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             }
         }
         
-        if (isset($_FILES['pds']) && $_FILES['pds']['error'] === UPLOAD_ERR_OK) {
-            $fileName = time() . '_pds_' . $_FILES['pds']['name'];
-            $pdsPath = $pdsDir . $fileName;
-            if (!move_uploaded_file($_FILES['pds']['tmp_name'], $pdsPath)) {
-                throw new Exception('Failed to upload PDS');
-            }
-        }
+        // Set source
+        $source = 'Website';
         
         if ($candidateId) {
             
@@ -139,8 +168,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 $_POST['current_position'] ?: null,
                 $_POST['current_company'] ?: null,
                 $_POST['expected_salary'] ?: null,
-                $pdsPath ?: null,
-                'Website',
+                $coverLetterPath ?: null,
+                $source,
                 $candidateId
             ]);
         } else {
@@ -157,11 +186,56 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 $_POST['current_position'] ?: null,
                 $_POST['current_company'] ?: null,
                 $_POST['expected_salary'] ?: null,
-                $pdsPath ?: null,
-                'Website'
+                $coverLetterPath ?: null,
+                $source
             ]);
             $candidateId = $conn->lastInsertId();
         }
+        
+        // Store PDS file in database as BLOB (for AI extraction later)
+        if ($pdsValidated && $pdsFileBlob) {
+            // Check if PDS record exists for this candidate
+            $stmt = $conn->prepare("SELECT pds_id FROM pds_data WHERE candidate_id = ?");
+            $stmt->execute([$candidateId]);
+            $existingPds = $stmt->fetch(PDO::FETCH_ASSOC);
+            
+            if ($existingPds) {
+                // Update existing PDS record
+                $stmt = $conn->prepare("UPDATE pds_data SET 
+                    pds_file_blob = ?, 
+                    pds_file_name = ?, 
+                    pds_file_type = ?, 
+                    pds_file_size = ?,
+                    updated_at = NOW()
+                    WHERE candidate_id = ?");
+                $stmt->execute([
+                    $pdsFileBlob,
+                    $pdsFileName,
+                    $pdsFileType,
+                    $pdsFileSize,
+                    $candidateId
+                ]);
+            } else {
+                // Insert new PDS record with BLOB only (AI will extract later)
+                $stmt = $conn->prepare("INSERT INTO pds_data (
+                    candidate_id, 
+                    pds_file_blob, 
+                    pds_file_name, 
+                    pds_file_type, 
+                    pds_file_size,
+                    application_source
+                ) VALUES (?, ?, ?, ?, ?, ?)");
+                $stmt->execute([
+                    $candidateId,
+                    $pdsFileBlob,
+                    $pdsFileName,
+                    $pdsFileType,
+                    $pdsFileSize,
+                    'Website Application'
+                ]);
+            }
+        }
+
         
         // Check if application already exists
         $stmt = $conn->prepare("SELECT application_id FROM job_applications WHERE job_opening_id = ? AND candidate_id = ?");
@@ -209,26 +283,16 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $stmt->execute([$documentName, $coverLetterPath, 'Cover Letter uploaded during job application. Candidate ID: ' . $candidateId]);
         }
         
-        // Handle PDS
-        if ($pdsPath) {
+        // Handle PDS - Store reference to database BLOB
+        if ($pdsValidated) {
             $documentName = 'PDS - ' . $candidateName . ' - ' . $jobTitle;
             $stmt = $conn->prepare("INSERT INTO document_management (employee_id, document_type, document_name, file_path, document_status, notes) VALUES (0, 'PDS', ?, ?, 'Active', ?)");
-            $stmt->execute([$documentName, $pdsPath, 'PDS uploaded during job application. Candidate ID: ' . $candidateId]);
+            $stmt->execute([$documentName, 'BLOB:candidate_' . $candidateId, 'PDS stored in database. Candidate ID: ' . $candidateId . '. AI extraction pending.']);
         }
         
         $conn->exec("SET FOREIGN_KEY_CHECKS = 1");
         
-        // Trigger resume extraction (non-blocking)
-        if ($resumePath) {
-            try {
-                require_once 'resume_extraction/ResumeExtractionService.php';
-                $extractionService = new ResumeExtractionService($conn);
-                $extractionService->extractAndStore($candidateId, $resumePath);
-            } catch (Exception $extractionError) {
-                // Log but don't fail the application
-                error_log("Resume extraction failed for candidate $candidateId: " . $extractionError->getMessage());
-            }
-        }
+        // Resume extraction removed - using PDS JSON data instead
         
         $success = true;
         
@@ -523,13 +587,161 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             <?php if ($success): ?>
                 <?php if (isset($_GET['confirm'])): ?>
                     <div class="application-header">
-                        <h2><i class="fas fa-check-circle mr-3"></i>Email Confirmed!</h2>
+                        <h2><i class="fas fa-check-circle mr-3"></i>Application Submitted!</h2>
                         <p>Your application has been successfully submitted</p>
                     </div>
                     <div class="success-container">
                         <i class="fas fa-check-circle success-icon"></i>
-                        <h4>Application Confirmed and Submitted</h4>
-                        <p class="text-muted mb-4">Thank you for confirming your email. We will review your application and contact you soon.</p>
+                        <h4>Application Submitted Successfully</h4>
+                        <p class="text-muted mb-4">Thank you for applying! Your application has been received and is being processed.</p>
+                        
+                        <!-- Real-time PDS Extraction Progress -->
+                        <div id="extractionProgress" class="extraction-progress mt-4">
+                            <h5 class="mb-3"><i class="fas fa-robot mr-2"></i>AI PDS Extraction in Progress</h5>
+                            <div class="progress mb-3" style="height: 30px;">
+                                <div id="progressBar" class="progress-bar progress-bar-striped progress-bar-animated" role="progressbar" style="width: 0%">0%</div>
+                            </div>
+                            <div id="extractionSteps" class="extraction-steps-list"></div>
+                            <div id="extractionComplete" class="alert alert-success mt-3" style="display: none;">
+                                <i class="fas fa-check-circle mr-2"></i>
+                                <strong>Extraction Complete!</strong> Your PDS data has been successfully processed.
+                            </div>
+                        </div>
+                        
+                        <a href="public_jobs.php" class="btn btn-primary mt-4">
+                            <i class="fas fa-arrow-left mr-2"></i>Back to Job Listings
+                        </a>
+                    </div>
+                    
+                    <script>
+                    // Start real-time PDS extraction
+                    const candidateId = <?php echo $candidateId; ?>;
+                    const eventSource = new EventSource('process_pds_extraction.php?candidate_id=' + candidateId);
+                    
+                    const progressBar = document.getElementById('progressBar');
+                    const stepsContainer = document.getElementById('extractionSteps');
+                    const completeAlert = document.getElementById('extractionComplete');
+                    
+                    let currentStep = 0;
+                    const totalSteps = 6;
+                    
+                    eventSource.addEventListener('status', function(e) {
+                        const data = JSON.parse(e.data);
+                        currentStep = data.step;
+                        
+                        // Update progress bar
+                        const progress = (currentStep / totalSteps) * 100;
+                        progressBar.style.width = progress + '%';
+                        progressBar.textContent = Math.round(progress) + '%';
+                        
+                        // Add step to list
+                        const stepDiv = document.createElement('div');
+                        stepDiv.className = 'extraction-step ' + data.status;
+                        stepDiv.innerHTML = `
+                            <div class="step-icon">
+                                ${data.status === 'success' ? '<i class="fas fa-check-circle text-success"></i>' : 
+                                  data.status === 'processing' ? '<i class="fas fa-spinner fa-spin text-primary"></i>' : 
+                                  '<i class="fas fa-times-circle text-danger"></i>'}
+                            </div>
+                            <div class="step-content">
+                                <strong>Step ${data.step}:</strong> ${data.message}
+                                ${data.details ? '<div class="text-muted small">' + JSON.stringify(data.details) + '</div>' : ''}
+                            </div>
+                        `;
+                        stepsContainer.appendChild(stepDiv);
+                        
+                        // Scroll to bottom
+                        stepsContainer.scrollTop = stepsContainer.scrollHeight;
+                    });
+                    
+                    eventSource.addEventListener('complete', function(e) {
+                        const data = JSON.parse(e.data);
+                        
+                        // Update progress to 100%
+                        progressBar.style.width = '100%';
+                        progressBar.textContent = '100%';
+                        progressBar.classList.remove('progress-bar-animated');
+                        progressBar.classList.add('bg-success');
+                        
+                        // Show completion message
+                        completeAlert.style.display = 'block';
+                        
+                        // Close event source
+                        eventSource.close();
+                    });
+                    
+                    eventSource.addEventListener('error', function(e) {
+                        const data = e.data ? JSON.parse(e.data) : {message: 'Connection error'};
+                        
+                        // Show error
+                        const errorDiv = document.createElement('div');
+                        errorDiv.className = 'alert alert-danger mt-3';
+                        errorDiv.innerHTML = '<i class="fas fa-exclamation-triangle mr-2"></i><strong>Error:</strong> ' + data.message;
+                        stepsContainer.appendChild(errorDiv);
+                        
+                        // Close event source
+                        eventSource.close();
+                    });
+                    
+                    // Handle connection errors
+                    eventSource.onerror = function() {
+                        console.error('EventSource connection error');
+                    };
+                    </script>
+                    
+                    <style>
+                    .extraction-progress {
+                        background: #f8f9fa;
+                        padding: 25px;
+                        border-radius: 15px;
+                        border: 2px solid #e9ecef;
+                    }
+                    
+                    .extraction-steps-list {
+                        max-height: 400px;
+                        overflow-y: auto;
+                        background: white;
+                        padding: 15px;
+                        border-radius: 10px;
+                        border: 1px solid #dee2e6;
+                    }
+                    
+                    .extraction-step {
+                        display: flex;
+                        align-items: flex-start;
+                        padding: 12px;
+                        margin-bottom: 10px;
+                        border-radius: 8px;
+                        background: #f8f9fa;
+                        border-left: 4px solid #e9ecef;
+                    }
+                    
+                    .extraction-step.success {
+                        border-left-color: #28a745;
+                        background: #f0fff4;
+                    }
+                    
+                    .extraction-step.processing {
+                        border-left-color: #007bff;
+                        background: #f0f7ff;
+                    }
+                    
+                    .extraction-step.error {
+                        border-left-color: #dc3545;
+                        background: #fff5f5;
+                    }
+                    
+                    .step-icon {
+                        font-size: 20px;
+                        margin-right: 12px;
+                        min-width: 25px;
+                    }
+                    
+                    .step-content {
+                        flex: 1;
+                        font-size: 14px;
+                    }
+                    </style>l review your application and contact you soon.</p>
                         <a href="public_jobs.php" class="btn btn-primary">
                             <i class="fas fa-arrow-left mr-2"></i>Back to Job Listings
                         </a>
@@ -658,8 +870,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                         <!-- Documents -->
                         <h5 class="mb-4"><i class="fas fa-file-upload mr-2"></i>Upload Documents</h5>
                         <div class="form-group">
-                            <label>Resume/CV *</label>
-                            <input type="file" name="resume" class="form-control-file" accept=".pdf,.doc,.docx" required>
+                            <label>Resume/CV <small class="text-muted">(Optional - for reference only)</small></label>
+                            <input type="file" name="resume" class="form-control-file" accept=".pdf,.doc,.docx">
                             <small class="text-muted">Accepted formats: PDF, DOC, DOCX (Max 5MB)</small>
                             <div id="resumePreview" class="mt-2"></div>
                         </div>
@@ -672,18 +884,21 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                         </div>
                         
                         <div class="form-group">
-                            <label>Personal Data Sheet (PDS) * <span class="text-danger">(Required - Will be sent to Mayor)</span></label>
-                            <input type="file" name="pds" class="form-control-file" accept=".pdf,.doc,.docx" required>
-                            <small class="text-muted">Accepted formats: PDF, DOC, DOCX (Max 5MB)</small>
+                            <label>Personal Data Sheet (PDS) * <span class="text-danger">(Required)</span></label>
+                            <input type="file" name="pds" class="form-control-file" accept=".json,.pdf,.doc,.docx" required>
+                            <small class="text-muted">Accepted formats: JSON (from PDS form), PDF, DOC, DOCX (Max 5MB)</small>
                             <div class="alert alert-warning mt-2">
                                 <i class="fas fa-exclamation-triangle mr-2"></i>
-                                <strong>IMPORTANT:</strong> PDS is mandatory and will be forwarded to the Mayor's office for review.
+                                <strong>IMPORTANT:</strong> PDS is mandatory for your application.
                                 <br>
                                 <strong>Need PDS Template?</strong> 
                                 <a href="uploads/pds_templates/PDS_Template.html" target="_blank" class="btn btn-sm btn-outline-primary ml-2">
-                                    <i class="fas fa-download mr-1"></i>Download PDS Template
+                                    <i class="fas fa-download mr-1"></i>Fill Out PDS Form
                                 </a>
-                                <small class="d-block mt-1 text-muted">Print and fill out the PDF template completely, then scan/photo and upload</small>
+                                <small class="d-block mt-1 text-muted">
+                                    <strong>Recommended:</strong> Fill out the online PDS form - it will generate a JSON file that auto-fills your application data!
+                                    <br>Or upload a scanned PDF/DOC of your completed PDS.
+                                </small>
                             </div>
                             <div id="pdsPreview" class="mt-2"></div>
                         </div>
