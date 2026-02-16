@@ -690,6 +690,7 @@ CREATE TABLE job_openings (
     employment_type ENUM('Full-time', 'Part-time', 'Contract', 'Temporary', 'Internship') NOT NULL,
     experience_level VARCHAR(50),
     education_requirements TEXT,
+    screening_level ENUM('Easy', 'Moderate', 'Strict') DEFAULT 'Moderate' COMMENT 'AI screening difficulty level',
     salary_range_min DECIMAL(10,2),
     salary_range_max DECIMAL(10,2),
     vacancy_count INT DEFAULT 1,
@@ -728,6 +729,127 @@ CREATE TABLE candidates (
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
 );
+
+-- Create PDS (Personal Data Sheet) table for complete candidate data
+CREATE TABLE pds_data (
+    pds_id INT AUTO_INCREMENT PRIMARY KEY,
+    candidate_id INT NOT NULL,
+    
+    -- I. Personal Information
+    surname VARCHAR(100),
+    first_name VARCHAR(100),
+    middle_name VARCHAR(100),
+    name_extension VARCHAR(20),
+    date_of_birth DATE,
+    place_of_birth VARCHAR(255),
+    sex ENUM('Male', 'Female'),
+    civil_status ENUM('Single', 'Married', 'Widowed', 'Separated'),
+    height DECIMAL(5,2),
+    weight DECIMAL(5,2),
+    blood_type VARCHAR(10),
+    
+    -- Government IDs
+    gsis_id VARCHAR(50),
+    pagibig_id VARCHAR(50),
+    philhealth_no VARCHAR(50),
+    sss_no VARCHAR(50),
+    tin_no VARCHAR(50),
+    agency_employee_no VARCHAR(50),
+    
+    -- Citizenship
+    citizenship_type VARCHAR(50),
+    citizenship_country VARCHAR(100),
+    
+    -- Residential Address
+    residential_address TEXT,
+    residential_subdivision VARCHAR(100),
+    residential_barangay VARCHAR(100),
+    residential_city VARCHAR(100),
+    residential_province VARCHAR(100),
+    residential_zipcode VARCHAR(20),
+    
+    -- Permanent Address
+    permanent_address TEXT,
+    permanent_subdivision VARCHAR(100),
+    permanent_barangay VARCHAR(100),
+    permanent_city VARCHAR(100),
+    permanent_province VARCHAR(100),
+    permanent_zipcode VARCHAR(20),
+    
+    -- Contact Information
+    telephone VARCHAR(50),
+    mobile VARCHAR(50),
+    email VARCHAR(255),
+    
+    -- II. Family Background
+    spouse_surname VARCHAR(100),
+    spouse_firstname VARCHAR(100),
+    spouse_middlename VARCHAR(100),
+    spouse_occupation VARCHAR(100),
+    spouse_employer VARCHAR(255),
+    spouse_business_address TEXT,
+    spouse_telephone VARCHAR(50),
+    
+    father_surname VARCHAR(100),
+    father_firstname VARCHAR(100),
+    father_middlename VARCHAR(100),
+    
+    mother_surname VARCHAR(100),
+    mother_firstname VARCHAR(100),
+    mother_middlename VARCHAR(100),
+    
+    -- Children (stored as JSON array)
+    children JSON,
+    
+    -- III. Educational Background (stored as JSON array)
+    education JSON,
+    
+    -- IV. Civil Service Eligibility (stored as JSON array)
+    eligibility JSON,
+    
+    -- V. Work Experience (stored as JSON array)
+    work_experience JSON,
+    
+    -- VI. Voluntary Work (stored as JSON array)
+    voluntary_work JSON,
+    
+    -- VII. Learning and Development (stored as JSON array)
+    training JSON,
+    
+    -- VIII. Other Information
+    special_skills TEXT,
+    distinctions TEXT,
+    memberships TEXT,
+    
+    -- IX. Additional Application Info
+    current_position VARCHAR(150),
+    current_company VARCHAR(255),
+    notice_period VARCHAR(100),
+    expected_salary DECIMAL(10,2),
+    application_source VARCHAR(100),
+    
+    -- X. Character References (stored as JSON array)
+    `references` JSON,
+    
+    -- File storage (PDF/JSON stored in database)
+    pds_file_blob LONGBLOB COMMENT 'PDF file content stored in database',
+    pds_file_name VARCHAR(255) COMMENT 'Original filename',
+    pds_file_type VARCHAR(50) COMMENT 'MIME type (application/pdf, application/json)',
+    pds_file_size INT COMMENT 'File size in bytes',
+    json_file_blob LONGBLOB COMMENT 'JSON file content stored in database',
+    
+    -- File paths (optional - for backward compatibility)
+    pds_file_path VARCHAR(255),
+    json_file_path VARCHAR(255),
+    
+    -- Metadata
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    
+    FOREIGN KEY (candidate_id) REFERENCES candidates(candidate_id) ON DELETE CASCADE,
+    INDEX idx_candidate (candidate_id),
+    INDEX idx_email (email)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- Create job_applications table
 CREATE TABLE job_applications (
@@ -1946,90 +2068,3 @@ FOREIGN KEY (approved_by) REFERENCES users(user_id) ON DELETE SET NULL;
 ALTER TABLE departments 
 ADD COLUMN IF NOT EXISTS vacancy_limit INT DEFAULT NULL COMMENT 'Maximum number of open job vacancies allowed for this department';
 
-
--- ===============================
--- AI RESUME EXTRACTION TABLES
--- ===============================
-
--- 1. Create candidate_education table
-CREATE TABLE IF NOT EXISTS candidate_education (
-    education_id INT AUTO_INCREMENT PRIMARY KEY,
-    candidate_id INT NOT NULL,
-    institution VARCHAR(255) NOT NULL,
-    degree VARCHAR(100) NOT NULL,
-    field_of_study VARCHAR(100),
-    start_date DATE,
-    end_date DATE,
-    grade VARCHAR(50),
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-    FOREIGN KEY (candidate_id) REFERENCES candidates(candidate_id) ON DELETE CASCADE,
-    INDEX idx_candidate_education (candidate_id)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
-
--- 2. Create candidate_skills table
-CREATE TABLE IF NOT EXISTS candidate_skills (
-    skill_id INT AUTO_INCREMENT PRIMARY KEY,
-    candidate_id INT NOT NULL,
-    skill_name VARCHAR(100) NOT NULL,
-    proficiency_level ENUM('Beginner', 'Intermediate', 'Advanced', 'Expert') DEFAULT 'Intermediate',
-    years_of_experience INT,
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-    FOREIGN KEY (candidate_id) REFERENCES candidates(candidate_id) ON DELETE CASCADE,
-    INDEX idx_candidate_skills (candidate_id),
-    INDEX idx_skill_name (skill_name)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
-
--- 3. Create candidate_work_experience table
-CREATE TABLE IF NOT EXISTS candidate_work_experience (
-    experience_id INT AUTO_INCREMENT PRIMARY KEY,
-    candidate_id INT NOT NULL,
-    company VARCHAR(255) NOT NULL,
-    job_title VARCHAR(100) NOT NULL,
-    start_date DATE,
-    end_date DATE,
-    responsibilities TEXT,
-    achievements TEXT,
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-    FOREIGN KEY (candidate_id) REFERENCES candidates(candidate_id) ON DELETE CASCADE,
-    INDEX idx_candidate_experience (candidate_id)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
-
--- 4. Create candidate_certifications table
-CREATE TABLE IF NOT EXISTS candidate_certifications (
-    certification_id INT AUTO_INCREMENT PRIMARY KEY,
-    candidate_id INT NOT NULL,
-    certification_name VARCHAR(255) NOT NULL,
-    issuing_organization VARCHAR(255) NOT NULL,
-    issue_date DATE,
-    expiry_date DATE,
-    credential_id VARCHAR(100),
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-    FOREIGN KEY (candidate_id) REFERENCES candidates(candidate_id) ON DELETE CASCADE,
-    INDEX idx_candidate_certifications (candidate_id)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
-
--- 5. Create candidate_parsed_resumes table (audit log)
-CREATE TABLE IF NOT EXISTS candidate_parsed_resumes (
-    parse_id INT AUTO_INCREMENT PRIMARY KEY,
-    candidate_id INT NOT NULL,
-    resume_file_path VARCHAR(255) NOT NULL,
-    parser_response JSON NOT NULL,
-    extraction_status ENUM('completed', 'failed') NOT NULL,
-    error_message TEXT,
-    parsed_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    FOREIGN KEY (candidate_id) REFERENCES candidates(candidate_id) ON DELETE CASCADE,
-    INDEX idx_candidate_parsed (candidate_id)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
-
--- 6. Add extraction tracking columns to candidates table
-ALTER TABLE candidates 
-ADD COLUMN IF NOT EXISTS extraction_status ENUM('pending', 'processing', 'completed', 'failed') DEFAULT 'pending',
-ADD COLUMN IF NOT EXISTS extraction_attempted_at TIMESTAMP NULL,
-ADD COLUMN IF NOT EXISTS extraction_error TEXT NULL;
-
--- Create index on extraction_status for filtering
-CREATE INDEX IF NOT EXISTS idx_extraction_status ON candidates(extraction_status);

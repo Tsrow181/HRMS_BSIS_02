@@ -11,9 +11,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     if (isset($_POST['action'])) {
         switch ($_POST['action']) {
             case 'create_opening':
-                $stmt = $conn->prepare("INSERT INTO job_openings (job_role_id, department_id, title, description, requirements, responsibilities, location, employment_type, salary_range_min, salary_range_max, vacancy_count, posting_date, status) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, CURDATE(), ?)");
-                $stmt->execute([$_POST['job_role_id'], $_POST['department_id'], $_POST['title'], $_POST['description'], $_POST['requirements'], $_POST['responsibilities'], $_POST['location'], $_POST['employment_type'], $_POST['salary_min'], $_POST['salary_max'], $_POST['vacancy_count'], $_POST['status']]);
-                $success_message = "✨ Job opening '" . htmlspecialchars($_POST['title']) . "' created successfully!";
+                $screening_level = $_POST['screening_level'] ?? 'Moderate';
+                $stmt = $conn->prepare("INSERT INTO job_openings (job_role_id, department_id, title, description, requirements, responsibilities, location, employment_type, salary_range_min, salary_range_max, vacancy_count, posting_date, status, screening_level) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, CURDATE(), ?, ?)");
+                $stmt->execute([$_POST['job_role_id'], $_POST['department_id'], $_POST['title'], $_POST['description'], $_POST['requirements'], $_POST['responsibilities'], $_POST['location'], $_POST['employment_type'], $_POST['salary_min'], $_POST['salary_max'], $_POST['vacancy_count'], $_POST['status'], $screening_level]);
+                $success_message = "✨ Job opening '" . htmlspecialchars($_POST['title']) . "' created successfully with " . $screening_level . " AI screening level!";
                 break;
             case 'update_status':
                 if ($_POST['new_status'] == 'Closed') {
@@ -353,7 +354,7 @@ try {
                         </div>
                         
                         <div class="row">
-                            <div class="col-md-12">
+                            <div class="col-md-6">
                                 <div class="form-group">
                                     <label class="font-weight-bold"><i class="fas fa-users mr-1"></i>Number of Vacancies <span class="text-danger">*</span></label>
                                     <input type="number" name="vacancy_count" id="ai_vacancy_count" class="form-control form-control-lg" 
@@ -363,6 +364,21 @@ try {
                                         <i class="fas fa-exclamation-triangle mr-1"></i>
                                         <span id="vacancyWarningText"></span>
                                     </div>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label class="font-weight-bold"><i class="fas fa-robot mr-1"></i>AI Screening Level <span class="text-danger">*</span></label>
+                                    <select name="screening_level" class="form-control form-control-lg" required>
+                                        <option value="Easy">🟢 Easy - Inclusive (Focus on potential)</option>
+                                        <option value="Moderate" selected>🟡 Moderate - Balanced (Recommended)</option>
+                                        <option value="Strict">🔴 Strict - Selective (High standards)</option>
+                                    </select>
+                                    <small class="form-text text-muted">
+                                        <strong>Easy:</strong> 50%+ match, focus on trainability<br>
+                                        <strong>Moderate:</strong> 65%+ match, balanced approach<br>
+                                        <strong>Strict:</strong> 80%+ match, proven qualifications
+                                    </small>
                                 </div>
                             </div>
                         </div>

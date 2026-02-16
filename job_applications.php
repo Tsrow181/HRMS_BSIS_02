@@ -155,27 +155,67 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 }
 
 $show_archived = isset($_GET['archived']) && $_GET['archived'] == '1';
+$sort_by_ai = isset($_GET['sort']) && $_GET['sort'] == 'ai_score';
+$filter_job = isset($_GET['job']) ? (int)$_GET['job'] : null;
 
+// Build WHERE clause
+$whereConditions = [];
 if ($show_archived) {
-    $applications_query = "SELECT ja.*, c.first_name, c.last_name, c.email, c.phone, c.current_position,
-                           jo.title as job_title, d.department_name
-                           FROM job_applications ja 
-                           JOIN candidates c ON ja.candidate_id = c.candidate_id 
-                           JOIN job_openings jo ON ja.job_opening_id = jo.job_opening_id
-                           JOIN departments d ON jo.department_id = d.department_id
-                           WHERE ja.status IN ('Hired', 'Rejected')";
+    $whereConditions[] = "ja.status IN ('Hired', 'Rejected')";
 } else {
-    $applications_query = "SELECT ja.*, c.first_name, c.last_name, c.email, c.phone, c.current_position,
-                           jo.title as job_title, d.department_name
-                           FROM job_applications ja 
-                           JOIN candidates c ON ja.candidate_id = c.candidate_id 
-                           JOIN job_openings jo ON ja.job_opening_id = jo.job_opening_id
-                           JOIN departments d ON jo.department_id = d.department_id
-                           WHERE ja.status IN ('Applied', 'Screening', 'Interview', 'Assessment', 'Reference Check', 'Onboarding', 'Offer', 'Offer Generated') AND ja.status != 'Draft'";
+    $whereConditions[] = "ja.status IN ('Applied', 'Screening', 'Interview', 'Assessment', 'Reference Check', 'Onboarding', 'Offer', 'Offer Generated') AND ja.status != 'Draft'";
 }
 
-$result = $conn->query($applications_query . " ORDER BY ja.application_date DESC");
-$applications = $result->fetch_all(MYSQLI_ASSOC);
+// Add job filter if specified
+if ($filter_job) {
+    $whereConditions[] = "ja.job_opening_id = " . $filter_job;
+}
+
+$whereClause = "WHERE " . implode(" AND ", $whereConditions);
+
+$applications_query = "SELECT ja.*, c.first_name, c.last_name, c.email, c.phone, c.current_position,
+                       jo.title as job_title, jo.screening_level, d.department_name
+                       FROM job_applications ja 
+                       JOIN candidates c ON ja.candidate_id = c.candidate_id 
+                       JOIN job_openings jo ON ja.job_opening_id = jo.job_opening_id
+                       JOIN departments d ON jo.department_id = d.department_id
+                       {$whereClause}";
+
+// Sort by AI score if requested
+if ($sort_by_ai) {
+    $result = $conn->query($applications_query . " ORDER BY ja.application_date DESC");
+    $applications = $result->fetch_all(MYSQLI_ASSOC);
+    
+    // Sort by AI score (extract from JSON)
+    usort($applications, function($a, $b) {
+        $scoreA = 0;
+        $scoreB = 0;
+        
+        if (!empty($a['assessment_scores'])) {
+            $dataA = json_decode($a['assessment_scores'], true);
+            $scoreA = $dataA['overall_score'] ?? 0;
+        }
+        
+        if (!empty($b['assessment_scores'])) {
+            $dataB = json_decode($b['assessment_scores'], true);
+            $scoreB = $dataB['overall_score'] ?? 0;
+        }
+        
+        return $scoreB - $scoreA; // Descending order (highest first)
+    });
+} else {
+    $result = $conn->query($applications_query . " ORDER BY ja.application_date DESC");
+    $applications = $result->fetch_all(MYSQLI_ASSOC);
+}
+
+// Get list of job openings for filter
+$jobsQuery = "SELECT DISTINCT jo.job_opening_id, jo.title, jo.screening_level, COUNT(ja.application_id) as app_count
+              FROM job_openings jo
+              LEFT JOIN job_applications ja ON jo.job_opening_id = ja.job_opening_id
+              WHERE jo.status = 'Open'
+              GROUP BY jo.job_opening_id, jo.title, jo.screening_level
+              ORDER BY jo.title";
+$jobsList = $conn->query($jobsQuery)->fetch_all(MYSQLI_ASSOC);
 
 $stats = [
     'Applied' => count(array_filter($applications, function($a) { return $a['status'] == 'Applied'; })),
@@ -431,7 +471,10 @@ $stats = [
                 <div class="d-flex justify-content-between align-items-center mb-4">
                     <h2 class="section-title">📋 Job Applications Management</h2>
                     <div>
-                        <a href="?archived=0" class="btn btn-primary <?php echo !$show_archived ? 'active' : ''; ?>">
+                        <a href="ai_screening_levels.php" class="btn btn-info">
+                            <i class="fas fa-sliders-h mr-1"></i>AI Screening Levels
+                        </a>
+                        <a href="?archived=0" class="btn btn-primary <?php echo !$show_archived ? 'active' : ''; ?> ml-2">
                             <i class="fas fa-list"></i> Active
                         </a>
                         <a href="?archived=1" class="btn btn-secondary <?php echo $show_archived ? 'active' : ''; ?> ml-2">
@@ -439,6 +482,25 @@ $stats = [
                         </a>
                     </div>
                 </div>
+                
+                <!-- Job Filter -->
+                <?php if (count($jobsList) > 0): ?>
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <label><i class="fas fa-briefcase mr-2"></i><strong>Filter by Position:</strong></label>
+                            <select class="form-control" onchange="window.location.href='?job=' + this.value + '<?php echo $show_archived ? '&archived=1' : ''; ?>'">
+                                <option value="">All Positions (<?php echo count($applications); ?> applications)</option>
+                                <?php foreach ($jobsList as $job): 
+                                    $levelIcon = ['Easy' => '🟢', 'Moderate' => '🟡', 'Strict' => '🔴'][$job['screening_level']] ?? '⚪';
+                                ?>
+                                    <option value="<?php echo $job['job_opening_id']; ?>" <?php echo $filter_job == $job['job_opening_id'] ? 'selected' : ''; ?>>
+                                        <?php echo htmlspecialchars($job['title']); ?> - <?php echo $job['app_count']; ?> apps (<?php echo $levelIcon; ?> <?php echo $job['screening_level']; ?>)
+                                    </option>
+                                <?php endforeach; ?>
+                            </select>
+                        </div>
+                    </div>
+                <?php endif; ?>
                 
                 <?php if (!empty($success_message)): ?>
                     <div class="alert alert-success alert-dismissible fade show" role="alert">
@@ -559,9 +621,29 @@ $stats = [
                                         <?php 
                                         $assessment_data = json_decode($app['assessment_scores'], true);
                                         $current_score = $assessment_data['overall_score'] ?? '';
-                                        if ($current_score): ?>
+                                        if ($current_score): 
+                                            // Color-code based on realistic scoring
+                                            if ($current_score >= 85) {
+                                                $score_color = 'success'; // Green - Exceptional
+                                                $score_label = '🌟 Exceptional';
+                                            } elseif ($current_score >= 75) {
+                                                $score_color = 'primary'; // Blue - Strong
+                                                $score_label = '💪 Strong';
+                                            } elseif ($current_score >= 65) {
+                                                $score_color = 'info'; // Cyan - Good
+                                                $score_label = '👍 Good';
+                                            } elseif ($current_score >= 55) {
+                                                $score_color = 'warning'; // Yellow - Acceptable
+                                                $score_label = '✓ Acceptable';
+                                            } else {
+                                                $score_color = 'secondary'; // Gray - Review
+                                                $score_label = '⚠ Review';
+                                            }
+                                        ?>
                                             <div class="mt-2">
-                                                <span class="badge badge-info">Score: <?php echo $current_score; ?>%</span>
+                                                <span class="badge badge-<?php echo $score_color; ?>" style="font-size: 13px; padding: 6px 12px;">
+                                                    <?php echo $score_label; ?>: <?php echo $current_score; ?>%
+                                                </span>
                                             </div>
                                         <?php endif; ?>
                                     </div>
@@ -1894,10 +1976,30 @@ $stats = [
                     }
                 },
                 error: function(xhr, status, error) {
+                    let errorMessage = 'Failed to connect to AI screening service.';
+                    
+                    // Try to get detailed error from response
+                    if (xhr.responseJSON && xhr.responseJSON.error) {
+                        errorMessage = xhr.responseJSON.error;
+                    } else if (xhr.responseText) {
+                        try {
+                            const response = JSON.parse(xhr.responseText);
+                            if (response.error) {
+                                errorMessage = response.error;
+                            }
+                        } catch (e) {
+                            // If not JSON, show the raw text (truncated)
+                            errorMessage = xhr.responseText.substring(0, 500);
+                        }
+                    }
+                    
+                    // Format error message with line breaks
+                    errorMessage = errorMessage.replace(/\n/g, '<br>');
+                    
                     resultsContainer.innerHTML = `
                         <div class="alert alert-danger">
                             <i class="fas fa-times-circle mr-2"></i>
-                            <strong>Connection Error:</strong> Failed to connect to AI screening service.
+                            <strong>Error:</strong><br>${errorMessage}
                         </div>
                     `;
                 }

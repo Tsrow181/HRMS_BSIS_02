@@ -18,7 +18,7 @@ $error_message = '';
 $current_config = [
     'provider' => 'mock',
     'gemini_key' => '',
-    'gemini_model' => 'gemini-1.5-flash',
+    'gemini_model' => 'gemini-2.5-flash-lite',
     'gemini_api_version' => 'v1',
     'openai_key' => '',
     'openai_model' => 'gpt-3.5-turbo'
@@ -55,7 +55,7 @@ if (defined('OPENAI_MODEL')) {
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $provider = $_POST['provider'] ?? 'gemini';
     $gemini_key = $_POST['gemini_key'] ?? '';
-    $gemini_model = $_POST['gemini_model'] ?? 'gemini-1.5-flash';
+    $gemini_model = $_POST['gemini_model'] ?? 'gemini-2.5-flash-lite';
     $gemini_api_version = $_POST['gemini_api_version'] ?? 'v1';
     $openai_key = $_POST['openai_key'] ?? '';
     $openai_model = $_POST['openai_model'] ?? 'gpt-3.5-turbo';
@@ -261,17 +261,45 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                                 <div class="form-group">
                                     <label class="font-weight-bold"><i class="fas fa-brain mr-1"></i>Gemini Model</label>
                                     <select name="gemini_model" id="gemini_model" class="form-control">
-                                        <optgroup label="⭐ Recommended for Production (v1 API - Stable)">
-                                            <option value="gemini-1.5-flash" <?php echo $current_config['gemini_model'] === 'gemini-1.5-flash' ? 'selected' : ''; ?>>gemini-1.5-flash (Stable, fast, recommended) ⭐</option>
-                                            <option value="gemini-1.5-pro" <?php echo $current_config['gemini_model'] === 'gemini-1.5-pro' ? 'selected' : ''; ?>>gemini-1.5-pro (Higher quality, slower)</option>
-                                            <option value="gemini-1.0-pro" <?php echo $current_config['gemini_model'] === 'gemini-1.0-pro' ? 'selected' : ''; ?>>gemini-1.0-pro (Older stable version)</option>
+                                        <optgroup label="⭐ Recommended (v1 API - Best Rate Limits)">
+                                            <option value="gemini-2.5-flash-lite" <?php echo $current_config['gemini_model'] === 'gemini-2.5-flash-lite' ? 'selected' : ''; ?>>gemini-2.5-flash-lite (Good limits, lightweight) ⭐</option>
+                                            <option value="gemini-2.0-flash-lite" <?php echo $current_config['gemini_model'] === 'gemini-2.0-flash-lite' ? 'selected' : ''; ?>>gemini-2.0-flash-lite (High limits)</option>
+                                            <option value="gemini-2.0-flash" <?php echo $current_config['gemini_model'] === 'gemini-2.0-flash' ? 'selected' : ''; ?>>gemini-2.0-flash (1500 req/day)</option>
+                                            <option value="gemini-2.5-flash" <?php echo $current_config['gemini_model'] === 'gemini-2.5-flash' ? 'selected' : ''; ?>>gemini-2.5-flash (20 req/day - Limited)</option>
+                                            <option value="gemini-2.5-pro" <?php echo $current_config['gemini_model'] === 'gemini-2.5-pro' ? 'selected' : ''; ?>>gemini-2.5-pro (Highest quality)</option>
                                         </optgroup>
-                                        <optgroup label="🔄 Latest Pointers (v1 API - Auto-updates)">
-                                            <option value="gemini-2.5-flash" <?php echo $current_config['gemini_model'] === 'gemini-2.5-flash' ? 'selected' : ''; ?>>gemini-2.5-flash (Latest, may require v1beta)</option>
-                                            <option value="gemini-2.5-pro" <?php echo $current_config['gemini_model'] === 'gemini-2.5-pro' ? 'selected' : ''; ?>>gemini-2.5-pro (Latest pro, may require v1beta)</option>
-                                            <option value="gemini-2.0-flash" <?php echo $current_config['gemini_model'] === 'gemini-2.0-flash' ? 'selected' : ''; ?>>gemini-2.0-flash (Newer, may require v1beta)</option>
-                                            <option value="gemini-2.0-flash-001" <?php echo $current_config['gemini_model'] === 'gemini-2.0-flash-001' ? 'selected' : ''; ?>>gemini-2.0-flash-001 (Specific version)</option>
+                                        <optgroup label="💡 Lightweight (v1 API - Lower resource usage)">
+                                            <option value="gemini-2.5-flash-lite" <?php echo $current_config['gemini_model'] === 'gemini-2.5-flash-lite' ? 'selected' : ''; ?>>gemini-2.5-flash-lite</option>
+                                            <option value="gemini-2.0-flash-lite" <?php echo $current_config['gemini_model'] === 'gemini-2.0-flash-lite' ? 'selected' : ''; ?>>gemini-2.0-flash-lite</option>
+                                            <option value="gemini-2.0-flash-001" <?php echo $current_config['gemini_model'] === 'gemini-2.0-flash-001' ? 'selected' : ''; ?>>gemini-2.0-flash-001</option>
+                                            <option value="gemini-2.0-flash-lite-001" <?php echo $current_config['gemini_model'] === 'gemini-2.0-flash-lite-001' ? 'selected' : ''; ?>>gemini-2.0-flash-lite-001</option>
                                         </optgroup>
+                                        <optgroup label="🔄 Latest Pointers (v1beta - Auto-updates)">
+                                            <option value="gemini-flash-latest" <?php echo $current_config['gemini_model'] === 'gemini-flash-latest' ? 'selected' : ''; ?>>gemini-flash-latest</option>
+                                            <option value="gemini-flash-lite-latest" <?php echo $current_config['gemini_model'] === 'gemini-flash-lite-latest' ? 'selected' : ''; ?>>gemini-flash-lite-latest</option>
+                                            <option value="gemini-pro-latest" <?php echo $current_config['gemini_model'] === 'gemini-pro-latest' ? 'selected' : ''; ?>>gemini-pro-latest</option>
+                                        </optgroup>
+                                        <optgroup label="🧪 Experimental (v1beta - Cutting edge)">
+                                            <option value="gemini-3-pro-preview" <?php echo $current_config['gemini_model'] === 'gemini-3-pro-preview' ? 'selected' : ''; ?>>gemini-3-pro-preview (Next gen)</option>
+                                            <option value="gemini-3-flash-preview" <?php echo $current_config['gemini_model'] === 'gemini-3-flash-preview' ? 'selected' : ''; ?>>gemini-3-flash-preview (Next gen)</option>
+                                            <option value="gemini-exp-1206" <?php echo $current_config['gemini_model'] === 'gemini-exp-1206' ? 'selected' : ''; ?>>gemini-exp-1206</option>
+                                            <option value="gemini-2.5-flash-preview-09-2025" <?php echo $current_config['gemini_model'] === 'gemini-2.5-flash-preview-09-2025' ? 'selected' : ''; ?>>gemini-2.5-flash-preview-09-2025</option>
+                                        </optgroup>
+                                        <optgroup label="🎯 Specialized (v1beta)">
+                                            <option value="gemini-2.5-flash-preview-tts" <?php echo $current_config['gemini_model'] === 'gemini-2.5-flash-preview-tts' ? 'selected' : ''; ?>>gemini-2.5-flash-preview-tts (Text-to-speech)</option>
+                                            <option value="gemini-2.5-pro-preview-tts" <?php echo $current_config['gemini_model'] === 'gemini-2.5-pro-preview-tts' ? 'selected' : ''; ?>>gemini-2.5-pro-preview-tts</option>
+                                            <option value="gemini-2.0-flash-exp-image-generation" <?php echo $current_config['gemini_model'] === 'gemini-2.0-flash-exp-image-generation' ? 'selected' : ''; ?>>gemini-2.0-flash-exp-image-generation</option>
+                                            <option value="gemini-2.5-flash-image" <?php echo $current_config['gemini_model'] === 'gemini-2.5-flash-image' ? 'selected' : ''; ?>>gemini-2.5-flash-image</option>
+                                        </optgroup>
+                                        <optgroup label="📦 Small Models (v1beta - 1B-27B params)">
+                                            <option value="gemma-3-27b-it" <?php echo $current_config['gemini_model'] === 'gemma-3-27b-it' ? 'selected' : ''; ?>>gemma-3-27b-it (27B)</option>
+                                            <option value="gemma-3-12b-it" <?php echo $current_config['gemini_model'] === 'gemma-3-12b-it' ? 'selected' : ''; ?>>gemma-3-12b-it (12B)</option>
+                                            <option value="gemma-3-4b-it" <?php echo $current_config['gemini_model'] === 'gemma-3-4b-it' ? 'selected' : ''; ?>>gemma-3-4b-it (4B)</option>
+                                            <option value="gemma-3-1b-it" <?php echo $current_config['gemini_model'] === 'gemma-3-1b-it' ? 'selected' : ''; ?>>gemma-3-1b-it (1B)</option>
+                                        </optgroup>
+                                    </select>
+                                    <small class="text-muted">Recommended: gemini-2.5-flash-lite (good balance of speed and limits). You can change models anytime - your selection is saved and used for all AI features.</small>
+                                </div>
                                         <optgroup label="💡 Lightweight Options (v1 API)">
                                             <option value="gemini-2.5-flash-lite" <?php echo $current_config['gemini_model'] === 'gemini-2.5-flash-lite' ? 'selected' : ''; ?>>gemini-2.5-flash-lite (Lighter 2.5)</option>
                                             <option value="gemini-2.0-flash-lite" <?php echo $current_config['gemini_model'] === 'gemini-2.0-flash-lite' ? 'selected' : ''; ?>>gemini-2.0-flash-lite (Lighter 2.0)</option>

@@ -67,7 +67,7 @@ if (file_exists($apiKeysFile)) {
 // NOTE: Models in v1 API are more stable. Models in v1beta may have breaking changes.
 //       For production use, stick with v1 API models (gemini-2.5-flash, gemini-2.5-pro, etc.)
 
-define('GEMINI_MODEL', 'gemini-1.5-flash'); // Using stable v1 API model
+define('GEMINI_MODEL', 'gemini-2.5-flash-lite'); // Lite version with available quota
 define('GEMINI_API_VERSION', 'v1'); // v1 or v1beta
 define('GEMINI_API_URL', 'https://generativelanguage.googleapis.com/' . GEMINI_API_VERSION . '/models/' . GEMINI_MODEL . ':generateContent');
 
@@ -205,6 +205,37 @@ function callGeminiAPI($prompt) {
     curl_close($ch);
     
     if ($httpCode !== 200) {
+        $errorData = json_decode($response, true);
+        
+        // Check for quota/rate limit errors
+        if ($httpCode === 429 && isset($errorData['error'])) {
+            $errorMsg = $errorData['error']['message'] ?? 'Rate limit exceeded';
+            
+            // Extract retry time if available
+            $retrySeconds = 60; // default
+            if (isset($errorData['error']['details'])) {
+                foreach ($errorData['error']['details'] as $detail) {
+                    if (isset($detail['retryDelay'])) {
+                        preg_match('/(\d+)/', $detail['retryDelay'], $matches);
+                        if (!empty($matches[1])) {
+                            $retrySeconds = (int)$matches[1];
+                        }
+                    }
+                }
+            }
+            
+            // User-friendly error message
+            $friendlyMsg = "⏱️ API Rate Limit Reached\n\n";
+            $friendlyMsg .= "You've used up your free quota for this model. Options:\n\n";
+            $friendlyMsg .= "1. Wait " . ceil($retrySeconds / 60) . " minutes and try again\n";
+            $friendlyMsg .= "2. Switch to 'Mock' provider in AI Config (instant, no API needed)\n";
+            $friendlyMsg .= "3. Generate a NEW API key at https://makersuite.google.com/app/apikey (fresh quota)\n";
+            $friendlyMsg .= "4. Try a different model in AI Config page\n\n";
+            $friendlyMsg .= "Current model: " . GEMINI_MODEL;
+            
+            return ['error' => $friendlyMsg];
+        }
+        
         return ['error' => 'Gemini API Error: ' . $response];
     }
     

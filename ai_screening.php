@@ -11,8 +11,10 @@ function screenCandidateWithAI($candidateId, $jobOpeningId, $conn) {
                            FROM candidates c 
                            JOIN job_applications ja ON c.candidate_id = ja.candidate_id 
                            WHERE c.candidate_id = ? AND ja.job_opening_id = ?");
-    $stmt->execute([$candidateId, $jobOpeningId]);
-    $candidate = $stmt->fetch(PDO::FETCH_ASSOC);
+    $stmt->bind_param('ii', $candidateId, $jobOpeningId);
+    $stmt->execute();
+    $result = $stmt->get_result();
+    $candidate = $result->fetch_assoc();
     
     if (!$candidate) {
         return ['error' => 'Candidate not found'];
@@ -23,8 +25,10 @@ function screenCandidateWithAI($candidateId, $jobOpeningId, $conn) {
                            FROM job_openings jo 
                            LEFT JOIN job_roles jr ON jo.job_role_id = jr.job_role_id 
                            WHERE jo.job_opening_id = ?");
-    $stmt->execute([$jobOpeningId]);
-    $job = $stmt->fetch(PDO::FETCH_ASSOC);
+    $stmt->bind_param('i', $jobOpeningId);
+    $stmt->execute();
+    $result = $stmt->get_result();
+    $job = $result->fetch_assoc();
     
     if (!$job) {
         return ['error' => 'Job opening not found'];
@@ -32,8 +36,10 @@ function screenCandidateWithAI($candidateId, $jobOpeningId, $conn) {
     
     // Get PDS data if available
     $stmt = $conn->prepare("SELECT * FROM pds_data WHERE candidate_id = ?");
-    $stmt->execute([$candidateId]);
-    $pdsData = $stmt->fetch(PDO::FETCH_ASSOC);
+    $stmt->bind_param('i', $candidateId);
+    $stmt->execute();
+    $result = $stmt->get_result();
+    $pdsData = $result->fetch_assoc();
     
     // Build screening prompt
     $prompt = buildScreeningPrompt($candidate, $job, $pdsData);
@@ -49,7 +55,7 @@ function screenCandidateWithAI($candidateId, $jobOpeningId, $conn) {
 }
 
 /**
- * Build AI screening prompt
+ * Build AI screening prompt with difficulty level
  */
 function buildScreeningPrompt($candidate, $job, $pdsData) {
     // Build comprehensive candidate profile
@@ -114,18 +120,81 @@ function buildScreeningPrompt($candidate, $job, $pdsData) {
     $jobInfo .= "REQUIREMENTS:\n{$job['requirements']}\n\n";
     $jobInfo .= "RESPONSIBILITIES:\n{$job['responsibilities']}\n";
     
-    $prompt = "You are an unbiased HR screening AI. Analyze this REAL candidate against the job requirements objectively.
+    // Get screening level (default to Moderate if not set)
+    $screeningLevel = $job['screening_level'] ?? 'Moderate';
+    
+    // Adjust scoring philosophy based on difficulty level
+    $scoringPhilosophy = "";
+    $scoringGuide = "";
+    
+    switch ($screeningLevel) {
+        case 'Easy':
+            $scoringPhilosophy = "SCREENING LEVEL: EASY (Inclusive - Focus on Potential)\n";
+            $scoringPhilosophy .= "- Prioritize POTENTIAL over perfect qualifications\n";
+            $scoringPhilosophy .= "- Give strong credit for transferable skills and willingness to learn\n";
+            $scoringPhilosophy .= "- Consider candidates who meet 50%+ of requirements\n";
+            $scoringPhilosophy .= "- Value attitude, motivation, and growth mindset highly\n";
+            $scoringPhilosophy .= "- Be encouraging and identify training opportunities\n";
+            
+            $scoringGuide = "SCORING GUIDE - EASY LEVEL (0-100):\n";
+            $scoringGuide .= "- 75-100: Strong potential - Recommend for interview\n";
+            $scoringGuide .= "- 60-74: Good potential - Consider for interview\n";
+            $scoringGuide .= "- 50-59: Acceptable with training - Possible candidate\n";
+            $scoringGuide .= "- 40-49: Marginal - May need significant development\n";
+            $scoringGuide .= "- Below 40: Not recommended for this role\n";
+            $scoringGuide .= "IMPORTANT: Most candidates should score 60-80. Be generous with potential.";
+            break;
+            
+        case 'Strict':
+            $scoringPhilosophy = "SCREENING LEVEL: STRICT (Selective - Focus on Qualifications)\n";
+            $scoringPhilosophy .= "- Require strong match to stated qualifications\n";
+            $scoringPhilosophy .= "- Prioritize proven experience and exact skill matches\n";
+            $scoringPhilosophy .= "- Candidates should meet 80%+ of requirements\n";
+            $scoringPhilosophy .= "- Look for demonstrated excellence and achievements\n";
+            $scoringPhilosophy .= "- Be thorough in identifying any gaps or concerns\n";
+            
+            $scoringGuide = "SCORING GUIDE - STRICT LEVEL (0-100):\n";
+            $scoringGuide .= "- 85-100: Exceptional - Exceeds requirements significantly\n";
+            $scoringGuide .= "- 75-84: Strong - Meets all key requirements well\n";
+            $scoringGuide .= "- 65-74: Good - Meets most requirements adequately\n";
+            $scoringGuide .= "- 55-64: Acceptable - Meets minimum requirements\n";
+            $scoringGuide .= "- Below 55: Not recommended - Significant gaps\n";
+            $scoringGuide .= "IMPORTANT: Only truly qualified candidates should score 75+. Be thorough.";
+            break;
+            
+        default: // Moderate
+            $scoringPhilosophy = "SCREENING LEVEL: MODERATE (Balanced - Realistic Standards)\n";
+            $scoringPhilosophy .= "- Balance POTENTIAL and QUALIFICATIONS\n";
+            $scoringPhilosophy .= "- Consider transferable skills and relevant experience\n";
+            $scoringPhilosophy .= "- Candidates should meet 65%+ of requirements\n";
+            $scoringPhilosophy .= "- Value both proven skills and growth potential\n";
+            $scoringPhilosophy .= "- Be fair and objective in assessment\n";
+            
+            $scoringGuide = "SCORING GUIDE - MODERATE LEVEL (0-100):\n";
+            $scoringGuide .= "- 85-100: Exceptional - Exceeds requirements, ready to excel\n";
+            $scoringGuide .= "- 75-84: Strong - Meets most requirements, good potential\n";
+            $scoringGuide .= "- 65-74: Good - Meets core requirements, trainable\n";
+            $scoringGuide .= "- 55-64: Acceptable - Meets minimum, needs development\n";
+            $scoringGuide .= "- 45-54: Marginal - Some gaps but has potential\n";
+            $scoringGuide .= "- Below 45: Not recommended - Significant gaps\n";
+            $scoringGuide .= "IMPORTANT: Most good candidates score 65-80. Be realistic and fair.";
+            break;
+    }
+    
+    $prompt = "You are a realistic HR screening AI for government positions. Analyze this candidate with the specified screening level.
 
 {$candidateInfo}
 
 {$jobInfo}
 
+{$scoringPhilosophy}
+
 INSTRUCTIONS:
-1. Compare candidate's actual qualifications to job requirements
-2. Be objective and fair - no bias based on name, gender, or background
-3. Score based on evidence in the data provided
-4. Identify real strengths and genuine concerns
-5. Generate relevant interview questions
+1. Apply the screening level standards consistently
+2. Compare candidate's qualifications to job requirements
+3. Be objective and fair - no bias based on name, gender, or background
+4. Identify both strengths AND areas for development
+5. Generate practical interview questions
 
 Respond with ONLY this JSON (no markdown, no explanations):
 
@@ -137,19 +206,12 @@ Respond with ONLY this JSON (no markdown, no explanations):
   \"skills_score\": 0,
   \"communication_score\": 0,
   \"strengths\": [\"actual strength from data\", \"another strength\"],
-  \"concerns\": [\"real concern if any\", \"another concern\"],
+  \"concerns\": [\"area for development if any\", \"another area\"],
   \"interview_questions\": [\"relevant question?\", \"another question?\", \"third question?\"],
-  \"summary\": \"Objective 2-sentence analysis based on actual data.\"
+  \"summary\": \"Balanced 2-sentence analysis focusing on fit for this role.\"
 }
 
-Scoring (0-100):
-- 90-100: Exceptional match
-- 80-89: Strong match
-- 70-79: Good match
-- 60-69: Moderate match
-- Below 60: Weak match
-
-Base scores ONLY on the actual candidate data provided above.";
+{$scoringGuide}";
 
     return $prompt;
 }
@@ -171,11 +233,13 @@ function generateMockScreening($candidate, $job) {
     
     // Determine recommendation based on score
     if ($overallScore >= 85) {
-        $recommendation = 'Highly Recommended';
+        $recommendation = 'Exceptional - Highly Recommended';
     } elseif ($overallScore >= 75) {
-        $recommendation = 'Recommended';
+        $recommendation = 'Strong Candidate - Recommended';
     } elseif ($overallScore >= 65) {
-        $recommendation = 'Consider for Interview';
+        $recommendation = 'Good Candidate - Interview';
+    } elseif ($overallScore >= 55) {
+        $recommendation = 'Acceptable - Consider';
     } else {
         $recommendation = 'Needs Further Review';
     }
@@ -290,6 +354,37 @@ function callGeminiScreening($prompt) {
     }
     
     if ($httpCode !== 200) {
+        $errorData = json_decode($response, true);
+        
+        // Check for quota/rate limit errors
+        if ($httpCode === 429 && isset($errorData['error'])) {
+            $errorMsg = $errorData['error']['message'] ?? 'Rate limit exceeded';
+            
+            // Extract retry time if available
+            $retrySeconds = 60; // default
+            if (isset($errorData['error']['details'])) {
+                foreach ($errorData['error']['details'] as $detail) {
+                    if (isset($detail['retryDelay'])) {
+                        preg_match('/(\d+)/', $detail['retryDelay'], $matches);
+                        if (!empty($matches[1])) {
+                            $retrySeconds = (int)$matches[1];
+                        }
+                    }
+                }
+            }
+            
+            // User-friendly error message
+            $friendlyMsg = "⏱️ API Rate Limit Reached\n\n";
+            $friendlyMsg .= "You've used up your free quota for this model. Options:\n\n";
+            $friendlyMsg .= "1. Wait " . ceil($retrySeconds / 60) . " minutes and try again\n";
+            $friendlyMsg .= "2. Switch to 'Mock' provider in AI Config (instant, no API needed)\n";
+            $friendlyMsg .= "3. Generate a NEW API key at https://makersuite.google.com/app/apikey (fresh quota)\n";
+            $friendlyMsg .= "4. Try a different model in AI Config page\n\n";
+            $friendlyMsg .= "Current model: " . GEMINI_MODEL;
+            
+            return ['error' => $friendlyMsg];
+        }
+        
         return ['error' => 'Gemini API Error (HTTP ' . $httpCode . '): ' . substr($response, 0, 200)];
     }
     

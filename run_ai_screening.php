@@ -7,7 +7,7 @@ if (!isset($_SESSION['loggedin']) || $_SESSION['loggedin'] !== true) {
     exit;
 }
 
-require_once 'config.php';
+require_once 'db_connect.php';
 require_once 'ai_screening.php';
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
@@ -61,8 +61,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             
             // Get application ID
             $stmt = $conn->prepare("SELECT application_id FROM job_applications WHERE candidate_id = ? AND job_opening_id = ?");
-            $stmt->execute([$candidateId, $jobOpeningId]);
-            $application = $stmt->fetch(PDO::FETCH_ASSOC);
+            $stmt->bind_param('ii', $candidateId, $jobOpeningId);
+            $stmt->execute();
+            $result = $stmt->get_result();
+            $application = $result->fetch_assoc();
             
             if ($application) {
                 // Update job application with AI screening results
@@ -70,7 +72,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                                        SET assessment_scores = ?, 
                                            notes = ? 
                                        WHERE application_id = ?");
-                $stmt->execute([$assessmentJson, $notesText, $application['application_id']]);
+                $stmt->bind_param('ssi', $assessmentJson, $notesText, $application['application_id']);
+                $stmt->execute();
             }
             
             echo json_encode([
