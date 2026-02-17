@@ -72,6 +72,15 @@ function createFeedbackTables() {
 // Create tables if they don't exist
 createFeedbackTables();
 
+// Handle AJAX requests for feedback data
+if (isset($_GET['action']) && $_GET['action'] === 'get_total_feedback' && isset($_GET['employee_id'])) {
+    $employee_id = (int)$_GET['employee_id'];
+    $data = getTotalFeedback($employee_id);
+    header('Content-Type: application/json');
+    echo json_encode($data);
+    exit;
+}
+
 // Handle form submissions
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     if (isset($_POST['action'])) {
@@ -1051,23 +1060,39 @@ $pending_requests = getPendingFeedbackRequests();
             </div>
         `);
 
-        // Simulate AJAX call (replace with actual AJAX when backend is ready)
-        setTimeout(() => {
-            // This would be replaced with actual AJAX call to get feedback data
-            const feedbackData = getTotalFeedback(employeeId); // This function is already defined in PHP
-
-            if (feedbackData && feedbackData.total_feedbacks > 0) {
-                displayTotalFeedback(feedbackData);
-            } else {
+        // Make AJAX call to get feedback data
+        $.ajax({
+            url: 'feedback_360.php',
+            type: 'GET',
+            data: {
+                action: 'get_total_feedback',
+                employee_id: employeeId
+            },
+            dataType: 'json',
+            success: function(feedbackData) {
+                if (feedbackData && feedbackData.total_feedbacks > 0) {
+                    displayTotalFeedback(feedbackData);
+                } else {
+                    $('#totalFeedbackContent').html(`
+                        <div class="text-center py-4">
+                            <i class="fas fa-inbox fa-3x text-muted mb-3"></i>
+                            <h6 class="text-muted">No feedback data available</h6>
+                            <p class="text-muted">This employee hasn't received any feedback yet.</p>
+                        </div>
+                    `);
+                }
+            },
+            error: function(xhr, status, error) {
+                console.error('Error loading feedback data:', error);
                 $('#totalFeedbackContent').html(`
                     <div class="text-center py-4">
-                        <i class="fas fa-inbox fa-3x text-muted mb-3"></i>
-                        <h6 class="text-muted">No feedback data available</h6>
-                        <p class="text-muted">This employee hasn't received any feedback yet.</p>
+                        <i class="fas fa-exclamation-triangle fa-3x text-danger mb-3"></i>
+                        <h6 class="text-danger">Error loading feedback data</h6>
+                        <p class="text-muted">Please try again later.</p>
                     </div>
                 `);
             }
-        }, 1000);
+        });
     }
 
     function displayTotalFeedback(data) {
