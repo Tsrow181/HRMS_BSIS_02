@@ -1,8 +1,48 @@
 <?php
-session_start();
+/**
+ * LEAVE BALANCES TRACKING PAGE
+ * 
+ * Applicable Philippine Republic Acts:
+ * - RA 10911 (Paid Leave Bill of 2016)
+ *   - Vacation leave balance: 15 days minimum per year
+ *   - Sick leave balance: 15 days minimum per year
+ *   - Carry-forward rules and conversions
+ *   - Pro-rata computation for partial years
+ * 
+ * - RA 11210 (Expanded Maternity Leave Law of 2018)
+ *   - Maternity leave balance: 120 days
+ *   - Solo parent female entitlements
+ *   - Gender-based leave provisions (female employees only)
+ * 
+ * - RA 11165 (Paternity Leave Bill of 2018)
+ *   - Paternity leave balance: 7-14 days
+ *   - Solo parent male entitlements
+ *   - Gender-based leave provisions (male employees)
+ * 
+ * - RA 9403 (Leave Benefits for Solo Parents)
+ *   - Additional 5-day solo parent leave allocation
+ *   - Certification and benefit computation
+ * 
+ * - RA 10173 (Data Privacy Act of 2012) - APPLIES TO ALL PAGES
+ *   - Leave balance data contains SENSITIVE PERSONAL INFORMATION
+ *   - Maternity/Paternity balances reveal health/family status (sensitive)
+ *   - Solo parent status is sensitive personal data
+ *   - Only access leave balances with legitimate HR business purpose
+ *   - Restrict view to authorized personnel (not visible to other employees)
+ *   - Encrypt leave balance data in database and during transmission
+ *   - Maintain audit logs for all leave balance queries/modifications
+ *   - Gender-based leave data must be handled confidentially
+ *   - Do not disclose employee leave balances without consent
+ * 
+ * Compliance Note: Gender-violating leave balance records should be prevented.
+ * Balance computations must account for statutory minimums and pro-rata adjustments.
+ * Gender restrictions on maternity/paternity leaves are legally mandated.
+ * All leave balance information is sensitive personal data under RA 10173.
+ */
 
-// Check if the user is logged in, if not then redirect to login page
-if (!isset($_SESSION['loggedin']) || $_SESSION['loggedin'] !== true) {
+session_start();
+// Restrict access for employees
+if (!isset($_SESSION['loggedin']) || $_SESSION['loggedin'] !== true || $_SESSION['role'] === 'employee') {
     header('Location: login.php');
     exit;
 }
@@ -153,6 +193,36 @@ $specialLeaveTotal = [
             <div class="main-content">
                 <h2 class="section-title">Leave Balances</h2>
                 
+                <!-- Compliance Information -->
+                <div class="row mb-4">
+                    <div class="col-md-12">
+                        <div class="alert alert-warning alert-dismissible fade show" role="alert">
+                            <h5 class="alert-heading"><i class="fas fa-shield-alt mr-2"></i>Applicable Philippine Laws & Data Privacy Notice</h5>
+                            <hr>
+                            <strong>Philippine Republic Acts:</strong>
+                            <ul class="mb-2">
+                                <li><strong>RA 10911</strong> - 15 days vacation + 15 days sick leave minimum</li>
+                                <li><strong>RA 11210</strong> - Maternity Leave: 120 days for female employees</li>
+                                <li><strong>RA 11165</strong> - Paternity Leave: 7-14 days for male employees</li>
+                                <li><strong>RA 9403</strong> - Solo Parent: Additional 5 days</li>
+                                <li><strong>RA 10173 (CRITICAL)</strong> - Data Privacy Act: <strong>Leave balances are SENSITIVE PERSONAL INFORMATION</strong></li>
+                            </ul>
+                            <strong style="color: #d32f2f;">⚠️ SENSITIVE DATA HANDLING:</strong>
+                            <ul class="mb-2">
+                                <li>Maternity/Paternity leave balances reveal health/family status - CONFIDENTIAL</li>
+                                <li>Solo parent status is sensitive personal data - access restricted to authorized HR only</li>
+                                <li>Gender-based leave balances are protected information</li>
+                                <li>Restrict visibility to authorized HR personnel only</li>
+                                <li>Maintain comprehensive audit logs for all balance queries and modifications</li>
+                                <li>Do not share individual leave balances without legitimate business purpose</li>
+                            </ul>
+                            <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                                <span aria-hidden="true">&times;</span>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
                 <div class="row mb-4">
                     <div class="col-md-12">
                         <div class="card">

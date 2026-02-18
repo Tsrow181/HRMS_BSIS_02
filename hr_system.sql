@@ -1106,11 +1106,13 @@ CREATE TABLE `leave_types` (
 --
 
 INSERT INTO `leave_types` (`leave_type_id`, `leave_type_name`, `description`, `paid`, `default_days`, `carry_forward`, `max_carry_forward_days`, `created_at`, `updated_at`) VALUES
-(1, 'Vacation Leave', 'Annual vacation leave', 1, 15.00, 0, 0.00, '2025-09-14 07:13:35', '2025-09-14 07:13:35'),
-(2, 'Sick Leave', 'Medical leave for illness', 1, 10.00, 0, 0.00, '2025-09-14 07:13:35', '2025-09-14 07:13:35'),
-(3, 'Maternity Leave', 'Leave for new mothers', 1, 60.00, 0, 0.00, '2025-09-14 07:13:35', '2025-09-14 07:13:35'),
-(4, 'Paternity Leave', 'Leave for new fathers', 1, 7.00, 0, 0.00, '2025-09-14 07:13:35', '2025-09-14 07:13:35'),
-(5, 'Emergency Leave', 'Unplanned emergency leave', 0, 5.00, 0, 0.00, '2025-09-14 07:13:35', '2025-09-14 07:13:35');
+(1, 'Vacation Leave', 'Annual vacation leave (RA 10911: 15 days minimum)', 1, 15.00, 1, 5.00, '2025-09-14 07:13:35', '2025-09-14 07:13:35'),
+(2, 'Sick Leave', 'Medical leave for illness (RA 10911: 15 days minimum)', 1, 15.00, 1, 5.00, '2025-09-14 07:13:35', '2025-09-14 07:13:35'),
+(3, 'Maternity Leave', 'Leave for new mothers (RA 11210: 120 days)', 1, 120.00, 0, 0.00, '2025-09-14 07:13:35', '2025-09-14 07:13:35'),
+(4, 'Paternity Leave', 'Leave for new fathers (RA 11165: 7-14 days; 14 for solo parents)', 1, 7.00, 0, 0.00, '2025-09-14 07:13:35', '2025-09-14 07:13:35'),
+(5, 'Emergency Leave', 'Unplanned emergency leave', 0, 5.00, 0, 0.00, '2025-09-14 07:13:35', '2025-09-14 07:13:35'),
+(6, 'Solo Parent Leave', 'Additional leave for solo parents (RA 9403: 5 days)', 1, 5.00, 0, 0.00, '2025-09-14 07:13:35', '2025-09-14 07:13:35'),
+(7, 'Menstrual Disorder Leave', 'Leave for menstrual disorder symptoms (RA 11058: up to 3 days annually)', 1, 3.00, 0, 0.00, '2025-09-14 07:13:35', '2025-09-14 07:13:35');
 
 -- --------------------------------------------------------
 

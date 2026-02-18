@@ -2656,3 +2656,143 @@
 2026-01-13 21:51:21 Error: [8192] htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated - C:\Program Files\xampp\htdocs\HRMS_BSIS_02\leave_balances.php:168
 2026-01-13 21:51:21 Error: [2] Undefined array key "employee_code" - C:\Program Files\xampp\htdocs\HRMS_BSIS_02\leave_balances.php:168
 2026-01-13 21:51:21 Error: [8192] htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated - C:\Program Files\xampp\htdocs\HRMS_BSIS_02\leave_balances.php:168
+2026-02-17 15:29:47 Error: [2] Undefined array key "email" - C:\Program Files\xampp\htdocs\HRMS_BSIS_02\my_profile.php:493
+2026-02-17 15:29:47 Error: [2] Undefined array key "address" - C:\Program Files\xampp\htdocs\HRMS_BSIS_02\my_profile.php:513
+2026-02-17 15:29:47 Error: [2] Undefined array key "address" - C:\Program Files\xampp\htdocs\HRMS_BSIS_02\my_profile.php:578
+2026-02-17 15:29:47 Error: [8192] htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated - C:\Program Files\xampp\htdocs\HRMS_BSIS_02\my_profile.php:578
+2026-02-17 15:29:47 Error: [2] Undefined array key "email" - C:\Program Files\xampp\htdocs\HRMS_BSIS_02\my_profile.php:589
+2026-02-17 15:29:47 Error: [8192] htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated - C:\Program Files\xampp\htdocs\HRMS_BSIS_02\my_profile.php:589
+2026-02-17 15:29:49 Error: [2] Undefined array key "email" - C:\Program Files\xampp\htdocs\HRMS_BSIS_02\my_profile.php:493
+2026-02-17 15:29:49 Error: [2] Undefined array key "address" - C:\Program Files\xampp\htdocs\HRMS_BSIS_02\my_profile.php:513
+2026-02-17 15:29:49 Error: [2] Undefined array key "address" - C:\Program Files\xampp\htdocs\HRMS_BSIS_02\my_profile.php:578
+2026-02-17 15:29:49 Error: [8192] htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated - C:\Program Files\xampp\htdocs\HRMS_BSIS_02\my_profile.php:578
+2026-02-17 15:29:49 Error: [2] Undefined array key "email" - C:\Program Files\xampp\htdocs\HRMS_BSIS_02\my_profile.php:589
+2026-02-17 15:29:49 Error: [8192] htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated - C:\Program Files\xampp\htdocs\HRMS_BSIS_02\my_profile.php:589
+2026-02-17 15:30:59 Error: [2] Undefined array key "email" - C:\Program Files\xampp\htdocs\HRMS_BSIS_02\my_profile.php:493
+2026-02-17 15:30:59 Error: [2] Undefined array key "address" - C:\Program Files\xampp\htdocs\HRMS_BSIS_02\my_profile.php:513
+2026-02-17 15:30:59 Error: [2] Undefined array key "address" - C:\Program Files\xampp\htdocs\HRMS_BSIS_02\my_profile.php:578
+2026-02-17 15:30:59 Error: [8192] htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated - C:\Program Files\xampp\htdocs\HRMS_BSIS_02\my_profile.php:578
+2026-02-17 15:30:59 Error: [2] Undefined array key "email" - C:\Program Files\xampp\htdocs\HRMS_BSIS_02\my_profile.php:589
+2026-02-17 15:30:59 Error: [8192] htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated - C:\Program Files\xampp\htdocs\HRMS_BSIS_02\my_profile.php:589
+2026-02-17 15:33:49 Error: [2] Undefined array key "email" - C:\Program Files\xampp\htdocs\HRMS_BSIS_02\my_profile.php:493
+2026-02-17 15:33:49 Error: [2] Undefined array key "address" - C:\Program Files\xampp\htdocs\HRMS_BSIS_02\my_profile.php:513
+2026-02-17 15:33:49 Error: [2] Undefined array key "address" - C:\Program Files\xampp\htdocs\HRMS_BSIS_02\my_profile.php:578
+2026-02-17 15:33:49 Error: [8192] htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated - C:\Program Files\xampp\htdocs\HRMS_BSIS_02\my_profile.php:578
+2026-02-17 15:33:49 Error: [2] Undefined array key "email" - C:\Program Files\xampp\htdocs\HRMS_BSIS_02\my_profile.php:589
+2026-02-17 15:33:49 Error: [8192] htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated - C:\Program Files\xampp\htdocs\HRMS_BSIS_02\my_profile.php:589
+2026-02-17 15:41:13 Error: [2] Undefined array key "email" - C:\Program Files\xampp\htdocs\HRMS_BSIS_02\my_profile.php:493
+2026-02-17 15:41:13 Error: [2] Undefined array key "address" - C:\Program Files\xampp\htdocs\HRMS_BSIS_02\my_profile.php:513
+2026-02-17 15:41:13 Error: [2] Undefined array key "address" - C:\Program Files\xampp\htdocs\HRMS_BSIS_02\my_profile.php:578
+2026-02-17 15:41:13 Error: [8192] htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated - C:\Program Files\xampp\htdocs\HRMS_BSIS_02\my_profile.php:578
+2026-02-17 15:41:13 Error: [2] Undefined array key "email" - C:\Program Files\xampp\htdocs\HRMS_BSIS_02\my_profile.php:589
+2026-02-17 15:41:13 Error: [8192] htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated - C:\Program Files\xampp\htdocs\HRMS_BSIS_02\my_profile.php:589
+2026-02-17 15:42:49 Error: [2] Undefined array key "email" - C:\Program Files\xampp\htdocs\HRMS_BSIS_02\my_profile.php:493
+2026-02-17 15:42:49 Error: [2] Undefined array key "address" - C:\Program Files\xampp\htdocs\HRMS_BSIS_02\my_profile.php:513
+2026-02-17 15:42:49 Error: [2] Undefined array key "address" - C:\Program Files\xampp\htdocs\HRMS_BSIS_02\my_profile.php:578
+2026-02-17 15:42:49 Error: [8192] htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated - C:\Program Files\xampp\htdocs\HRMS_BSIS_02\my_profile.php:578
+2026-02-17 15:42:49 Error: [2] Undefined array key "email" - C:\Program Files\xampp\htdocs\HRMS_BSIS_02\my_profile.php:589
+2026-02-17 15:42:49 Error: [8192] htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated - C:\Program Files\xampp\htdocs\HRMS_BSIS_02\my_profile.php:589
+2026-02-17 15:44:15 Error: [2] Undefined array key "email" - C:\Program Files\xampp\htdocs\HRMS_BSIS_02\my_profile.php:493
+2026-02-17 15:44:15 Error: [2] Undefined array key "address" - C:\Program Files\xampp\htdocs\HRMS_BSIS_02\my_profile.php:513
+2026-02-17 15:44:15 Error: [2] Undefined array key "address" - C:\Program Files\xampp\htdocs\HRMS_BSIS_02\my_profile.php:578
+2026-02-17 15:44:15 Error: [8192] htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated - C:\Program Files\xampp\htdocs\HRMS_BSIS_02\my_profile.php:578
+2026-02-17 15:44:15 Error: [2] Undefined array key "email" - C:\Program Files\xampp\htdocs\HRMS_BSIS_02\my_profile.php:589
+2026-02-17 15:44:15 Error: [8192] htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated - C:\Program Files\xampp\htdocs\HRMS_BSIS_02\my_profile.php:589
+2026-02-17 15:44:17 Error: [2] Undefined array key "email" - C:\Program Files\xampp\htdocs\HRMS_BSIS_02\my_profile.php:493
+2026-02-17 15:44:17 Error: [2] Undefined array key "address" - C:\Program Files\xampp\htdocs\HRMS_BSIS_02\my_profile.php:513
+2026-02-17 15:44:17 Error: [2] Undefined array key "address" - C:\Program Files\xampp\htdocs\HRMS_BSIS_02\my_profile.php:578
+2026-02-17 15:44:17 Error: [8192] htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated - C:\Program Files\xampp\htdocs\HRMS_BSIS_02\my_profile.php:578
+2026-02-17 15:44:17 Error: [2] Undefined array key "email" - C:\Program Files\xampp\htdocs\HRMS_BSIS_02\my_profile.php:589
+2026-02-17 15:44:17 Error: [8192] htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated - C:\Program Files\xampp\htdocs\HRMS_BSIS_02\my_profile.php:589
+2026-02-17 15:48:11 Error: [2] Undefined array key "email" - C:\Program Files\xampp\htdocs\HRMS_BSIS_02\my_profile.php:493
+2026-02-17 15:48:11 Error: [2] Undefined array key "address" - C:\Program Files\xampp\htdocs\HRMS_BSIS_02\my_profile.php:513
+2026-02-17 15:48:11 Error: [2] Undefined array key "address" - C:\Program Files\xampp\htdocs\HRMS_BSIS_02\my_profile.php:578
+2026-02-17 15:48:11 Error: [8192] htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated - C:\Program Files\xampp\htdocs\HRMS_BSIS_02\my_profile.php:578
+2026-02-17 15:48:11 Error: [2] Undefined array key "email" - C:\Program Files\xampp\htdocs\HRMS_BSIS_02\my_profile.php:589
+2026-02-17 15:48:11 Error: [8192] htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated - C:\Program Files\xampp\htdocs\HRMS_BSIS_02\my_profile.php:589
+2026-02-17 15:48:17 Error: [2] Undefined array key "email" - C:\Program Files\xampp\htdocs\HRMS_BSIS_02\my_profile.php:493
+2026-02-17 15:48:17 Error: [2] Undefined array key "address" - C:\Program Files\xampp\htdocs\HRMS_BSIS_02\my_profile.php:513
+2026-02-17 15:48:17 Error: [2] Undefined array key "address" - C:\Program Files\xampp\htdocs\HRMS_BSIS_02\my_profile.php:578
+2026-02-17 15:48:17 Error: [8192] htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated - C:\Program Files\xampp\htdocs\HRMS_BSIS_02\my_profile.php:578
+2026-02-17 15:48:17 Error: [2] Undefined array key "email" - C:\Program Files\xampp\htdocs\HRMS_BSIS_02\my_profile.php:589
+2026-02-17 15:48:17 Error: [8192] htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated - C:\Program Files\xampp\htdocs\HRMS_BSIS_02\my_profile.php:589
+2026-02-17 15:48:22 Error: [2] Undefined array key "email" - C:\Program Files\xampp\htdocs\HRMS_BSIS_02\my_profile.php:493
+2026-02-17 15:48:22 Error: [2] Undefined array key "address" - C:\Program Files\xampp\htdocs\HRMS_BSIS_02\my_profile.php:513
+2026-02-17 15:48:22 Error: [2] Undefined array key "address" - C:\Program Files\xampp\htdocs\HRMS_BSIS_02\my_profile.php:578
+2026-02-17 15:48:22 Error: [8192] htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated - C:\Program Files\xampp\htdocs\HRMS_BSIS_02\my_profile.php:578
+2026-02-17 15:48:22 Error: [2] Undefined array key "email" - C:\Program Files\xampp\htdocs\HRMS_BSIS_02\my_profile.php:589
+2026-02-17 15:48:22 Error: [8192] htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated - C:\Program Files\xampp\htdocs\HRMS_BSIS_02\my_profile.php:589
+2026-02-17 15:49:17 Error: [2] Undefined array key "email" - C:\Program Files\xampp\htdocs\HRMS_BSIS_02\my_profile.php:493
+2026-02-17 15:49:17 Error: [2] Undefined array key "address" - C:\Program Files\xampp\htdocs\HRMS_BSIS_02\my_profile.php:513
+2026-02-17 15:49:17 Error: [2] Undefined array key "address" - C:\Program Files\xampp\htdocs\HRMS_BSIS_02\my_profile.php:578
+2026-02-17 15:49:17 Error: [8192] htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated - C:\Program Files\xampp\htdocs\HRMS_BSIS_02\my_profile.php:578
+2026-02-17 15:49:17 Error: [2] Undefined array key "email" - C:\Program Files\xampp\htdocs\HRMS_BSIS_02\my_profile.php:589
+2026-02-17 15:49:17 Error: [8192] htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated - C:\Program Files\xampp\htdocs\HRMS_BSIS_02\my_profile.php:589
+2026-02-17 15:49:18 Error: [2] Undefined array key "email" - C:\Program Files\xampp\htdocs\HRMS_BSIS_02\my_profile.php:493
+2026-02-17 15:49:18 Error: [2] Undefined array key "address" - C:\Program Files\xampp\htdocs\HRMS_BSIS_02\my_profile.php:513
+2026-02-17 15:49:18 Error: [2] Undefined array key "address" - C:\Program Files\xampp\htdocs\HRMS_BSIS_02\my_profile.php:578
+2026-02-17 15:49:18 Error: [8192] htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated - C:\Program Files\xampp\htdocs\HRMS_BSIS_02\my_profile.php:578
+2026-02-17 15:49:18 Error: [2] Undefined array key "email" - C:\Program Files\xampp\htdocs\HRMS_BSIS_02\my_profile.php:589
+2026-02-17 15:49:18 Error: [8192] htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated - C:\Program Files\xampp\htdocs\HRMS_BSIS_02\my_profile.php:589
+2026-02-17 15:49:22 Error: [2] Undefined array key "email" - C:\Program Files\xampp\htdocs\HRMS_BSIS_02\my_profile.php:493
+2026-02-17 15:49:22 Error: [2] Undefined array key "address" - C:\Program Files\xampp\htdocs\HRMS_BSIS_02\my_profile.php:513
+2026-02-17 15:49:22 Error: [2] Undefined array key "address" - C:\Program Files\xampp\htdocs\HRMS_BSIS_02\my_profile.php:578
+2026-02-17 15:49:22 Error: [8192] htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated - C:\Program Files\xampp\htdocs\HRMS_BSIS_02\my_profile.php:578
+2026-02-17 15:49:22 Error: [2] Undefined array key "email" - C:\Program Files\xampp\htdocs\HRMS_BSIS_02\my_profile.php:589
+2026-02-17 15:49:22 Error: [8192] htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated - C:\Program Files\xampp\htdocs\HRMS_BSIS_02\my_profile.php:589
+2026-02-17 15:49:30 Error: [2] Undefined array key "email" - C:\Program Files\xampp\htdocs\HRMS_BSIS_02\my_profile.php:493
+2026-02-17 15:49:30 Error: [2] Undefined array key "address" - C:\Program Files\xampp\htdocs\HRMS_BSIS_02\my_profile.php:513
+2026-02-17 15:49:30 Error: [2] Undefined array key "address" - C:\Program Files\xampp\htdocs\HRMS_BSIS_02\my_profile.php:578
+2026-02-17 15:49:30 Error: [8192] htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated - C:\Program Files\xampp\htdocs\HRMS_BSIS_02\my_profile.php:578
+2026-02-17 15:49:30 Error: [2] Undefined array key "email" - C:\Program Files\xampp\htdocs\HRMS_BSIS_02\my_profile.php:589
+2026-02-17 15:49:30 Error: [8192] htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated - C:\Program Files\xampp\htdocs\HRMS_BSIS_02\my_profile.php:589
+2026-02-17 15:49:33 Error: [2] Undefined array key "email" - C:\Program Files\xampp\htdocs\HRMS_BSIS_02\my_profile.php:493
+2026-02-17 15:49:33 Error: [2] Undefined array key "address" - C:\Program Files\xampp\htdocs\HRMS_BSIS_02\my_profile.php:513
+2026-02-17 15:49:33 Error: [2] Undefined array key "address" - C:\Program Files\xampp\htdocs\HRMS_BSIS_02\my_profile.php:578
+2026-02-17 15:49:33 Error: [8192] htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated - C:\Program Files\xampp\htdocs\HRMS_BSIS_02\my_profile.php:578
+2026-02-17 15:49:33 Error: [2] Undefined array key "email" - C:\Program Files\xampp\htdocs\HRMS_BSIS_02\my_profile.php:589
+2026-02-17 15:49:33 Error: [8192] htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated - C:\Program Files\xampp\htdocs\HRMS_BSIS_02\my_profile.php:589
+2026-02-17 16:15:19 Error: [2] Undefined array key "marital_status_date" - C:\Program Files\xampp\htdocs\HRMS_BSIS_02\personal_information.php:785
+2026-02-17 16:15:19 Error: [2] Undefined array key "highest_educational_attainment" - C:\Program Files\xampp\htdocs\HRMS_BSIS_02\personal_information.php:790
+2026-02-17 16:15:19 Error: [2] Undefined array key "marital_status_date" - C:\Program Files\xampp\htdocs\HRMS_BSIS_02\personal_information.php:785
+2026-02-17 16:15:19 Error: [2] Undefined array key "highest_educational_attainment" - C:\Program Files\xampp\htdocs\HRMS_BSIS_02\personal_information.php:790
+2026-02-17 16:15:19 Error: [2] Undefined array key "marital_status_date" - C:\Program Files\xampp\htdocs\HRMS_BSIS_02\personal_information.php:785
+2026-02-17 16:15:19 Error: [2] Undefined array key "highest_educational_attainment" - C:\Program Files\xampp\htdocs\HRMS_BSIS_02\personal_information.php:790
+2026-02-17 16:15:19 Error: [2] Undefined array key "marital_status_date" - C:\Program Files\xampp\htdocs\HRMS_BSIS_02\personal_information.php:785
+2026-02-17 16:15:19 Error: [2] Undefined array key "highest_educational_attainment" - C:\Program Files\xampp\htdocs\HRMS_BSIS_02\personal_information.php:790
+2026-02-17 16:15:19 Error: [2] Undefined array key "marital_status_date" - C:\Program Files\xampp\htdocs\HRMS_BSIS_02\personal_information.php:785
+2026-02-17 16:15:19 Error: [2] Undefined array key "highest_educational_attainment" - C:\Program Files\xampp\htdocs\HRMS_BSIS_02\personal_information.php:790
+2026-02-17 16:15:19 Error: [2] Undefined array key "marital_status_date" - C:\Program Files\xampp\htdocs\HRMS_BSIS_02\personal_information.php:785
+2026-02-17 16:15:19 Error: [2] Undefined array key "highest_educational_attainment" - C:\Program Files\xampp\htdocs\HRMS_BSIS_02\personal_information.php:790
+2026-02-17 16:15:19 Error: [2] Undefined array key "marital_status_date" - C:\Program Files\xampp\htdocs\HRMS_BSIS_02\personal_information.php:785
+2026-02-17 16:15:19 Error: [2] Undefined array key "highest_educational_attainment" - C:\Program Files\xampp\htdocs\HRMS_BSIS_02\personal_information.php:790
+2026-02-17 16:15:19 Error: [2] Undefined array key "marital_status_date" - C:\Program Files\xampp\htdocs\HRMS_BSIS_02\personal_information.php:785
+2026-02-17 16:15:19 Error: [2] Undefined array key "highest_educational_attainment" - C:\Program Files\xampp\htdocs\HRMS_BSIS_02\personal_information.php:790
+2026-02-17 16:15:19 Error: [2] Undefined array key "marital_status_date" - C:\Program Files\xampp\htdocs\HRMS_BSIS_02\personal_information.php:785
+2026-02-17 16:15:19 Error: [2] Undefined array key "highest_educational_attainment" - C:\Program Files\xampp\htdocs\HRMS_BSIS_02\personal_information.php:790
+2026-02-17 16:15:19 Error: [2] Undefined array key "marital_status_date" - C:\Program Files\xampp\htdocs\HRMS_BSIS_02\personal_information.php:785
+2026-02-17 16:15:19 Error: [2] Undefined array key "highest_educational_attainment" - C:\Program Files\xampp\htdocs\HRMS_BSIS_02\personal_information.php:790
+2026-02-17 16:15:19 Error: [2] Undefined array key "marital_status_date" - C:\Program Files\xampp\htdocs\HRMS_BSIS_02\personal_information.php:785
+2026-02-17 16:15:19 Error: [2] Undefined array key "highest_educational_attainment" - C:\Program Files\xampp\htdocs\HRMS_BSIS_02\personal_information.php:790
+2026-02-17 16:15:19 Error: [2] Undefined array key "marital_status_date" - C:\Program Files\xampp\htdocs\HRMS_BSIS_02\personal_information.php:785
+2026-02-17 16:15:19 Error: [2] Undefined array key "highest_educational_attainment" - C:\Program Files\xampp\htdocs\HRMS_BSIS_02\personal_information.php:790
+2026-02-17 16:15:19 Error: [2] Undefined array key "marital_status_date" - C:\Program Files\xampp\htdocs\HRMS_BSIS_02\personal_information.php:785
+2026-02-17 16:15:19 Error: [2] Undefined array key "highest_educational_attainment" - C:\Program Files\xampp\htdocs\HRMS_BSIS_02\personal_information.php:790
+2026-02-17 16:15:19 Error: [2] Undefined array key "marital_status_date" - C:\Program Files\xampp\htdocs\HRMS_BSIS_02\personal_information.php:785
+2026-02-17 16:15:19 Error: [2] Undefined array key "highest_educational_attainment" - C:\Program Files\xampp\htdocs\HRMS_BSIS_02\personal_information.php:790
+2026-02-17 16:15:19 Error: [2] Undefined array key "marital_status_date" - C:\Program Files\xampp\htdocs\HRMS_BSIS_02\personal_information.php:785
+2026-02-17 16:15:19 Error: [2] Undefined array key "highest_educational_attainment" - C:\Program Files\xampp\htdocs\HRMS_BSIS_02\personal_information.php:790
+2026-02-17 16:15:22 Error: [8192] htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated - C:\Program Files\xampp\htdocs\HRMS_BSIS_02\employment_history.php:732
+2026-02-17 16:15:22 Error: [8192] htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated - C:\Program Files\xampp\htdocs\HRMS_BSIS_02\employment_history.php:837
+2026-02-18 21:38:07 Error: [8192] htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated - C:\Program Files\xampp\htdocs\HRMS_BSIS_02\employee_profile.php:577
+2026-02-18 21:38:07 Error: [8192] htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated - C:\Program Files\xampp\htdocs\HRMS_BSIS_02\employee_profile.php:578
+2026-02-18 21:38:07 Error: [8192] htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated - C:\Program Files\xampp\htdocs\HRMS_BSIS_02\employee_profile.php:581
+2026-02-18 21:38:07 Error: [8192] htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated - C:\Program Files\xampp\htdocs\HRMS_BSIS_02\employee_profile.php:582
+2026-02-18 21:45:32 Error: [2] move_uploaded_file(uploads/leave_documents/699632fc4a906_test_doc.pdf): Failed to open stream: No such file or directory - C:\Program Files\xampp\htdocs\HRMS_BSIS_02\employee_leave.php:62
+2026-02-18 21:45:32 Error: [2] move_uploaded_file(): Unable to move &quot;C:\Program Files\xampp\tmp\phpBCD1.tmp&quot; to &quot;uploads/leave_documents/699632fc4a906_test_doc.pdf&quot; - C:\Program Files\xampp\htdocs\HRMS_BSIS_02\employee_leave.php:62
+2026-02-18 21:49:43 Error: [2] move_uploaded_file(uploads/leave_documents/699633f77ddfb_Cv.pdf): Failed to open stream: No such file or directory - C:\Program Files\xampp\htdocs\HRMS_BSIS_02\employee_leave.php:62
+2026-02-18 21:49:43 Error: [2] move_uploaded_file(): Unable to move &quot;C:\Program Files\xampp\tmp\php9215.tmp&quot; to &quot;uploads/leave_documents/699633f77ddfb_Cv.pdf&quot; - C:\Program Files\xampp\htdocs\HRMS_BSIS_02\employee_leave.php:62
+2026-02-18 23:23:02 Error: [2] Undefined variable $leaveBalances - C:\Program Files\xampp\htdocs\HRMS_BSIS_02\employee_leave.php:238
+2026-02-18 23:23:02 Error: [2] foreach() argument must be of type array|object, null given - C:\Program Files\xampp\htdocs\HRMS_BSIS_02\employee_leave.php:238
+2026-02-18 23:23:02 Error: [2] Undefined variable $leaveTypes - C:\Program Files\xampp\htdocs\HRMS_BSIS_02\employee_leave.php:338
+2026-02-18 23:23:02 Error: [2] foreach() argument must be of type array|object, null given - C:\Program Files\xampp\htdocs\HRMS_BSIS_02\employee_leave.php:338
