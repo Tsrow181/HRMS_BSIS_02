@@ -67,15 +67,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 $success_message = "🤖 Auto-generated offer created and logged for Mayor approval!";
                 break;
                 
-            case 'mayor_approve':
+            case 'approve_screening':
                 $application_id = $_POST['application_id'];
                 
-                // Simply change status from Screening to Interview
+                // Change status from Screening to Interview
                 $stmt = $conn->prepare("UPDATE job_applications SET status = 'Interview' WHERE application_id = ?");
                 $stmt->bind_param('i', $application_id);
                 $stmt->execute();
                 
-                $success_message = "🏛️ Mayor approved! Application moved to Interview stage!";
+                $success_message = "✅ Application approved! Moved to Interview stage!";
                 break;
                 
             case 'reject_candidate':
@@ -155,6 +155,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 }
 
 $show_archived = isset($_GET['archived']) && $_GET['archived'] == '1';
+$show_screened = isset($_GET['screened']) && $_GET['screened'] == '1';
 $sort_by_ai = isset($_GET['sort']) && $_GET['sort'] == 'ai_score';
 $filter_job = isset($_GET['job']) ? (int)$_GET['job'] : null;
 
@@ -162,8 +163,14 @@ $filter_job = isset($_GET['job']) ? (int)$_GET['job'] : null;
 $whereConditions = [];
 if ($show_archived) {
     $whereConditions[] = "ja.status IN ('Hired', 'Rejected')";
+} else if ($show_screened) {
+    // Show only screened applicants (those with AI scores)
+    $whereConditions[] = "ja.status IN ('Applied', 'Screening', 'Interview', 'Assessment', 'Reference Check', 'Onboarding', 'Offer', 'Offer Generated')";
+    $whereConditions[] = "ja.assessment_scores IS NOT NULL AND ja.assessment_scores != ''";
 } else {
-    $whereConditions[] = "ja.status IN ('Applied', 'Screening', 'Interview', 'Assessment', 'Reference Check', 'Onboarding', 'Offer', 'Offer Generated') AND ja.status != 'Draft'";
+    // Show only unscreened applicants (Applied status without AI scores)
+    $whereConditions[] = "ja.status = 'Applied'";
+    $whereConditions[] = "(ja.assessment_scores IS NULL OR ja.assessment_scores = '')";
 }
 
 // Add job filter if specified
@@ -474,8 +481,11 @@ $stats = [
                         <a href="ai_screening_levels.php" class="btn btn-info">
                             <i class="fas fa-sliders-h mr-1"></i>AI Screening Levels
                         </a>
-                        <a href="?archived=0" class="btn btn-primary <?php echo !$show_archived ? 'active' : ''; ?> ml-2">
-                            <i class="fas fa-list"></i> Active
+                        <a href="?" class="btn btn-warning <?php echo !$show_archived && !$show_screened ? 'active' : ''; ?> ml-2">
+                            <i class="fas fa-clock"></i> Pending (<?php echo count(array_filter($applications, function($a) { return $a['status'] == 'Applied' && empty($a['assessment_scores']); })); ?>)
+                        </a>
+                        <a href="?screened=1" class="btn btn-primary <?php echo $show_screened ? 'active' : ''; ?> ml-2">
+                            <i class="fas fa-check-circle"></i> Screened (<?php echo count(array_filter($applications, function($a) { return !empty($a['assessment_scores']); })); ?>)
                         </a>
                         <a href="?archived=1" class="btn btn-secondary <?php echo $show_archived ? 'active' : ''; ?> ml-2">
                             <i class="fas fa-archive"></i> Archived
@@ -504,83 +514,12 @@ $stats = [
                 
                 <?php if (!empty($success_message)): ?>
                     <div class="alert alert-success alert-dismissible fade show" role="alert">
-                        <?php echo $success_message; ?>
+                        <i class="fas fa-check-circle mr-2"></i><?php echo $success_message; ?>
                         <button type="button" class="close" data-dismiss="alert">
                             <span>&times;</span>
                         </button>
                     </div>
                 <?php endif; ?>
-
-                <!-- Statistics Cards -->
-                <div class="row mb-4">
-                    <div class="col-md-2">
-                        <div class="stats-card card">
-                            <div class="card-body text-center">
-                                <div class="activity-icon bg-warning">
-                                    <i class="fas fa-file-alt"></i>
-                                </div>
-                                <h3 class="stats-number"><?php echo $stats['Applied']; ?></h3>
-                                <p class="stats-label">Applied</p>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="col-md-2">
-                        <div class="stats-card card">
-                            <div class="card-body text-center">
-                                <div class="activity-icon bg-info">
-                                    <i class="fas fa-search"></i>
-                                </div>
-                                <h3 class="stats-number"><?php echo $stats['Screening']; ?></h3>
-                                <p class="stats-label">Screening</p>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="col-md-2">
-                        <div class="stats-card card">
-                            <div class="card-body text-center">
-                                <div class="activity-icon bg-primary">
-                                    <i class="fas fa-comments"></i>
-                                </div>
-                                <h3 class="stats-number"><?php echo $stats['Interview']; ?></h3>
-                                <p class="stats-label">Interview</p>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="col-md-2">
-                        <div class="stats-card card">
-                            <div class="card-body text-center">
-                                <div class="activity-icon bg-secondary">
-                                    <i class="fas fa-clipboard-check"></i>
-                                </div>
-                                <h3 class="stats-number"><?php echo $stats['Assessment']; ?></h3>
-                                <p class="stats-label">Assessment</p>
-                            </div>
-                        </div>
-                    </div>
-                    
-                    <div class="col-md-2">
-                        <div class="stats-card card">
-                            <div class="card-body text-center">
-                                <div class="activity-icon bg-success">
-                                    <i class="fas fa-user-check"></i>
-                                </div>
-                                <h3 class="stats-number"><?php echo $stats['Hired']; ?></h3>
-                                <p class="stats-label">Hired</p>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="col-md-2">
-                        <div class="stats-card card">
-                            <div class="card-body text-center">
-                                <div class="activity-icon bg-danger">
-                                    <i class="fas fa-times"></i>
-                                </div>
-                                <h3 class="stats-number"><?php echo $stats['Rejected']; ?></h3>
-                                <p class="stats-label">Rejected</p>
-                            </div>
-                        </div>
-                    </div>
-                </div>
 
                 <!-- Applications Grid -->
                 <?php if (count($applications) > 0): ?>
@@ -668,13 +607,13 @@ $stats = [
 
     <!-- Application Detail Modal -->
     <div class="modal fade" id="applicationModal" tabindex="-1">
-        <div class="modal-dialog modal-lg">
-            <div class="modal-content">
+        <div class="modal-dialog modal-xl" style="max-width: 95%; height: 90vh;">
+            <div class="modal-content" style="height: 100%;">
                 <div class="modal-header">
                     <h5 class="modal-title">Applicant Screening</h5>
                     <button type="button" class="close" data-dismiss="modal">&times;</button>
                 </div>
-                <div class="modal-body" id="modalContent">
+                <div class="modal-body" id="modalContent" style="overflow-y: auto; max-height: calc(90vh - 120px);">
                     <!-- Content loaded dynamically -->
                 </div>
             </div>
@@ -1195,23 +1134,20 @@ $stats = [
                             </button>
                         </form>
                     ` : app.status === 'Screening' ? `
-                        <div class="d-flex align-items-center">
-                            <span class="text-info mr-3"><i class="fas fa-envelope mr-1"></i>Awaiting Mayor Approval</span>
-                            <form method="POST" style="display: inline;" class="mr-2">
-                                <input type="hidden" name="action" value="mayor_approve">
-                                <input type="hidden" name="application_id" value="${app.application_id}">
-                                <button type="submit" class="btn btn-sm btn-success" onclick="return confirm('Simulate Mayor approval? This will move candidate to Interview stage.')">
-                                    <i class="fas fa-check mr-1"></i>[TEST] Mayor Approve
-                                </button>
-                            </form>
-                            <form method="POST" style="display: inline;">
-                                <input type="hidden" name="action" value="reject_candidate">
-                                <input type="hidden" name="application_id" value="${app.application_id}">
-                                <button type="submit" class="btn btn-sm btn-outline-danger" onclick="return confirm('Reject this application? This will cancel the Mayor approval process.')">
-                                    <i class="fas fa-times mr-1"></i>Reject
-                                </button>
-                            </form>
-                        </div>
+                        <form method="POST" style="display: inline;" class="mr-2">
+                            <input type="hidden" name="action" value="approve_screening">
+                            <input type="hidden" name="application_id" value="${app.application_id}">
+                            <button type="submit" class="btn btn-success">
+                                <i class="fas fa-check mr-1"></i>Move to Interview
+                            </button>
+                        </form>
+                        <form method="POST" style="display: inline;">
+                            <input type="hidden" name="action" value="reject_candidate">
+                            <input type="hidden" name="application_id" value="${app.application_id}">
+                            <button type="submit" class="btn btn-danger" onclick="return confirm('Reject this application?')">
+                                <i class="fas fa-times mr-1"></i>Reject
+                            </button>
+                        </form>
                     ` : app.status === 'Offer' ? `
                         <form method="POST" style="display: inline;" class="mr-2">
                             <input type="hidden" name="action" value="hire_candidate">
@@ -1973,6 +1909,11 @@ $stats = [
                         
                         // Auto-populate manual scores
                         populateManualScores(response.data);
+                        
+                        // Reload page after 2 seconds to show in screened table
+                        setTimeout(function() {
+                            window.location.href = '?screened=1';
+                        }, 2000);
                     }
                 },
                 error: function(xhr, status, error) {

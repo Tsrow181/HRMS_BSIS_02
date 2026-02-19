@@ -595,11 +595,28 @@ try {
                         $btn.prop('disabled', false).html('<i class="fas fa-magic mr-2"></i>Generate with AI');
                     }
                 },
-                error: function(){
+                error: function(xhr, status, error){
+                    let errorMsg = 'Failed to generate job. ';
+                    
+                    // Try to parse response as JSON for better error message
+                    try {
+                        var response = JSON.parse(xhr.responseText);
+                        if (response.error) {
+                            errorMsg += response.error;
+                        }
+                    } catch(e) {
+                        // If not JSON, use the raw response
+                        if (xhr.responseText) {
+                            errorMsg += 'Server response: ' + xhr.responseText.substring(0, 200);
+                        } else {
+                            errorMsg += 'Please try again. (HTTP ' + xhr.status + ')';
+                        }
+                    }
+                    
                     $status.removeClass('alert-success').addClass('alert-danger')
-                           .html('<i class="fas fa-exclamation-circle mr-2"></i>Failed to generate job. Please try again.')
+                           .html('<i class="fas fa-exclamation-circle mr-2"></i>' + errorMsg)
                            .show();
-                    showToast('Failed to generate job. Please try again.', 'error');
+                    showToast(errorMsg, 'error');
                     $btn.prop('disabled', false).html('<i class="fas fa-magic mr-2"></i>Generate with AI');
                 }
             });

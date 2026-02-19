@@ -45,12 +45,21 @@ function screenCandidateWithAI($candidateId, $jobOpeningId, $conn) {
     $prompt = buildScreeningPrompt($candidate, $job, $pdsData);
     
     // Call AI for screening
-    if (AI_PROVIDER === 'mock') {
+    if (SCREENING_AI_PROVIDER === 'mock') {
+        logAPIUsage('mock', 'screening');
         return generateMockScreening($candidate, $job);
-    } elseif (AI_PROVIDER === 'gemini') {
-        return callGeminiScreening($prompt);
+    } elseif (SCREENING_AI_PROVIDER === 'gemini') {
+        $result = callGeminiScreening($prompt);
+        if (isset($result['success']) && $result['success']) {
+            logAPIUsage('gemini', 'screening');
+        }
+        return $result;
     } else {
-        return callOpenAIScreening($prompt);
+        $result = callOpenAIScreening($prompt);
+        if (isset($result['success']) && $result['success']) {
+            logAPIUsage('openai', 'screening');
+        }
+        return $result;
     }
 }
 
@@ -312,14 +321,14 @@ function generateMockScreening($candidate, $job) {
  * Call Gemini API for screening
  */
 function callGeminiScreening($prompt) {
-    $apiKey = GEMINI_API_KEY;
+    $apiKey = SCREENING_GEMINI_API_KEY;
     
     // Check if API key is set
     if (empty($apiKey)) {
-        return ['error' => 'Gemini API key is not configured. Please visit ai_keys_setup.php to add your API key.'];
+        return ['error' => 'Screening Gemini API key is not configured. Please visit ai_config_page.php to add your API key.'];
     }
     
-    $url = GEMINI_API_URL . '?key=' . $apiKey;
+    $url = SCREENING_GEMINI_API_URL . '?key=' . $apiKey;
     
     $data = [
         'contents' => [
@@ -457,11 +466,17 @@ function callGeminiScreening($prompt) {
  * Call OpenAI API for screening
  */
 function callOpenAIScreening($prompt) {
-    $apiKey = OPENAI_API_KEY;
+    $apiKey = SCREENING_OPENAI_API_KEY;
+    
+    // Check if API key is set
+    if (empty($apiKey)) {
+        return ['error' => 'Screening OpenAI API key is not configured. Please visit ai_config_page.php to add your API key.'];
+    }
+    
     $url = OPENAI_API_URL;
     
     $data = [
-        'model' => OPENAI_MODEL,
+        'model' => SCREENING_OPENAI_MODEL,
         'messages' => [
             [
                 'role' => 'system',

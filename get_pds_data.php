@@ -38,10 +38,10 @@ try {
             telephone,
             mobile,
             email,
-            education_data,
-            work_experience_data,
-            skills_data,
-            references_data,
+            education,
+            work_experience,
+            special_skills,
+            `references`,
             pds_file_name,
             created_at,
             updated_at
@@ -71,10 +71,10 @@ try {
     }
     
     // Parse JSON fields
-    $education = json_decode($pdsData['education_data'], true) ?? [];
-    $workExperience = json_decode($pdsData['work_experience_data'], true) ?? [];
-    $skills = json_decode($pdsData['skills_data'], true) ?? [];
-    $references = json_decode($pdsData['references_data'], true) ?? [];
+    $education = json_decode($pdsData['education'], true) ?? [];
+    $workExperience = json_decode($pdsData['work_experience'], true) ?? [];
+    $skills = json_decode($pdsData['special_skills'], true) ?? [];
+    $references = json_decode($pdsData['references'], true) ?? [];
     
     // Build structured response
     $response = [
@@ -112,7 +112,7 @@ try {
             ],
             'education' => $education,
             'work_experience' => $workExperience,
-            'skills' => is_array($skills) ? $skills : ($pdsData['skills_data'] ? [$pdsData['skills_data']] : []),
+            'skills' => is_array($skills) ? $skills : ($pdsData['special_skills'] ? [$pdsData['special_skills']] : []),
             'references' => $references
         ],
         'metadata' => [
