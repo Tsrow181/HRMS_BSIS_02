@@ -97,6 +97,7 @@ CREATE TABLE `attendance` (
   `status` enum('Present','Absent','Late','Half Day','On Leave') NOT NULL,
   `working_hours` decimal(5,2) DEFAULT NULL,
   `overtime_hours` decimal(5,2) DEFAULT 0.00,
+  `late_minutes` decimal(5,2) DEFAULT 0.00,
   `notes` text DEFAULT NULL,
   `created_at` timestamp NOT NULL DEFAULT current_timestamp(),
   `updated_at` timestamp NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp()
@@ -180,6 +181,128 @@ CREATE TABLE `candidates` (
   `created_at` timestamp NOT NULL DEFAULT current_timestamp(),
   `updated_at` timestamp NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp()
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `pds_data`
+--
+
+CREATE TABLE `pds_data` (
+  `pds_id` int(11) NOT NULL,
+  `candidate_id` int(11) NOT NULL,
+  
+  -- I. Personal Information
+  `surname` varchar(100) DEFAULT NULL,
+  `first_name` varchar(100) DEFAULT NULL,
+  `middle_name` varchar(100) DEFAULT NULL,
+  `name_extension` varchar(20) DEFAULT NULL,
+  `date_of_birth` date DEFAULT NULL,
+  `place_of_birth` varchar(255) DEFAULT NULL,
+  `sex` enum('Male','Female') DEFAULT NULL,
+  `civil_status` enum('Single','Married','Widowed','Separated') DEFAULT NULL,
+  `height` decimal(5,2) DEFAULT NULL,
+  `weight` decimal(5,2) DEFAULT NULL,
+  `blood_type` varchar(10) DEFAULT NULL,
+  
+  -- Government IDs
+  `gsis_id` varchar(50) DEFAULT NULL,
+  `pagibig_id` varchar(50) DEFAULT NULL,
+  `philhealth_no` varchar(50) DEFAULT NULL,
+  `sss_no` varchar(50) DEFAULT NULL,
+  `tin_no` varchar(50) DEFAULT NULL,
+  `agency_employee_no` varchar(50) DEFAULT NULL,
+  
+  -- Citizenship
+  `citizenship_type` varchar(50) DEFAULT NULL,
+  `citizenship_country` varchar(100) DEFAULT NULL,
+  
+  -- Residential Address
+  `residential_address` text DEFAULT NULL,
+  `residential_subdivision` varchar(100) DEFAULT NULL,
+  `residential_barangay` varchar(100) DEFAULT NULL,
+  `residential_city` varchar(100) DEFAULT NULL,
+  `residential_province` varchar(100) DEFAULT NULL,
+  `residential_zipcode` varchar(20) DEFAULT NULL,
+  
+  -- Permanent Address
+  `permanent_address` text DEFAULT NULL,
+  `permanent_subdivision` varchar(100) DEFAULT NULL,
+  `permanent_barangay` varchar(100) DEFAULT NULL,
+  `permanent_city` varchar(100) DEFAULT NULL,
+  `permanent_province` varchar(100) DEFAULT NULL,
+  `permanent_zipcode` varchar(20) DEFAULT NULL,
+  
+  -- Contact Information
+  `telephone` varchar(50) DEFAULT NULL,
+  `mobile` varchar(50) DEFAULT NULL,
+  `email` varchar(255) DEFAULT NULL,
+  
+  -- II. Family Background
+  `spouse_surname` varchar(100) DEFAULT NULL,
+  `spouse_firstname` varchar(100) DEFAULT NULL,
+  `spouse_middlename` varchar(100) DEFAULT NULL,
+  `spouse_occupation` varchar(100) DEFAULT NULL,
+  `spouse_employer` varchar(255) DEFAULT NULL,
+  `spouse_business_address` text DEFAULT NULL,
+  `spouse_telephone` varchar(50) DEFAULT NULL,
+  
+  `father_surname` varchar(100) DEFAULT NULL,
+  `father_firstname` varchar(100) DEFAULT NULL,
+  `father_middlename` varchar(100) DEFAULT NULL,
+  
+  `mother_surname` varchar(100) DEFAULT NULL,
+  `mother_firstname` varchar(100) DEFAULT NULL,
+  `mother_middlename` varchar(100) DEFAULT NULL,
+  
+  -- Children (stored as JSON array)
+  `children` longtext CHARACTER SET utf8mb4 COLLATE utf8mb4_bin DEFAULT NULL CHECK (json_valid(`children`)),
+  
+  -- III. Educational Background (stored as JSON array)
+  `education` longtext CHARACTER SET utf8mb4 COLLATE utf8mb4_bin DEFAULT NULL CHECK (json_valid(`education`)),
+  
+  -- IV. Civil Service Eligibility (stored as JSON array)
+  `eligibility` longtext CHARACTER SET utf8mb4 COLLATE utf8mb4_bin DEFAULT NULL CHECK (json_valid(`eligibility`)),
+  
+  -- V. Work Experience (stored as JSON array)
+  `work_experience` longtext CHARACTER SET utf8mb4 COLLATE utf8mb4_bin DEFAULT NULL CHECK (json_valid(`work_experience`)),
+  
+  -- VI. Voluntary Work (stored as JSON array)
+  `voluntary_work` longtext CHARACTER SET utf8mb4 COLLATE utf8mb4_bin DEFAULT NULL CHECK (json_valid(`voluntary_work`)),
+  
+  -- VII. Learning and Development (stored as JSON array)
+  `training` longtext CHARACTER SET utf8mb4 COLLATE utf8mb4_bin DEFAULT NULL CHECK (json_valid(`training`)),
+  
+  -- VIII. Other Information
+  `special_skills` text DEFAULT NULL,
+  `distinctions` text DEFAULT NULL,
+  `memberships` text DEFAULT NULL,
+  
+  -- IX. Additional Application Info
+  `current_position` varchar(150) DEFAULT NULL,
+  `current_company` varchar(255) DEFAULT NULL,
+  `notice_period` varchar(100) DEFAULT NULL,
+  `expected_salary` decimal(10,2) DEFAULT NULL,
+  `application_source` varchar(100) DEFAULT NULL,
+  
+  -- X. Character References (stored as JSON array)
+  `references` longtext CHARACTER SET utf8mb4 COLLATE utf8mb4_bin DEFAULT NULL CHECK (json_valid(`references`)),
+  
+  -- File storage (PDF/JSON stored in database)
+  `pds_file_blob` longblob DEFAULT NULL COMMENT 'PDF file content stored in database',
+  `pds_file_name` varchar(255) DEFAULT NULL COMMENT 'Original filename',
+  `pds_file_type` varchar(50) DEFAULT NULL COMMENT 'MIME type (application/pdf, application/json)',
+  `pds_file_size` int(11) DEFAULT NULL COMMENT 'File size in bytes',
+  `json_file_blob` longblob DEFAULT NULL COMMENT 'JSON file content stored in database',
+  
+  -- File paths (optional - for backward compatibility)
+  `pds_file_path` varchar(255) DEFAULT NULL,
+  `json_file_path` varchar(255) DEFAULT NULL,
+  
+  -- Metadata
+  `created_at` timestamp NOT NULL DEFAULT current_timestamp(),
+  `updated_at` timestamp NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp()
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- --------------------------------------------------------
 
@@ -377,6 +500,7 @@ CREATE TABLE `departments` (
   `department_name` varchar(100) NOT NULL,
   `description` text DEFAULT NULL,
   `location` varchar(100) DEFAULT NULL,
+  `vacancy_limit` int(11) DEFAULT NULL COMMENT 'Maximum number of open job vacancies allowed for this department',
   `created_at` timestamp NOT NULL DEFAULT current_timestamp(),
   `updated_at` timestamp NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp()
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
@@ -1208,6 +1332,13 @@ CREATE TABLE `job_openings` (
   `posting_date` date NOT NULL,
   `closing_date` date DEFAULT NULL,
   `status` enum('Draft','Open','On Hold','Closed','Cancelled') DEFAULT 'Draft',
+  `screening_level` enum('Easy','Moderate','Strict') DEFAULT 'Moderate' COMMENT 'AI screening difficulty level',
+  `ai_generated` tinyint(1) DEFAULT 0 COMMENT 'Flag if job was created by AI',
+  `created_by` int(11) DEFAULT NULL COMMENT 'User ID who created the job',
+  `approval_status` enum('Pending','Approved','Rejected') DEFAULT NULL COMMENT 'Approval status for AI-generated jobs',
+  `approved_by` int(11) DEFAULT NULL COMMENT 'User ID who approved/rejected the job',
+  `approved_at` datetime DEFAULT NULL COMMENT 'Timestamp of approval/rejection',
+  `rejection_reason` text DEFAULT NULL COMMENT 'Reason if job was rejected',
   `created_at` timestamp NOT NULL DEFAULT current_timestamp(),
   `updated_at` timestamp NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp()
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
@@ -2088,6 +2219,14 @@ ALTER TABLE `career_path_stages`
   ADD KEY `job_role_id` (`job_role_id`);
 
 --
+-- Indexes for table `pds_data`
+--
+ALTER TABLE `pds_data`
+  ADD PRIMARY KEY (`pds_id`),
+  ADD KEY `idx_candidate` (`candidate_id`),
+  ADD KEY `idx_email` (`email`);
+
+--
 -- Indexes for table `compensation_packages`
 --
 ALTER TABLE `compensation_packages`
@@ -2637,6 +2776,12 @@ ALTER TABLE `career_path_stages`
   MODIFY `stage_id` int(11) NOT NULL AUTO_INCREMENT;
 
 --
+-- AUTO_INCREMENT for table `pds_data`
+--
+ALTER TABLE `pds_data`
+  MODIFY `pds_id` int(11) NOT NULL AUTO_INCREMENT;
+
+--
 -- AUTO_INCREMENT for table `compensation_packages`
 --
 ALTER TABLE `compensation_packages`
@@ -3076,6 +3221,12 @@ ALTER TABLE `career_path_stages`
   ADD CONSTRAINT `career_path_stages_ibfk_2` FOREIGN KEY (`job_role_id`) REFERENCES `job_roles` (`job_role_id`) ON DELETE CASCADE;
 
 --
+-- Constraints for table `pds_data`
+--
+ALTER TABLE `pds_data`
+  ADD CONSTRAINT `pds_data_ibfk_1` FOREIGN KEY (`candidate_id`) REFERENCES `candidates` (`candidate_id`) ON DELETE CASCADE;
+
+--
 -- Constraints for table `compensation_packages`
 --
 ALTER TABLE `compensation_packages`
@@ -3278,7 +3429,9 @@ ALTER TABLE `job_offers`
 --
 ALTER TABLE `job_openings`
   ADD CONSTRAINT `job_openings_ibfk_1` FOREIGN KEY (`job_role_id`) REFERENCES `job_roles` (`job_role_id`) ON DELETE CASCADE,
-  ADD CONSTRAINT `job_openings_ibfk_2` FOREIGN KEY (`department_id`) REFERENCES `departments` (`department_id`) ON DELETE CASCADE;
+  ADD CONSTRAINT `job_openings_ibfk_2` FOREIGN KEY (`department_id`) REFERENCES `departments` (`department_id`) ON DELETE CASCADE,
+  ADD CONSTRAINT `fk_job_created_by` FOREIGN KEY (`created_by`) REFERENCES `users` (`user_id`) ON DELETE SET NULL,
+  ADD CONSTRAINT `fk_job_approved_by` FOREIGN KEY (`approved_by`) REFERENCES `users` (`user_id`) ON DELETE SET NULL;
 
 --
 -- Constraints for table `knowledge_transfers`

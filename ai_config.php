@@ -19,35 +19,35 @@ if (file_exists($apiKeysFile)) {
 }
 
 /**
- * Log API usage to database (mysqli Compatible)
+ * Log API usage to database (PDO Compatible)
  */
 function logAPIUsage($provider, $apiType = 'job_generation') {
     try {
-        // Try to get connection from globals
+        // Try to get PDO connection from globals
         $conn = $GLOBALS['conn'] ?? null;
         
         if (!$conn) {
-            require_once 'db_connect.php';
+            require_once 'config.php';
             $conn = $GLOBALS['conn'] ?? null;
         }
         
-        if (!$conn) {
+        if (!$conn || !($conn instanceof PDO)) {
             return; // Silently fail if no connection
         }
         
         $today = date('Y-m-d');
         
-        // Check if tracking table exists (mysqli)
+        // Check if tracking table exists (PDO)
         try {
             $result = $conn->query("SHOW TABLES LIKE 'api_usage_tracking'");
-            $tableExists = ($result && $result->num_rows > 0);
+            $tableExists = ($result && $result->rowCount() > 0);
         } catch (Exception $e) {
             $tableExists = false;
         }
         
         if (!$tableExists) {
             try {
-                $conn->query("CREATE TABLE IF NOT EXISTS api_usage_tracking (
+                $conn->exec("CREATE TABLE IF NOT EXISTS api_usage_tracking (
                     id INT AUTO_INCREMENT PRIMARY KEY,
                     provider VARCHAR(50) NOT NULL,
                     api_type VARCHAR(50) NOT NULL,
@@ -62,14 +62,12 @@ function logAPIUsage($provider, $apiType = 'job_generation') {
             }
         }
         
-        // Insert or update usage count (mysqli)
+        // Insert or update usage count (PDO)
         try {
             $stmt = $conn->prepare("INSERT INTO api_usage_tracking (provider, api_type, request_date, request_count) 
                                    VALUES (?, ?, ?, 1)
                                    ON DUPLICATE KEY UPDATE request_count = request_count + 1");
-            $stmt->bind_param('sss', $provider, $apiType, $today);
-            $stmt->execute();
-            $stmt->close();
+            $stmt->execute([$provider, $apiType, $today]);
         } catch (Exception $e) {
             // Silently fail if query fails
         }

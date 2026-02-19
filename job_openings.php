@@ -12,8 +12,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         switch ($_POST['action']) {
             case 'create_opening':
                 $screening_level = $_POST['screening_level'] ?? 'Moderate';
-                $stmt = $conn->prepare("INSERT INTO job_openings (job_role_id, department_id, title, description, requirements, responsibilities, location, employment_type, salary_range_min, salary_range_max, vacancy_count, posting_date, status, screening_level) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, CURDATE(), ?, ?)");
-                $stmt->execute([$_POST['job_role_id'], $_POST['department_id'], $_POST['title'], $_POST['description'], $_POST['requirements'], $_POST['responsibilities'], $_POST['location'], $_POST['employment_type'], $_POST['salary_min'], $_POST['salary_max'], $_POST['vacancy_count'], $_POST['status'], $screening_level]);
+                $stmt = $conn->prepare("INSERT INTO job_openings (job_role_id, department_id, title, description, requirements, responsibilities, location, employment_type, salary_range_min, salary_range_max, vacancy_count, posting_date, status, screening_level, ai_generated, created_by) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, CURDATE(), ?, ?, FALSE, ?)");
+                $stmt->execute([$_POST['job_role_id'], $_POST['department_id'], $_POST['title'], $_POST['description'], $_POST['requirements'], $_POST['responsibilities'], $_POST['location'], $_POST['employment_type'], $_POST['salary_min'], $_POST['salary_max'], $_POST['vacancy_count'], $_POST['status'], $screening_level, $_SESSION['user_id']]);
                 $success_message = "✨ Job opening '" . htmlspecialchars($_POST['title']) . "' created successfully with " . $screening_level . " AI screening level!";
                 break;
             case 'update_status':
