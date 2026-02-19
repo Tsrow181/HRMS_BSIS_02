@@ -722,6 +722,43 @@ INSERT INTO `employee_competencies` (`employee_id`, `competency_id`, `cycle_id`,
 -- --------------------------------------------------------
 
 --
+-- Table structure for table `candidate_onboarding`
+--
+
+CREATE TABLE `candidate_onboarding` (
+  `candidate_onboarding_id` int(11) NOT NULL AUTO_INCREMENT,
+  `candidate_id` int(11) NOT NULL,
+  `application_id` int(11) DEFAULT NULL,
+  `start_date` date NOT NULL,
+  `expected_completion_date` date NOT NULL,
+  `status` enum('Pending','In Progress','Completed','Cancelled') DEFAULT 'Pending',
+  `created_at` timestamp NOT NULL DEFAULT current_timestamp(),
+  `updated_at` timestamp NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp(),
+  PRIMARY KEY (`candidate_onboarding_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `candidate_onboarding_tasks`
+--
+
+CREATE TABLE `candidate_onboarding_tasks` (
+  `candidate_task_id` int(11) NOT NULL AUTO_INCREMENT,
+  `candidate_onboarding_id` int(11) NOT NULL,
+  `task_id` int(11) NOT NULL,
+  `due_date` date NOT NULL,
+  `status` enum('Not Started','In Progress','Completed','Cancelled') DEFAULT 'Not Started',
+  `completion_date` date DEFAULT NULL,
+  `notes` text DEFAULT NULL,
+  `created_at` timestamp NOT NULL DEFAULT current_timestamp(),
+  `updated_at` timestamp NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp(),
+  PRIMARY KEY (`candidate_task_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+-- --------------------------------------------------------
+
+--
 -- Table structure for table `employee_onboarding`
 --
 
@@ -1306,6 +1343,28 @@ CREATE TABLE `job_offers` (
   `notes` text DEFAULT NULL,
   `created_at` timestamp NOT NULL DEFAULT current_timestamp(),
   `updated_at` timestamp NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp()
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `offer_letters`
+--
+
+CREATE TABLE `offer_letters` (
+  `letter_id` int(11) NOT NULL AUTO_INCREMENT,
+  `offer_id` int(11) NOT NULL,
+  `application_id` int(11) NOT NULL,
+  `letter_content` text NOT NULL,
+  `status` enum('Draft','Sent','Accepted','Declined') DEFAULT 'Draft',
+  `created_by` int(11) DEFAULT NULL,
+  `created_at` datetime DEFAULT NULL,
+  `sent_at` datetime DEFAULT NULL,
+  PRIMARY KEY (`letter_id`),
+  UNIQUE KEY `unique_offer` (`offer_id`),
+  KEY `application_id` (`application_id`),
+  CONSTRAINT `offer_letters_ibfk_1` FOREIGN KEY (`offer_id`) REFERENCES `job_offers` (`offer_id`) ON DELETE CASCADE,
+  CONSTRAINT `offer_letters_ibfk_2` FOREIGN KEY (`application_id`) REFERENCES `job_applications` (`application_id`) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 -- --------------------------------------------------------
