@@ -1352,19 +1352,14 @@ CREATE TABLE `job_offers` (
 --
 
 CREATE TABLE `offer_letters` (
-  `letter_id` int(11) NOT NULL AUTO_INCREMENT,
+  `letter_id` int(11) NOT NULL,
   `offer_id` int(11) NOT NULL,
   `application_id` int(11) NOT NULL,
   `letter_content` text NOT NULL,
   `status` enum('Draft','Sent','Accepted','Declined') DEFAULT 'Draft',
   `created_by` int(11) DEFAULT NULL,
   `created_at` datetime DEFAULT NULL,
-  `sent_at` datetime DEFAULT NULL,
-  PRIMARY KEY (`letter_id`),
-  UNIQUE KEY `unique_offer` (`offer_id`),
-  KEY `application_id` (`application_id`),
-  CONSTRAINT `offer_letters_ibfk_1` FOREIGN KEY (`offer_id`) REFERENCES `job_offers` (`offer_id`) ON DELETE CASCADE,
-  CONSTRAINT `offer_letters_ibfk_2` FOREIGN KEY (`application_id`) REFERENCES `job_applications` (`application_id`) ON DELETE CASCADE
+  `sent_at` datetime DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 -- --------------------------------------------------------
@@ -2549,6 +2544,14 @@ ALTER TABLE `job_offers`
   ADD KEY `candidate_id` (`candidate_id`);
 
 --
+-- Indexes for table `offer_letters`
+--
+ALTER TABLE `offer_letters`
+  ADD PRIMARY KEY (`letter_id`),
+  ADD UNIQUE KEY `unique_offer` (`offer_id`),
+  ADD KEY `application_id` (`application_id`);
+
+--
 -- Indexes for table `job_openings`
 --
 ALTER TABLE `job_openings`
@@ -3039,6 +3042,12 @@ ALTER TABLE `job_offers`
   MODIFY `offer_id` int(11) NOT NULL AUTO_INCREMENT;
 
 --
+-- AUTO_INCREMENT for table `offer_letters`
+--
+ALTER TABLE `offer_letters`
+  MODIFY `letter_id` int(11) NOT NULL AUTO_INCREMENT;
+
+--
 -- AUTO_INCREMENT for table `job_openings`
 --
 ALTER TABLE `job_openings`
@@ -3482,6 +3491,13 @@ ALTER TABLE `job_offers`
   ADD CONSTRAINT `job_offers_ibfk_1` FOREIGN KEY (`application_id`) REFERENCES `job_applications` (`application_id`) ON DELETE CASCADE,
   ADD CONSTRAINT `job_offers_ibfk_2` FOREIGN KEY (`job_opening_id`) REFERENCES `job_openings` (`job_opening_id`) ON DELETE CASCADE,
   ADD CONSTRAINT `job_offers_ibfk_3` FOREIGN KEY (`candidate_id`) REFERENCES `candidates` (`candidate_id`) ON DELETE CASCADE;
+
+--
+-- Constraints for table `offer_letters`
+--
+ALTER TABLE `offer_letters`
+  ADD CONSTRAINT `offer_letters_ibfk_1` FOREIGN KEY (`offer_id`) REFERENCES `job_offers` (`offer_id`) ON DELETE CASCADE,
+  ADD CONSTRAINT `offer_letters_ibfk_2` FOREIGN KEY (`application_id`) REFERENCES `job_applications` (`application_id`) ON DELETE CASCADE;
 
 --
 -- Constraints for table `job_openings`
