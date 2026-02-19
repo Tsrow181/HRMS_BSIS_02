@@ -11,24 +11,20 @@ if (!isset($_SESSION['loggedin']) || $_SESSION['loggedin'] !== true) {
 // Include database connection
 require_once 'config.php';
 
-// Get employee_id from request parameters
+// Get employee_id from request parameters (supports both GET and POST)
 $employee_id = isset($_GET['employee_id']) ? $_GET['employee_id'] : (isset($_POST['employee_id']) ? $_POST['employee_id'] : null);
 
 // Validate employee_id
 if ($employee_id) {
     try {
-        $sql = "SELECT 
-            ep.employee_number, 
-            ep.employment_status,
-            ep.current_salary, -- ✅ get from employee_profiles
-            pi.first_name, 
-            pi.last_name,
-            jr.title AS job_title,
-            d.department_name
+        $sql = "SELECT
+            ep.employee_id,
+            CONCAT(pi.first_name, ' ', pi.last_name) AS name,
+            jr.title AS job_role,
+            ep.job_role_id
         FROM employee_profiles ep
         JOIN personal_information pi ON ep.personal_info_id = pi.personal_info_id
         LEFT JOIN job_roles jr ON ep.job_role_id = jr.job_role_id
-        LEFT JOIN departments d ON jr.department = d.department_name
         WHERE ep.employee_id = ?";
 
         $stmt = $conn->prepare($sql);

@@ -71,7 +71,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                         $stmt = $pdo->prepare("INSERT INTO personal_information (
                             first_name, last_name, date_of_birth, gender, marital_status, marital_status_date, 
                             marital_status_document_url, nationality, tax_id, social_security_number, 
-                            pagibig_id, philhealth_id, phone_number, 
+                            pag_ibig_id, philhealth_id, phone_number, 
                             emergency_contact_name, emergency_contact_relationship, emergency_contact_phone,
                             highest_educational_attainment, course_degree, school_university, year_graduated
                         ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
@@ -87,7 +87,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                             $_POST['nationality'],
                             $_POST['tax_id'],
                             $_POST['social_security_number'],
-                            $_POST['pagibig_id'] ?? null,
+                            $_POST['pag_ibig_id'] ?? null,
                             $_POST['philhealth_id'] ?? null,
                             $_POST['phone_number'],
                             $_POST['emergency_contact_name'],
@@ -154,7 +154,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                         $stmt = $pdo->prepare("UPDATE personal_information SET 
                             first_name=?, last_name=?, date_of_birth=?, gender=?, marital_status=?, 
                             marital_status_date=?, marital_status_document_url=?, nationality=?, tax_id=?, 
-                            social_security_number=?, pagibig_id=?, philhealth_id=?, phone_number=?, 
+                            social_security_number=?, pag_ibig_id=?, philhealth_id=?, phone_number=?, 
                             emergency_contact_name=?, emergency_contact_relationship=?, emergency_contact_phone=?,
                             highest_educational_attainment=?, course_degree=?, school_university=?, year_graduated=?
                             WHERE personal_info_id=?");
@@ -170,7 +170,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                             $_POST['nationality'],
                             $_POST['tax_id'],
                             $_POST['social_security_number'],
-                            $_POST['pagibig_id'] ?? null,
+                            $_POST['pag_ibig_id'] ?? null,
                             $_POST['philhealth_id'] ?? null,
                             $_POST['phone_number'],
                             $_POST['emergency_contact_name'],
@@ -987,8 +987,8 @@ $personalInfo = $stmt->fetchAll(PDO::FETCH_ASSOC);
                     <div class="form-row">
                         <div class="form-col">
                             <div class="form-group">
-                                <label for="pagibig_id">Pag-IBIG ID</label>
-                                <input type="text" id="pagibig_id" name="pagibig_id" class="form-control">
+                                <label for="pag_ibig_id">Pag-IBIG ID</label>
+                                <input type="text" id="pag_ibig_id" name="pag_ibig_id" class="form-control">
                             </div>
                         </div>
                         <div class="form-col">
@@ -1174,7 +1174,7 @@ $personalInfo = $stmt->fetchAll(PDO::FETCH_ASSOC);
                 document.getElementById('marital_status_date').value = person.marital_status_date || '';
                 document.getElementById('tax_id').value = person.tax_id || '';
                 document.getElementById('social_security_number').value = person.social_security_number || '';
-                document.getElementById('pagibig_id').value = person.pagibig_id || '';
+                document.getElementById('pag_ibig_id').value = person.pag_ibig_id || '';
                 document.getElementById('philhealth_id').value = person.philhealth_id || '';
                 document.getElementById('emergency_contact_name').value = person.emergency_contact_name || '';
                 document.getElementById('emergency_contact_relationship').value = person.emergency_contact_relationship || '';
@@ -1256,7 +1256,7 @@ $personalInfo = $stmt->fetchAll(PDO::FETCH_ASSOC);
                     </div>
                     <div class="info-item">
                         <div class="info-label">Pag-IBIG ID</div>
-                        <div class="info-value">${person.pagibig_id || 'N/A'}</div>
+                        <div class="info-value">${person.pag_ibig_id || 'N/A'}</div>
                     </div>
                     <div class="info-item">
                         <div class="info-label">PhilHealth ID</div>
@@ -1494,6 +1494,9 @@ $personalInfo = $stmt->fetchAll(PDO::FETCH_ASSOC);
                 const date = new Date(dateString);
                 return date.toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
             }
+
+            // Get Pag-IBIG ID
+            const pagIbigId = person.pag_ibig_id || 'N/A';
 
             // Generate PDS HTML
             let pdsHTML = `
@@ -1762,7 +1765,7 @@ $personalInfo = $stmt->fetchAll(PDO::FETCH_ASSOC);
             </tr>
             <tr>
                 <td class="label">19. PAG-IBIG ID</td>
-                <td class="value">${person.pagibig_id || 'N/A'}</td>
+                <td class="value">${pagIbigId}</td>
             </tr>
             <tr>
                 <td class="label">20. PHILHEALTH ID</td>

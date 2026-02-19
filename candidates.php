@@ -7,6 +7,7 @@ if (!isset($_SESSION['loggedin']) || $_SESSION['loggedin'] !== true) {
 require_once 'config.php';
 
 $success_message = '';
+$error_message = '';
 $filter_job = isset($_GET['job_id']) ? $_GET['job_id'] : '';
 $filter_status = isset($_GET['status']) ? $_GET['status'] : '';
 $search = isset($_GET['search']) ? $_GET['search'] : '';
@@ -16,129 +17,68 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         switch ($_POST['action']) {
             case 'approve_candidate':
                 try {
-                    $conn->beginTransaction();
-                    
                     $application_id = $_POST['application_id'];
                     
-                    // Get application and candidate details
-                    $app_stmt = $conn->prepare("SELECT ja.candidate_id, jo.department_id, jo.job_role_id, c.* 
-                                              FROM job_applications ja 
-                                              JOIN job_openings jo ON ja.job_opening_id = jo.job_opening_id 
-                                              JOIN candidates c ON ja.candidate_id = c.candidate_id 
-                                              WHERE ja.application_id = ?");
-                    $app_stmt->execute([$application_id]);
-                    $app_data = $app_stmt->fetch(PDO::FETCH_ASSOC);
+                    // Get candidate and application details
+                    $cand_stmt = $conn->prepare("SELECT c.candidate_id, c.email, c.first_name, c.last_name FROM candidates c 
+                                                 JOIN job_applications ja ON c.candidate_id = ja.candidate_id 
+                                                 WHERE ja.application_id = ?");
+                    $cand_stmt->execute([$application_id]);
+                    $cand_data = $cand_stmt->fetch(PDO::FETCH_ASSOC);
                     
-                    if (!$app_data) {
-                        throw new Exception("Application not found");
-                    }
-                    
-                    // First create personal information record
-                    $personal_stmt = $conn->prepare("INSERT INTO personal_information 
-                        (first_name, last_name, date_of_birth, gender, marital_status, nationality, 
-                         tax_id, social_security_number, phone_number, emergency_contact_name, 
-                         emergency_contact_relationship, emergency_contact_phone) 
-                        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
-                    
-                    $personal_stmt->execute([
-                        $app_data['first_name'],
-                        $app_data['last_name'],
-                        $app_data['date_of_birth'] ?? date('Y-m-d'),
-                        $app_data['gender'] ?? 'Prefer not to say',
-                        $app_data['marital_status'] ?? 'Single',
-                        $app_data['nationality'] ?? 'Filipino',
-                        $app_data['tax_id'] ?? null,
-                        $app_data['ssn'] ?? null,
-                        $app_data['phone'],
-                        $app_data['emergency_contact'] ?? null,
-                        $app_data['emergency_relation'] ?? null,
-                        $app_data['emergency_phone'] ?? null
-                    ]);
-                    
-                    $personal_info_id = $conn->lastInsertId();
-                    
-                    // Create employee profile with the personal info ID
-                    $emp_number = 'EMP' . str_pad($app_data['candidate_id'], 4, '0', STR_PAD_LEFT);
-                    $emp_stmt = $conn->prepare("INSERT INTO employee_profiles 
-                        (employee_number, personal_info_id, job_role_id, hire_date, employment_status,
-                         current_salary, work_email, work_phone, location, remote_work) 
-                        VALUES (?, ?, ?, CURDATE(), 'Full-time', ?, ?, ?, ?, false)");
-                    
-                    $emp_stmt->execute([
-                        $emp_number,
-                        $personal_info_id,
-                        $app_data['job_role_id'],
-                        $app_data['expected_salary'] ?? 0,
-                        $app_data['email'],
-                        $app_data['phone'],
-                        $app_data['preferred_location'] ?? 'Main Office'
-                    ]);
-                    $employee_id = $conn->lastInsertId();
-                    
-                    // Link candidate documents to the new employee
-                    require_once 'link_candidate_documents.php';
-                    linkCandidateDocuments($app_data['candidate_id'], $employee_id, $conn);
-                    
-                    // Update application status to Reference Check
+                    // Update job application status
                     $stmt = $conn->prepare("UPDATE job_applications SET status = 'Reference Check' WHERE application_id = ?");
                     $stmt->execute([$application_id]);
                     
-                    // Create onboarding record with Reference Check status
-                    $start_date = date('Y-m-d');
-                    $completion_date = date('Y-m-d', strtotime('+7 days')); // 1 week to complete reference checks
+                    // Create or get employee profile
+                    $emp_check = $conn->prepare("SELECT employee_id FROM employee_profiles WHERE work_email = ?");
+                    $emp_check->execute([$cand_data['email']]);
+                    $emp_data = $emp_check->fetch(PDO::FETCH_ASSOC);
                     
-                    $onboarding_stmt = $conn->prepare("INSERT INTO employee_onboarding (employee_id, start_date, expected_completion_date, status) VALUES (?, ?, ?, 'Pending Reference Check')");
-                    $onboarding_stmt->execute([$employee_id, $start_date, $completion_date]);
-                    $onboarding_id = $conn->lastInsertId();
-                    
-                    // Create reference check tasks
-                    $ref_check_tasks = array(
-                        array('task_name' => 'Contact Previous Employer', 'description' => 'Verify employment details with previous employer'),
-                        array('task_name' => 'Verify Employment History', 'description' => 'Check dates and positions held'),
-                        array('task_name' => 'Check Professional References', 'description' => 'Contact and verify professional references')
-                    );
-                    
-                    foreach ($ref_check_tasks as $task) {
-                        // First insert the task if it doesn't exist
-                        $task_stmt = $conn->prepare("INSERT IGNORE INTO onboarding_tasks (task_name, department_id, is_mandatory) VALUES (?, ?, ?)");
-                        $task_stmt->execute([$task['task_name'], $app_data['department_id'], $task['is_mandatory']]);
+                    if (!$emp_data) {
+                        // Create personal information with candidate data
+                        $phone = isset($cand_data['phone']) ? $cand_data['phone'] : '000-0000-0000';
+                        $personal_stmt = $conn->prepare("INSERT INTO personal_information (first_name, last_name, date_of_birth, gender, marital_status, nationality, phone_number) 
+                                                        VALUES (?, ?, DATE_SUB(CURDATE(), INTERVAL 30 YEAR), 'Prefer not to say', 'Single', 'Not specified', ?)");
+                        $personal_stmt->execute([$cand_data['first_name'], $cand_data['last_name'], $phone]);
+                        $personal_info_id = $conn->lastInsertId();
                         
-                        // Get the task_id (whether it was just inserted or already existed)
-                        $task_id_stmt = $conn->prepare("SELECT task_id FROM onboarding_tasks WHERE task_name = ? AND (department_id = ? OR department_id IS NULL)");
-                        $task_id_stmt->execute([$task['task_name'], $app_data['department_id']]);
-                        $task_id = $task_id_stmt->fetchColumn();
-                        
-                        if (!$task_id) {
-                            throw new Exception("Failed to get task ID");
-                        }
-                        
-                        // Create the task in employee_onboarding_tasks
-                        $due_date = date('Y-m-d', strtotime('+7 days'));
-                        $task_assign_stmt = $conn->prepare("INSERT INTO employee_onboarding_tasks (onboarding_id, task_id, due_date, status) VALUES (?, ?, ?, 'Not Started')");
-                        $task_assign_stmt->execute([$onboarding_id, $task_id, $due_date]);
+                        // Create employee profile linking to personal information
+                        $emp_number = 'EMP' . str_pad($cand_data['candidate_id'], 4, '0', STR_PAD_LEFT);
+                        $emp_stmt = $conn->prepare("INSERT INTO employee_profiles (personal_info_id, employee_number, work_email, hire_date, employment_status, current_salary) 
+                                                    VALUES (?, ?, ?, CURDATE(), 'Full-time', 0)");
+                        $emp_stmt->execute([$personal_info_id, $emp_number, $cand_data['email']]);
+                        $employee_id = $conn->lastInsertId();
+                    } else {
+                        $employee_id = $emp_data['employee_id'];
                     }
                     
-                    $conn->commit();
-                    $success_message = "✅ Candidate moved to reference check phase with " . count($ref_check_tasks) . " verification tasks created!";
+                    // Create onboarding record if it doesn't exist
+                    $onboard_check = $conn->prepare("SELECT onboarding_id FROM employee_onboarding WHERE employee_id = ?");
+                    $onboard_check->execute([$employee_id]);
+                    if (!$onboard_check->fetch()) {
+                        $onboard_stmt = $conn->prepare("INSERT INTO employee_onboarding (employee_id, start_date, expected_completion_date, status) 
+                                                        VALUES (?, CURDATE(), DATE_ADD(CURDATE(), INTERVAL 30 DAY), 'In Progress')");
+                        $onboard_stmt->execute([$employee_id]);
+                    }
+                    
+                    $success_message = "✅ Candidate moved to Reference Check!";
                 } catch (Exception $e) {
-                    $conn->rollBack();
-                    $success_message = "❌ Error: " . $e->getMessage();
+                    $error_message = "Error: " . $e->getMessage();
                 }
                 break;
                 
             case 'reject_candidate':
-                $application_id = $_POST['application_id'];
-                
-                $app_stmt = $conn->prepare("SELECT candidate_id FROM job_applications WHERE application_id = ?");
-                $app_stmt->execute([$application_id]);
-                $app_data = $app_stmt->fetch(PDO::FETCH_ASSOC);
-                
-                $stmt = $conn->prepare("UPDATE job_applications SET status = 'Rejected' WHERE application_id = ?");
-                $stmt->execute([$application_id]);
-                
-
-                
-                $success_message = "❌ Candidate rejected!";
+                try {
+                    $application_id = $_POST['application_id'];
+                    
+                    $stmt = $conn->prepare("UPDATE job_applications SET status = 'Rejected' WHERE application_id = ?");
+                    $stmt->execute([$application_id]);
+                    
+                    $success_message = "❌ Candidate rejected!";
+                } catch (Exception $e) {
+                    $error_message = "Error: " . $e->getMessage();
+                }
                 break;
         }
     }
@@ -230,45 +170,14 @@ $recent_activities = $conn->query("SELECT c.first_name, c.last_name, ja.status, 
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.1/css/all.min.css">
     <link rel="stylesheet" href="styles.css?v=rose">
     <style>
-        .loading-overlay {
-            display: none;
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(255, 255, 255, 0.9);
-            z-index: 9999;
-        }
-        .loading-content {
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            text-align: center;
-        }
-        .loading-spinner {
-            width: 50px;
-            height: 50px;
-            margin-bottom: 10px;
-        }
-        .loading-text {
-            font-size: 18px;
-            color: #333;
-        }
+        .toast-container { position: fixed; top: 80px; right: 20px; z-index: 9999; }
+        .custom-toast { min-width: 300px; background: white; border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.15); margin-bottom: 10px; animation: slideIn 0.3s ease; }
+        @keyframes slideIn { from { transform: translateX(400px); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
+        .toast-error { border-left: 4px solid #dc3545; }
     </style>
 </head>
 <body>
-    <!-- Loading Overlay -->
-    <div class="loading-overlay" id="loadingOverlay">
-        <div class="loading-content">
-            <div class="spinner-border text-primary loading-spinner" role="status">
-                <span class="sr-only">Loading...</span>
-            </div>
-            <div class="loading-text">Processing candidate information...</div>
-            <div class="loading-progress small text-muted mt-2" id="loadingProgress">Creating employee profile...</div>
-        </div>
-    </div>
+    <div class="toast-container" id="toastContainer"></div>
     
     <div class="container-fluid">
         <?php include 'navigation.php'; ?>
@@ -279,11 +188,18 @@ $recent_activities = $conn->query("SELECT c.first_name, c.last_name, ja.status, 
                 
                 <?php if (!empty($success_message)): ?>
                     <div class="alert alert-success alert-dismissible fade show" role="alert">
-                        <?php echo $success_message; ?>
+                        <i class="fas fa-check-circle mr-2"></i><?php echo $success_message; ?>
                         <button type="button" class="close" data-dismiss="alert">
                             <span>&times;</span>
                         </button>
                     </div>
+                <?php endif; ?>
+                <?php if (!empty($error_message)): ?>
+                    <script>
+                        document.addEventListener('DOMContentLoaded', function() {
+                            showToast('<?php echo addslashes($error_message); ?>', 'error');
+                        });
+                    </script>
                 <?php endif; ?>
                 
                 <!-- Overview Statistics -->
@@ -549,49 +465,17 @@ $recent_activities = $conn->query("SELECT c.first_name, c.last_name, ja.status, 
                                                         </button>
                                                         
                                                         <?php if ($candidate['status'] == 'Assessment'): ?>
-                                                            <form method="POST" style="display:inline;" class="ml-1" onsubmit="return showLoadingScreen(this)">
+                                                            <form method="POST" style="display:inline;" class="ml-1" onsubmit="return confirm('Move this candidate to Reference Check?');">
                                                                 <input type="hidden" name="action" value="approve_candidate">
                                                                 <input type="hidden" name="application_id" value="<?php echo $candidate['application_id']; ?>">
                                                                 <button type="submit" class="btn btn-success btn-sm">
                                                                     <i class="fas fa-check"></i>
                                                                 </button>
                                                             </form>
-                                                            
-                                                            <script>
-                                                            function showLoadingScreen(form) {
-                                                                if (!confirm('Approve this candidate for hiring?')) {
-                                                                    return false;
-                                                                }
-                                                                
-                                                                document.getElementById('loadingOverlay').style.display = 'block';
-                                                                
-                                                                // Simulate progress updates
-                                                                const progress = document.getElementById('loadingProgress');
-                                                                const steps = [
-                                                                    'Creating personal information record...',
-                                                                    'Generating employee profile...',
-                                                                    'Setting up onboarding tasks...',
-                                                                    'Linking documents...',
-                                                                    'Finalizing process...'
-                                                                ];
-                                                                
-                                                                let i = 0;
-                                                                const interval = setInterval(() => {
-                                                                    if (i < steps.length) {
-                                                                        progress.textContent = steps[i];
-                                                                        i++;
-                                                                    } else {
-                                                                        clearInterval(interval);
-                                                                    }
-                                                                }, 1000);
-                                                                
-                                                                return true;
-                                                            }
-                                                            </script>
-                                                            <form method="POST" style="display:inline;" class="ml-1">
+                                                            <form method="POST" style="display:inline;" class="ml-1" onsubmit="return confirm('Reject this candidate? This action cannot be undone.');">
                                                                 <input type="hidden" name="action" value="reject_candidate">
                                                                 <input type="hidden" name="application_id" value="<?php echo $candidate['application_id']; ?>">
-                                                                <button type="submit" class="btn btn-danger btn-sm" onclick="return confirm('Reject this candidate?')">
+                                                                <button type="submit" class="btn btn-danger btn-sm">
                                                                     <i class="fas fa-times"></i>
                                                                 </button>
                                                             </form>
@@ -778,17 +662,17 @@ $recent_activities = $conn->query("SELECT c.first_name, c.last_name, ja.status, 
                                 </div>
                                 <div class="modal-footer">
                                     <?php if ($candidate['status'] == 'Assessment'): ?>
-                                        <form method="POST" style="display:inline;">
+                                        <form method="POST" style="display:inline;" onsubmit="return confirm('Move this candidate to Reference Check?');">
                                             <input type="hidden" name="action" value="approve_candidate">
                                             <input type="hidden" name="application_id" value="<?php echo $candidate['application_id']; ?>">
-                                            <button type="submit" class="btn btn-success" onclick="return confirm('Approve this candidate for hiring?')">
-                                                <i class="fas fa-check"></i> Approve & Hire
+                                            <button type="submit" class="btn btn-success">
+                                                <i class="fas fa-check"></i> Move to Reference Check
                                             </button>
                                         </form>
-                                        <form method="POST" style="display:inline;" class="ml-2">
+                                        <form method="POST" style="display:inline;" class="ml-2" onsubmit="return confirm('Reject this candidate? This action cannot be undone.');">
                                             <input type="hidden" name="action" value="reject_candidate">
                                             <input type="hidden" name="application_id" value="<?php echo $candidate['application_id']; ?>">
-                                            <button type="submit" class="btn btn-danger" onclick="return confirm('Reject this candidate?')">
+                                            <button type="submit" class="btn btn-danger">
                                                 <i class="fas fa-times"></i> Reject
                                             </button>
                                         </form>
@@ -805,5 +689,28 @@ $recent_activities = $conn->query("SELECT c.first_name, c.last_name, ja.status, 
 
     <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
     <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+    <script>
+        function showToast(message, type = 'error') {
+            const container = document.getElementById('toastContainer');
+            const toast = document.createElement('div');
+            toast.className = `custom-toast toast-${type}`;
+            toast.innerHTML = `
+                <div class="p-3">
+                    <div class="d-flex align-items-center">
+                        <i class="fas fa-exclamation-circle text-danger mr-2" style="font-size: 20px;"></i>
+                        <div class="flex-grow-1">
+                            <strong>${type === 'error' ? 'Error' : 'Success'}</strong>
+                            <div class="small">${message}</div>
+                        </div>
+                        <button type="button" class="close ml-2" onclick="this.parentElement.parentElement.parentElement.remove()">
+                            <span>&times;</span>
+                        </button>
+                    </div>
+                </div>
+            `;
+            container.appendChild(toast);
+            setTimeout(() => toast.remove(), 5000);
+        }
+    </script>
 </body>
 </html>

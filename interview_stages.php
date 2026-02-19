@@ -89,7 +89,7 @@ $job_openings = $conn->query("SELECT DISTINCT jo.job_opening_id, jo.title, d.dep
                               FROM job_openings jo
                               JOIN departments d ON jo.department_id = d.department_id
                               JOIN job_applications ja ON jo.job_opening_id = ja.job_opening_id
-                              WHERE ja.status IN ('Interview', 'Screening', 'Hired')
+                              WHERE ja.status IN ('Interview', 'Hired')
                               GROUP BY jo.job_opening_id, jo.title, d.department_name
                               ORDER BY jo.title")->fetchAll(PDO::FETCH_ASSOC);
 
@@ -107,15 +107,6 @@ if ($selected_job) {
     $job_stages = $conn->prepare("SELECT * FROM interview_stages WHERE job_opening_id = ? ORDER BY stage_order");
     $job_stages->execute([$selected_job]);
     $stages = $job_stages->fetchAll(PDO::FETCH_ASSOC);
-    
-    // Get screening candidates (awaiting mayor approval)
-    $screening_candidates = $conn->prepare("SELECT c.*, ja.application_id, ja.application_date
-                                           FROM candidates c 
-                                           JOIN job_applications ja ON c.candidate_id = ja.candidate_id
-                                           WHERE ja.job_opening_id = ? AND ja.status = 'Screening'
-                                           ORDER BY ja.application_date DESC");
-    $screening_candidates->execute([$selected_job]);
-    $screening_list = $screening_candidates->fetchAll(PDO::FETCH_ASSOC);
     
     // Get job info
     $job_info = $conn->prepare("SELECT jo.title, d.department_name FROM job_openings jo 

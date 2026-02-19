@@ -90,7 +90,7 @@ $result = $conn->query("SELECT c.*, ja.application_id, jo.title as job_title, d.
                                       -- Match employee_profiles by work email (employee_profiles doesn't store candidate_id)
                                       LEFT JOIN employee_profiles ep ON ep.work_email = c.email
                                       LEFT JOIN employee_onboarding eo ON eo.employee_id = ep.employee_id
-                                      WHERE ja.status IN ('Reference Check', 'Approved', 'Onboarding')
+                                      WHERE ja.status IN ('Reference Check', 'Offer', 'Hired')
                                       ORDER BY ja.application_date DESC");
 $onboarding_candidates = $result->fetch_all(MYSQLI_ASSOC);
 ?>

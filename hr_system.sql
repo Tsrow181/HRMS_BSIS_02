@@ -3,9 +3,9 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Generation Time: Oct 22, 2025 at 11:20 AM
+-- Generation Time: Jan 27, 2026 at 06:36 AM
 -- Server version: 10.4.32-MariaDB
--- PHP Version: 8.0.30
+-- PHP Version: 8.2.12
 
 SET SQL_MODE = "NO_AUTO_VALUE_ON_ZERO";
 START TRANSACTION;
@@ -20,6 +20,67 @@ SET time_zone = "+00:00";
 --
 -- Database: `hr_system`
 --
+
+DELIMITER $$
+--
+-- Procedures
+--
+CREATE DEFINER=`root`@`localhost` PROCEDURE `update_clearance_status` (IN `p_checklist_id` INT)   BEGIN
+    DECLARE v_status VARCHAR(20);
+    DECLARE v_approval VARCHAR(20);
+    
+    SELECT status, approval_status INTO v_status, v_approval
+    FROM exit_checklist
+    WHERE checklist_id = p_checklist_id;
+    
+    IF v_status = 'Completed' AND v_approval = 'Approved' THEN
+        UPDATE exit_checklist
+        SET clearance_status = 'Cleared',
+            clearance_date = CURDATE(),
+            cleared_by = COALESCE(approved_by, 'System')
+        WHERE checklist_id = p_checklist_id;
+    END IF;
+END$$
+
+DELIMITER ;
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `archive_storage`
+--
+
+CREATE TABLE `archive_storage` (
+  `archive_id` int(11) NOT NULL,
+  `source_table` enum('employee_profiles','personal_information','employment_history','document_management') NOT NULL,
+  `record_id` int(11) NOT NULL COMMENT 'Original primary key from source table',
+  `employee_id` int(11) DEFAULT NULL COMMENT 'Employee reference for all archived records',
+  `record_data` longtext CHARACTER SET utf8mb4 COLLATE utf8mb4_bin NOT NULL COMMENT 'JSON containing all original data',
+  `archive_reason` enum('Termination','Resignation','Retirement','Data Cleanup','System Migration','Expired Document','Other') NOT NULL,
+  `archive_reason_details` text DEFAULT NULL,
+  `archived_by` int(11) NOT NULL COMMENT 'User ID who archived the record',
+  `archived_at` timestamp NOT NULL DEFAULT current_timestamp(),
+  `can_restore` tinyint(1) DEFAULT 1 COMMENT 'Whether this record can be restored',
+  `restored_at` timestamp NULL DEFAULT NULL,
+  `restored_by` int(11) DEFAULT NULL,
+  `notes` text DEFAULT NULL,
+  `created_at` timestamp NOT NULL DEFAULT current_timestamp(),
+  `updated_at` timestamp NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp()
+) ;
+
+--
+-- Dumping data for table `archive_storage`
+--
+
+INSERT INTO `archive_storage` (`archive_id`, `source_table`, `record_id`, `employee_id`, `record_data`, `archive_reason`, `archive_reason_details`, `archived_by`, `archived_at`, `can_restore`, `restored_at`, `restored_by`, `notes`, `created_at`, `updated_at`) VALUES
+(1, 'employee_profiles', 16, 16, '{\r\n  \"employee_id\": 16,\r\n  \"personal_info_id\": 16,\r\n  \"job_role_id\": 29,\r\n  \"employee_number\": \"MUN016\",\r\n  \"hire_date\": \"2018-03-15\",\r\n  \"employment_status\": \"Terminated\",\r\n  \"current_salary\": 30000.00,\r\n  \"work_email\": \"pedro.santos@municipality.gov.ph\",\r\n  \"work_phone\": \"034-123-0016\",\r\n  \"location\": \"Municipal Civil Registrar\'s Office\",\r\n  \"remote_work\": 0,\r\n  \"created_at\": \"2018-03-15 02:00:00\",\r\n  \"updated_at\": \"2025-08-14 05:20:00\"\r\n}', 'Termination', 'Employee terminated due to prolonged absence without notice (AWOL)', 1, '2025-08-15 08:30:00', 0, NULL, NULL, 'Final clearance completed. All equipment returned.', '2026-01-20 02:55:57', '2026-01-20 02:55:57'),
+(2, 'personal_information', 16, 16, '{\r\n  \"personal_info_id\": 16,\r\n  \"first_name\": \"Pedro\",\r\n  \"last_name\": \"Santos\",\r\n  \"date_of_birth\": \"1985-05-20\",\r\n  \"gender\": \"Male\",\r\n  \"marital_status\": \"Single\",\r\n  \"nationality\": \"Filipino\",\r\n  \"tax_id\": \"678-91-2345\",\r\n  \"social_security_number\": \"678912345\",\r\n  \"phone_number\": \"0917-680-1234\",\r\n  \"emergency_contact_name\": \"Maria Santos\",\r\n  \"emergency_contact_relationship\": \"Sister\",\r\n  \"emergency_contact_phone\": \"0917-024-5678\",\r\n  \"created_at\": \"2018-03-15 02:00:00\",\r\n  \"updated_at\": \"2022-06-10 03:15:00\"\r\n}', 'Termination', 'Personal information archived with employee termination', 1, '2025-08-15 08:30:00', 0, NULL, NULL, 'Sensitive data retained as per retention policy.', '2026-01-20 02:55:57', '2026-01-20 02:55:57'),
+(3, 'employment_history', 16, 16, '{\r\n  \"history_id\": 16,\r\n  \"employee_id\": 16,\r\n  \"job_title\": \"Clerk\",\r\n  \"department_id\": 8,\r\n  \"employment_type\": \"Full-time\",\r\n  \"start_date\": \"2018-03-15\",\r\n  \"end_date\": \"2025-08-14\",\r\n  \"employment_status\": \"Terminated\",\r\n  \"reporting_manager_id\": null,\r\n  \"location\": \"Municipal Civil Registrar\'s Office\",\r\n  \"base_salary\": 30000.00,\r\n  \"allowances\": 1000.00,\r\n  \"bonuses\": 0.00,\r\n  \"salary_adjustments\": 0.00,\r\n  \"reason_for_change\": \"Terminated due to AWOL\",\r\n  \"promotions_transfers\": null,\r\n  \"duties_responsibilities\": \"Maintained registry records, assisted clients with civil documents.\",\r\n  \"performance_evaluations\": \"Last rating was Satisfactory in 2024 review\",\r\n  \"training_certifications\": \"Civil Registration Training\",\r\n  \"contract_details\": \"Fixed-term contract terminated early\",\r\n  \"remarks\": \"Multiple written warnings for attendance issues before termination\",\r\n  \"created_at\": \"2018-03-15 02:00:00\",\r\n  \"updated_at\": \"2025-08-14 05:20:00\"\r\n}', 'Termination', 'Employment history archived upon termination', 1, '2025-08-15 08:30:00', 0, NULL, NULL, 'Complete employment record preserved for legal compliance.', '2026-01-20 02:55:57', '2026-01-20 02:55:57'),
+(4, 'document_management', 33, 16, '{\r\n  \"document_id\": 33,\r\n  \"employee_id\": 16,\r\n  \"document_type\": \"Contract\",\r\n  \"document_name\": \"Employment Contract - Clerk\",\r\n  \"file_path\": \"/documents/contracts/pedro_santos_contract.pdf\",\r\n  \"upload_date\": \"2018-03-15 02:00:00\",\r\n  \"expiry_date\": \"2025-03-15\",\r\n  \"document_status\": \"Expired\",\r\n  \"notes\": \"Civil registrar office clerk contract\",\r\n  \"created_at\": \"2018-03-15 02:00:00\",\r\n  \"updated_at\": \"2025-08-14 05:20:00\"\r\n}', 'Expired Document', 'Document archived after employee termination and contract expiry', 1, '2025-08-15 08:30:00', 0, NULL, NULL, 'Physical document retained in secure storage.', '2026-01-20 02:55:57', '2026-01-20 02:55:57'),
+(5, 'employee_profiles', 17, 17, '{\r\n  \"employee_id\": 17,\r\n  \"personal_info_id\": 17,\r\n  \"job_role_id\": 34,\r\n  \"employee_number\": \"MUN017\",\r\n  \"hire_date\": \"1995-06-01\",\r\n  \"employment_status\": \"Full-time\",\r\n  \"current_salary\": 25000.00,\r\n  \"work_email\": \"ramon.reyes@municipality.gov.ph\",\r\n  \"work_phone\": \"034-123-0017\",\r\n  \"location\": \"General Services Office\",\r\n  \"remote_work\": 0,\r\n  \"created_at\": \"1995-06-01 02:00:00\",\r\n  \"updated_at\": \"2025-06-29 08:00:00\"\r\n}', 'Retirement', 'Employee retired after 30 years of exemplary service', 2, '2025-06-30 16:00:00', 0, NULL, NULL, 'Retirement ceremony held on June 28, 2025. Plaque of appreciation awarded.', '2026-01-20 02:55:57', '2026-01-20 02:55:57'),
+(6, 'personal_information', 17, 17, '{\r\n  \"personal_info_id\": 17,\r\n  \"first_name\": \"Ramon\",\r\n  \"last_name\": \"Reyes\",\r\n  \"date_of_birth\": \"1960-02-15\",\r\n  \"gender\": \"Male\",\r\n  \"marital_status\": \"Married\",\r\n  \"nationality\": \"Filipino\",\r\n  \"tax_id\": \"789-02-3456\",\r\n  \"social_security_number\": \"789023456\",\r\n  \"phone_number\": \"0917-791-2345\",\r\n  \"emergency_contact_name\": \"Elena Reyes\",\r\n  \"emergency_contact_relationship\": \"Spouse\",\r\n  \"emergency_contact_phone\": \"0917-135-6789\",\r\n  \"created_at\": \"1995-06-01 02:00:00\",\r\n  \"updated_at\": \"2020-03-10 04:20:00\"\r\n}', 'Retirement', 'Personal information archived upon retirement', 2, '2025-06-30 16:00:00', 0, NULL, NULL, 'Contact information maintained for pension processing.', '2026-01-20 02:55:57', '2026-01-20 02:55:57'),
+(7, 'document_management', 35, 11, '{\r\n  \"document_id\": 35,\r\n  \"employee_id\": 11,\r\n  \"document_type\": \"Resume\",\r\n  \"document_name\": \"Resume - Ana Morales (2020 Version)\",\r\n  \"file_path\": \"/documents/resumes/ana_morales_resume_2020.pdf\",\r\n  \"upload_date\": \"2020-04-15 02:00:00\",\r\n  \"expiry_date\": null,\r\n  \"document_status\": \"Active\",\r\n  \"notes\": \"Outdated resume replaced with newer version\",\r\n  \"created_at\": \"2020-04-15 02:00:00\",\r\n  \"updated_at\": \"2025-10-01 03:15:00\"\r\n}', 'Data Cleanup', 'Old version archived after employee submitted updated resume', 2, '2025-10-01 10:00:00', 1, NULL, NULL, 'Previous version archived for historical records.', '2026-01-20 02:55:57', '2026-01-20 02:55:57'),
+(8, 'employment_history', 18, 18, '{\r\n  \"history_id\": 18,\r\n  \"employee_id\": 18,\r\n  \"job_title\": \"Budget Analyst\",\r\n  \"department_id\": 4,\r\n  \"employment_type\": \"Full-time\",\r\n  \"start_date\": \"2019-09-01\",\r\n  \"end_date\": \"2025-09-30\",\r\n  \"employment_status\": \"Resigned\",\r\n  \"reporting_manager_id\": null,\r\n  \"location\": \"Municipal Budget Office\",\r\n  \"base_salary\": 42000.00,\r\n  \"allowances\": 3000.00,\r\n  \"bonuses\": 5000.00,\r\n  \"salary_adjustments\": 2000.00,\r\n  \"reason_for_change\": \"Resigned for career advancement opportunity abroad\",\r\n  \"promotions_transfers\": \"Promoted from Administrative Aide in 2021\",\r\n  \"duties_responsibilities\": \"Analyzed budget data and prepared financial reports for municipal operations.\",\r\n  \"performance_evaluations\": \"Consistently rated Outstanding. Received Best Employee Award 2023.\",\r\n  \"training_certifications\": \"Financial Planning Certification, Advanced Excel Training\",\r\n  \"contract_details\": \"Regular plantilla position\",\r\n  \"remarks\": \"Excellent employee. Provided comprehensive turnover documentation. Eligible for rehire.\",\r\n  \"created_at\": \"2019-09-01 02:00:00\",\r\n  \"updated_at\": \"2025-09-30 10:15:00\"\r\n}', 'Resignation', 'Employee resigned in good standing for overseas employment', 1, '2025-09-30 14:00:00', 1, NULL, NULL, 'Exit clearance completed. Certificate of Employment issued.', '2026-01-20 02:55:57', '2026-01-20 02:55:57');
 
 -- --------------------------------------------------------
 
@@ -36,6 +97,7 @@ CREATE TABLE `attendance` (
   `status` enum('Present','Absent','Late','Half Day','On Leave') NOT NULL,
   `working_hours` decimal(5,2) DEFAULT NULL,
   `overtime_hours` decimal(5,2) DEFAULT 0.00,
+  `late_minutes` decimal(5,2) DEFAULT 0.00,
   `notes` text DEFAULT NULL,
   `created_at` timestamp NOT NULL DEFAULT current_timestamp(),
   `updated_at` timestamp NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp()
@@ -119,6 +181,128 @@ CREATE TABLE `candidates` (
   `created_at` timestamp NOT NULL DEFAULT current_timestamp(),
   `updated_at` timestamp NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp()
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `pds_data`
+--
+
+CREATE TABLE `pds_data` (
+  `pds_id` int(11) NOT NULL,
+  `candidate_id` int(11) NOT NULL,
+  
+  -- I. Personal Information
+  `surname` varchar(100) DEFAULT NULL,
+  `first_name` varchar(100) DEFAULT NULL,
+  `middle_name` varchar(100) DEFAULT NULL,
+  `name_extension` varchar(20) DEFAULT NULL,
+  `date_of_birth` date DEFAULT NULL,
+  `place_of_birth` varchar(255) DEFAULT NULL,
+  `sex` enum('Male','Female') DEFAULT NULL,
+  `civil_status` enum('Single','Married','Widowed','Separated') DEFAULT NULL,
+  `height` decimal(5,2) DEFAULT NULL,
+  `weight` decimal(5,2) DEFAULT NULL,
+  `blood_type` varchar(10) DEFAULT NULL,
+  
+  -- Government IDs
+  `gsis_id` varchar(50) DEFAULT NULL,
+  `pagibig_id` varchar(50) DEFAULT NULL,
+  `philhealth_no` varchar(50) DEFAULT NULL,
+  `sss_no` varchar(50) DEFAULT NULL,
+  `tin_no` varchar(50) DEFAULT NULL,
+  `agency_employee_no` varchar(50) DEFAULT NULL,
+  
+  -- Citizenship
+  `citizenship_type` varchar(50) DEFAULT NULL,
+  `citizenship_country` varchar(100) DEFAULT NULL,
+  
+  -- Residential Address
+  `residential_address` text DEFAULT NULL,
+  `residential_subdivision` varchar(100) DEFAULT NULL,
+  `residential_barangay` varchar(100) DEFAULT NULL,
+  `residential_city` varchar(100) DEFAULT NULL,
+  `residential_province` varchar(100) DEFAULT NULL,
+  `residential_zipcode` varchar(20) DEFAULT NULL,
+  
+  -- Permanent Address
+  `permanent_address` text DEFAULT NULL,
+  `permanent_subdivision` varchar(100) DEFAULT NULL,
+  `permanent_barangay` varchar(100) DEFAULT NULL,
+  `permanent_city` varchar(100) DEFAULT NULL,
+  `permanent_province` varchar(100) DEFAULT NULL,
+  `permanent_zipcode` varchar(20) DEFAULT NULL,
+  
+  -- Contact Information
+  `telephone` varchar(50) DEFAULT NULL,
+  `mobile` varchar(50) DEFAULT NULL,
+  `email` varchar(255) DEFAULT NULL,
+  
+  -- II. Family Background
+  `spouse_surname` varchar(100) DEFAULT NULL,
+  `spouse_firstname` varchar(100) DEFAULT NULL,
+  `spouse_middlename` varchar(100) DEFAULT NULL,
+  `spouse_occupation` varchar(100) DEFAULT NULL,
+  `spouse_employer` varchar(255) DEFAULT NULL,
+  `spouse_business_address` text DEFAULT NULL,
+  `spouse_telephone` varchar(50) DEFAULT NULL,
+  
+  `father_surname` varchar(100) DEFAULT NULL,
+  `father_firstname` varchar(100) DEFAULT NULL,
+  `father_middlename` varchar(100) DEFAULT NULL,
+  
+  `mother_surname` varchar(100) DEFAULT NULL,
+  `mother_firstname` varchar(100) DEFAULT NULL,
+  `mother_middlename` varchar(100) DEFAULT NULL,
+  
+  -- Children (stored as JSON array)
+  `children` longtext CHARACTER SET utf8mb4 COLLATE utf8mb4_bin DEFAULT NULL CHECK (json_valid(`children`)),
+  
+  -- III. Educational Background (stored as JSON array)
+  `education` longtext CHARACTER SET utf8mb4 COLLATE utf8mb4_bin DEFAULT NULL CHECK (json_valid(`education`)),
+  
+  -- IV. Civil Service Eligibility (stored as JSON array)
+  `eligibility` longtext CHARACTER SET utf8mb4 COLLATE utf8mb4_bin DEFAULT NULL CHECK (json_valid(`eligibility`)),
+  
+  -- V. Work Experience (stored as JSON array)
+  `work_experience` longtext CHARACTER SET utf8mb4 COLLATE utf8mb4_bin DEFAULT NULL CHECK (json_valid(`work_experience`)),
+  
+  -- VI. Voluntary Work (stored as JSON array)
+  `voluntary_work` longtext CHARACTER SET utf8mb4 COLLATE utf8mb4_bin DEFAULT NULL CHECK (json_valid(`voluntary_work`)),
+  
+  -- VII. Learning and Development (stored as JSON array)
+  `training` longtext CHARACTER SET utf8mb4 COLLATE utf8mb4_bin DEFAULT NULL CHECK (json_valid(`training`)),
+  
+  -- VIII. Other Information
+  `special_skills` text DEFAULT NULL,
+  `distinctions` text DEFAULT NULL,
+  `memberships` text DEFAULT NULL,
+  
+  -- IX. Additional Application Info
+  `current_position` varchar(150) DEFAULT NULL,
+  `current_company` varchar(255) DEFAULT NULL,
+  `notice_period` varchar(100) DEFAULT NULL,
+  `expected_salary` decimal(10,2) DEFAULT NULL,
+  `application_source` varchar(100) DEFAULT NULL,
+  
+  -- X. Character References (stored as JSON array)
+  `references` longtext CHARACTER SET utf8mb4 COLLATE utf8mb4_bin DEFAULT NULL CHECK (json_valid(`references`)),
+  
+  -- File storage (PDF/JSON stored in database)
+  `pds_file_blob` longblob DEFAULT NULL COMMENT 'PDF file content stored in database',
+  `pds_file_name` varchar(255) DEFAULT NULL COMMENT 'Original filename',
+  `pds_file_type` varchar(50) DEFAULT NULL COMMENT 'MIME type (application/pdf, application/json)',
+  `pds_file_size` int(11) DEFAULT NULL COMMENT 'File size in bytes',
+  `json_file_blob` longblob DEFAULT NULL COMMENT 'JSON file content stored in database',
+  
+  -- File paths (optional - for backward compatibility)
+  `pds_file_path` varchar(255) DEFAULT NULL,
+  `json_file_path` varchar(255) DEFAULT NULL,
+  
+  -- Metadata
+  `created_at` timestamp NOT NULL DEFAULT current_timestamp(),
+  `updated_at` timestamp NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp()
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- --------------------------------------------------------
 
@@ -268,7 +452,7 @@ INSERT INTO `competencies` (`competency_id`, `job_role_id`, `name`, `description
 (73, 25, 'Budget Evaluation', 'Analyzes and reviews budget requests for compliance.', 'Technical', '2025-10-22 07:45:57', '2025-10-22 07:45:57'),
 (74, 25, 'Financial Forecasting', 'Predicts financial trends to guide budgeting decisions.', 'Technical', '2025-10-22 07:45:57', '2025-10-22 07:45:57'),
 (75, 25, 'Analytical Thinking', 'Interprets complex financial data accurately.', 'Behavioral', '2025-10-22 07:45:57', '2025-10-22 07:45:57'),
-(76, 26, 'Bookkeeping', 'Maintains accurate financial records and ledgers.', 'Technical', '2025-10-22 07:50:22', '2025-10-22 07:50:22'),
+(76, 26, 'Bookkeeping', 'Maintains accurate financial records and ledgers.', 'Technical', '2025-10-22 07:50:22', '2026-01-20 03:12:40'),
 (77, 26, 'Data Accuracy', 'Ensures precision when recording financial transactions.', 'Behavioral', '2025-10-22 07:50:22', '2025-10-22 07:50:22'),
 (78, 26, 'Financial Reporting', 'Prepares monthly and annual financial reports.', 'Technical', '2025-10-22 07:50:22', '2025-10-22 07:50:22'),
 (79, 27, 'Research and Data Analysis', 'Collects and interprets data for planning purposes.', 'Technical', '2025-10-22 07:50:22', '2025-10-22 07:50:22'),
@@ -316,6 +500,7 @@ CREATE TABLE `departments` (
   `department_name` varchar(100) NOT NULL,
   `description` text DEFAULT NULL,
   `location` varchar(100) DEFAULT NULL,
+  `vacancy_limit` int(11) DEFAULT NULL COMMENT 'Maximum number of open job vacancies allowed for this department',
   `created_at` timestamp NOT NULL DEFAULT current_timestamp(),
   `updated_at` timestamp NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp()
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
@@ -439,6 +624,39 @@ INSERT INTO `document_management` (`document_id`, `employee_id`, `document_type`
 -- --------------------------------------------------------
 
 --
+-- Table structure for table `educational_background`
+--
+
+CREATE TABLE `educational_background` (
+  `education_id` int(11) NOT NULL,
+  `personal_info_id` int(11) NOT NULL,
+  `education_level` enum('Elementary','High School','Vocational','Associate Degree','Bachelor''s Degree','Master''s Degree','Doctoral Degree','Other') NOT NULL,
+  `school_name` varchar(150) NOT NULL,
+  `course_degree` varchar(150) DEFAULT NULL COMMENT 'Course or degree program',
+  `major_specialization` varchar(100) DEFAULT NULL,
+  `year_started` year(4) DEFAULT NULL,
+  `year_graduated` year(4) DEFAULT NULL,
+  `honors_awards` varchar(255) DEFAULT NULL,
+  `is_highest_attainment` tinyint(1) DEFAULT 0,
+  `document_url` varchar(255) DEFAULT NULL COMMENT 'Diploma or certificate',
+  `created_at` timestamp NOT NULL DEFAULT current_timestamp(),
+  `updated_at` timestamp NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp()
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- Dumping data for table `educational_background`
+--
+
+INSERT INTO `educational_background` (`education_id`, `personal_info_id`, `education_level`, `school_name`, `course_degree`, `major_specialization`, `year_started`, `year_graduated`, `honors_awards`, `is_highest_attainment`, `document_url`, `created_at`, `updated_at`) VALUES
+(1, 1, 'Bachelor\'s Degree', 'University of the Philippines', 'Bachelor of Science in Accountancy', 'Accountancy', '2003', '2007', 'Cum Laude', 1, '/documents/diplomas/maria_santos_bsa.pdf', '2026-01-20 02:55:57', '2026-01-20 02:55:57'),
+(2, 2, 'Bachelor\'s Degree', 'De La Salle University', 'Bachelor of Science in Civil Engineering', 'Civil Engineering', '1996', '2000', NULL, 1, '/documents/diplomas/roberto_cruz_bsce.pdf', '2026-01-20 02:55:57', '2026-01-20 02:55:57'),
+(3, 3, 'Bachelor\'s Degree', 'Far Eastern University', 'Bachelor of Science in Nursing', 'Nursing', '2006', '2010', NULL, 1, '/documents/diplomas/jennifer_reyes_bsn.pdf', '2026-01-20 02:55:57', '2026-01-20 02:55:57'),
+(4, 4, 'Vocational', 'Technical Education and Skills Development Authority', 'Computer-Aided Design', 'CAD Operations', '1993', '1995', NULL, 1, '/documents/certificates/antonio_garcia_cad_cert.pdf', '2026-01-20 02:55:57', '2026-01-20 02:55:57'),
+(5, 5, 'Master\'s Degree', 'University of Santo Tomas', 'Master of Social Work', 'Community Development', '2008', '2012', NULL, 1, '/documents/diplomas/lisa_mendoza_msw.pdf', '2026-01-20 02:55:57', '2026-01-20 02:55:57');
+
+-- --------------------------------------------------------
+
+--
 -- Table structure for table `employee_benefits`
 --
 
@@ -493,12 +711,13 @@ CREATE TABLE `employee_competencies` (
 --
 
 INSERT INTO `employee_competencies` (`employee_id`, `competency_id`, `cycle_id`, `rating`, `assessment_date`, `comments`, `created_at`, `updated_at`) VALUES
-(2, 22, 3, 4, '2025-10-22', 'impressive', '2025-10-22 08:13:30', '2025-10-22 08:13:30'),
-(2, 23, 3, 3, '2025-10-22', 'nice', '2025-10-22 08:13:30', '2025-10-22 08:13:30'),
-(2, 24, 3, 5, '2025-10-22', 'excellent', '2025-10-22 08:13:30', '2025-10-22 08:13:30'),
-(11, 76, 3, 3, '2025-10-22', 'nice', '2025-10-22 08:58:29', '2025-10-22 08:58:29'),
-(11, 77, 3, 3, '2025-10-22', 'amazing', '2025-10-22 08:58:29', '2025-10-22 08:58:29'),
-(11, 78, 3, 4, '2025-10-22', 'excellent', '2025-10-22 08:58:29', '2025-10-22 08:58:29');
+(2, 22, 3, 3, '2026-01-20', 'Nice Improvement', '2026-01-20 03:29:05', '2026-01-20 04:12:51'),
+(2, 23, 3, 2, '2026-01-20', 'Attend Simminar And Training', '2026-01-20 03:29:05', '2026-01-20 04:12:51'),
+(2, 24, 3, 4, '2026-01-20', 'Excellent', '2026-01-20 03:47:10', '2026-01-20 04:12:51'),
+(7, 79, 3, 5, '2026-01-20', 'perfect', '2026-01-20 03:30:19', '2026-01-20 03:30:19'),
+(7, 80, 3, 4, '2026-01-20', 'excellent', '2026-01-20 03:30:19', '2026-01-20 03:30:19'),
+(11, 76, 3, 3, '2026-01-27', 'nice', '2026-01-27 02:03:46', '2026-01-27 02:03:46'),
+(11, 77, 3, 3, '2026-01-27', 'amazing', '2026-01-27 02:03:46', '2026-01-27 02:03:46');
 
 -- --------------------------------------------------------
 
@@ -732,8 +951,126 @@ CREATE TABLE `exit_checklist` (
   `status` enum('Pending','Completed','Not Applicable') DEFAULT 'Pending',
   `completed_date` date DEFAULT NULL,
   `notes` text DEFAULT NULL,
+  `item_type` enum('Physical','Document','Access','Financial','Other') DEFAULT 'Other',
+  `serial_number` varchar(100) DEFAULT NULL,
+  `sticker_type` varchar(100) DEFAULT NULL,
+  `approval_status` enum('Pending','Approved','Rejected') DEFAULT 'Pending',
+  `approved_by` varchar(100) DEFAULT NULL,
+  `approved_date` date DEFAULT NULL,
+  `remarks` text DEFAULT NULL,
+  `clearance_status` enum('Pending','Cleared','Conditional') DEFAULT 'Pending',
+  `clearance_date` date DEFAULT NULL,
+  `cleared_by` varchar(100) DEFAULT NULL,
   `created_at` timestamp NOT NULL DEFAULT current_timestamp(),
   `updated_at` timestamp NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp()
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- Triggers `exit_checklist`
+--
+DELIMITER $$
+CREATE TRIGGER `after_checklist_update` AFTER UPDATE ON `exit_checklist` FOR EACH ROW BEGIN
+    -- Log the change in audit table
+    IF OLD.status != NEW.status OR OLD.approval_status != NEW.approval_status OR OLD.clearance_status != NEW.clearance_status THEN
+        INSERT INTO exit_checklist_audit (checklist_id, action_type, field_changed, old_value, new_value, changed_by)
+        VALUES (NEW.checklist_id, 'Updated', 
+                CASE 
+                    WHEN OLD.status != NEW.status THEN 'status'
+                    WHEN OLD.approval_status != NEW.approval_status THEN 'approval_status'
+                    WHEN OLD.clearance_status != NEW.clearance_status THEN 'clearance_status'
+                    ELSE 'general'
+                END,
+                CASE 
+                    WHEN OLD.status != NEW.status THEN OLD.status
+                    WHEN OLD.approval_status != NEW.approval_status THEN OLD.approval_status
+                    WHEN OLD.clearance_status != NEW.clearance_status THEN OLD.clearance_status
+                    ELSE NULL
+                END,
+                CASE 
+                    WHEN OLD.status != NEW.status THEN NEW.status
+                    WHEN OLD.approval_status != NEW.approval_status THEN NEW.approval_status
+                    WHEN OLD.clearance_status != NEW.clearance_status THEN NEW.clearance_status
+                    ELSE NULL
+                END,
+                COALESCE(NEW.approved_by, 'System'));
+    END IF;
+END
+$$
+DELIMITER ;
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `exit_checklist_approvals`
+--
+
+CREATE TABLE `exit_checklist_approvals` (
+  `approval_id` int(11) NOT NULL,
+  `checklist_id` int(11) NOT NULL,
+  `approver_id` varchar(100) NOT NULL,
+  `approver_name` varchar(255) NOT NULL,
+  `approval_level` int(11) DEFAULT 1,
+  `decision` enum('Pending','Approved','Rejected') DEFAULT 'Pending',
+  `decision_date` datetime DEFAULT NULL,
+  `decision_remarks` text DEFAULT NULL,
+  `created_at` datetime DEFAULT current_timestamp()
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `exit_checklist_audit`
+--
+
+CREATE TABLE `exit_checklist_audit` (
+  `audit_id` int(11) NOT NULL,
+  `checklist_id` int(11) NOT NULL,
+  `action_type` enum('Created','Updated','Deleted','Approved','Rejected','Cleared') NOT NULL,
+  `field_changed` varchar(100) DEFAULT NULL,
+  `old_value` text DEFAULT NULL,
+  `new_value` text DEFAULT NULL,
+  `changed_by` varchar(100) DEFAULT NULL,
+  `changed_date` datetime DEFAULT current_timestamp(),
+  `remarks` text DEFAULT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+-- --------------------------------------------------------
+
+--
+-- Stand-in structure for view `exit_clearance_summary`
+-- (See below for the actual view)
+--
+CREATE TABLE `exit_clearance_summary` (
+`exit_id` int(11)
+,`employee_id` int(11)
+,`employee_name` varchar(101)
+,`employee_number` varchar(20)
+,`exit_date` date
+,`total_items` bigint(21)
+,`completed_items` decimal(22,0)
+,`approved_items` decimal(22,0)
+,`cleared_items` decimal(22,0)
+,`overall_clearance_status` varchar(17)
+);
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `exit_clearance_tracking`
+--
+
+CREATE TABLE `exit_clearance_tracking` (
+  `clearance_id` int(11) NOT NULL,
+  `exit_id` int(11) NOT NULL,
+  `department` varchar(100) NOT NULL,
+  `clearance_officer` varchar(100) DEFAULT NULL,
+  `clearance_status` enum('Pending','Cleared','Conditional','Not Required') DEFAULT 'Pending',
+  `items_cleared` text DEFAULT NULL,
+  `conditions` text DEFAULT NULL,
+  `cleared_date` date DEFAULT NULL,
+  `remarks` text DEFAULT NULL,
+  `created_at` datetime DEFAULT current_timestamp(),
+  `updated_at` datetime DEFAULT current_timestamp() ON UPDATE current_timestamp()
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 -- --------------------------------------------------------
@@ -773,6 +1110,85 @@ CREATE TABLE `exit_interviews` (
   `status` enum('Scheduled','Completed','Cancelled') DEFAULT 'Scheduled',
   `created_at` timestamp NOT NULL DEFAULT current_timestamp(),
   `updated_at` timestamp NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp()
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `exit_physical_items`
+--
+
+CREATE TABLE `exit_physical_items` (
+  `item_id` int(11) NOT NULL,
+  `checklist_id` int(11) NOT NULL,
+  `item_category` varchar(100) NOT NULL,
+  `item_description` text DEFAULT NULL,
+  `serial_number` varchar(100) DEFAULT NULL,
+  `sticker_code` varchar(100) DEFAULT NULL,
+  `asset_tag` varchar(100) DEFAULT NULL,
+  `condition_on_return` enum('Good','Fair','Poor','Damaged','Missing') DEFAULT 'Good',
+  `return_date` date DEFAULT NULL,
+  `received_by` varchar(100) DEFAULT NULL,
+  `verification_status` enum('Pending','Verified','Discrepancy') DEFAULT 'Pending',
+  `verification_remarks` text DEFAULT NULL,
+  `created_at` datetime DEFAULT current_timestamp()
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `feedback_cycles`
+--
+
+CREATE TABLE `feedback_cycles` (
+  `cycle_id` int(11) NOT NULL,
+  `cycle_name` varchar(255) NOT NULL,
+  `description` text DEFAULT NULL,
+  `start_date` date NOT NULL,
+  `end_date` date NOT NULL,
+  `status` enum('Active','Draft','Completed','Cancelled') DEFAULT 'Draft',
+  `created_by` int(11) NOT NULL,
+  `created_at` timestamp NOT NULL DEFAULT current_timestamp(),
+  `updated_at` timestamp NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp()
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- Dumping data for table `feedback_cycles`
+--
+
+INSERT INTO `feedback_cycles` (`cycle_id`, `cycle_name`, `description`, `start_date`, `end_date`, `status`, `created_by`, `created_at`, `updated_at`) VALUES
+(2, 'Yearly Evaluation', 'you', '2026-01-27', '2026-02-21', 'Active', 2, '2026-01-27 05:33:15', '2026-01-27 05:33:15');
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `feedback_requests`
+--
+
+CREATE TABLE `feedback_requests` (
+  `request_id` int(11) NOT NULL,
+  `employee_id` int(11) NOT NULL,
+  `reviewer_id` int(11) NOT NULL,
+  `cycle_id` int(11) NOT NULL,
+  `relationship_type` enum('supervisor','peer','subordinate','self') NOT NULL,
+  `status` enum('Pending','Completed','Cancelled') DEFAULT 'Pending',
+  `created_at` timestamp NOT NULL DEFAULT current_timestamp(),
+  `updated_at` timestamp NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp()
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `feedback_responses`
+--
+
+CREATE TABLE `feedback_responses` (
+  `response_id` int(11) NOT NULL,
+  `request_id` int(11) NOT NULL,
+  `reviewer_id` int(11) NOT NULL,
+  `responses` longtext CHARACTER SET utf8mb4 COLLATE utf8mb4_bin NOT NULL,
+  `comments` text DEFAULT NULL,
+  `submitted_at` timestamp NOT NULL DEFAULT current_timestamp()
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 -- --------------------------------------------------------
@@ -916,6 +1332,13 @@ CREATE TABLE `job_openings` (
   `posting_date` date NOT NULL,
   `closing_date` date DEFAULT NULL,
   `status` enum('Draft','Open','On Hold','Closed','Cancelled') DEFAULT 'Draft',
+  `screening_level` enum('Easy','Moderate','Strict') DEFAULT 'Moderate' COMMENT 'AI screening difficulty level',
+  `ai_generated` tinyint(1) DEFAULT 0 COMMENT 'Flag if job was created by AI',
+  `created_by` int(11) DEFAULT NULL COMMENT 'User ID who created the job',
+  `approval_status` enum('Pending','Approved','Rejected') DEFAULT NULL COMMENT 'Approval status for AI-generated jobs',
+  `approved_by` int(11) DEFAULT NULL COMMENT 'User ID who approved/rejected the job',
+  `approved_at` datetime DEFAULT NULL COMMENT 'Timestamp of approval/rejection',
+  `rejection_reason` text DEFAULT NULL COMMENT 'Reason if job was rejected',
   `created_at` timestamp NOT NULL DEFAULT current_timestamp(),
   `updated_at` timestamp NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp()
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
@@ -1117,6 +1540,39 @@ INSERT INTO `leave_types` (`leave_type_id`, `leave_type_name`, `description`, `p
 -- --------------------------------------------------------
 
 --
+-- Table structure for table `marital_status_history`
+--
+
+CREATE TABLE `marital_status_history` (
+  `status_history_id` int(11) NOT NULL,
+  `personal_info_id` int(11) NOT NULL,
+  `marital_status` enum('Single','Married','Divorced','Widowed','Separated','Annulled') NOT NULL,
+  `status_date` date NOT NULL COMMENT 'Date of marriage, divorce, etc.',
+  `spouse_name` varchar(100) DEFAULT NULL,
+  `supporting_document_type` enum('Marriage Certificate','Divorce Decree','Death Certificate','Annulment Certificate','Separation Agreement') DEFAULT NULL,
+  `document_url` varchar(255) DEFAULT NULL,
+  `document_number` varchar(50) DEFAULT NULL COMMENT 'Certificate or decree number',
+  `issuing_authority` varchar(150) DEFAULT NULL,
+  `remarks` text DEFAULT NULL,
+  `is_current` tinyint(1) DEFAULT 1 COMMENT '1 = current status, 0 = historical',
+  `created_at` timestamp NOT NULL DEFAULT current_timestamp(),
+  `updated_at` timestamp NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp()
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- Dumping data for table `marital_status_history`
+--
+
+INSERT INTO `marital_status_history` (`status_history_id`, `personal_info_id`, `marital_status`, `status_date`, `spouse_name`, `supporting_document_type`, `document_url`, `document_number`, `issuing_authority`, `remarks`, `is_current`, `created_at`, `updated_at`) VALUES
+(1, 1, 'Married', '2012-05-15', 'Carlos Santos', 'Marriage Certificate', '/documents/marital/maria_santos_marriage_cert.pdf', 'MC-2012-05-001234', 'Manila City Civil Registrar', NULL, 1, '2026-01-20 02:55:57', '2026-01-20 02:55:57'),
+(2, 2, 'Married', '2005-11-20', 'Elena Cruz', 'Marriage Certificate', '/documents/marital/roberto_cruz_marriage_cert.pdf', 'MC-2005-11-005678', 'Quezon City Civil Registrar', NULL, 1, '2026-01-20 02:55:57', '2026-01-20 02:55:57'),
+(3, 4, 'Married', '2001-03-10', 'Rosa Garcia', 'Marriage Certificate', '/documents/marital/antonio_garcia_marriage_cert.pdf', 'MC-2001-03-009012', 'Makati City Civil Registrar', NULL, 1, '2026-01-20 02:55:57', '2026-01-20 02:55:57'),
+(4, 5, 'Divorced', '2018-08-22', 'John Mendoza', 'Divorce Decree', '/documents/marital/lisa_mendoza_divorce_decree.pdf', 'DD-2018-08-003456', 'Family Court Manila', NULL, 1, '2026-01-20 02:55:57', '2026-01-20 02:55:57'),
+(5, 6, 'Married', '2008-07-14', 'Anna Torres', 'Marriage Certificate', '/documents/marital/michael_torres_marriage_cert.pdf', 'MC-2008-07-007890', 'Pasig City Civil Registrar', NULL, 1, '2026-01-20 02:55:57', '2026-01-20 02:55:57');
+
+-- --------------------------------------------------------
+
+--
 -- Table structure for table `onboarding_tasks`
 --
 
@@ -1266,10 +1722,12 @@ CREATE TABLE `performance_review_cycles` (
 --
 
 INSERT INTO `performance_review_cycles` (`cycle_id`, `cycle_name`, `start_date`, `end_date`, `status`, `created_at`, `updated_at`) VALUES
-(3, 'Monthly Evaluation', '2025-10-01', '2025-10-31', '', '2025-10-21 12:47:53', '2025-10-21 12:47:53');
+(3, 'Monthly Evaluation', '2025-10-01', '2025-10-31', '', '2025-10-21 12:47:53', '2025-10-21 12:47:53'),
+(4, 'Yearly Evaluation', '2026-01-01', '2026-12-31', 'In Progress', '2026-01-20 03:48:27', '2026-01-20 03:48:52');
 
 -- --------------------------------------------------------
 
+--
 --
 -- Table structure for table `personal_information`
 --
@@ -1284,10 +1742,19 @@ CREATE TABLE `personal_information` (
   `nationality` varchar(50) NOT NULL,
   `tax_id` varchar(20) DEFAULT NULL,
   `social_security_number` varchar(20) DEFAULT NULL,
+  `pag_ibig_id` varchar(20) DEFAULT NULL,
+  `philhealth_id` varchar(20) DEFAULT NULL,
   `phone_number` varchar(20) NOT NULL,
   `emergency_contact_name` varchar(100) DEFAULT NULL,
   `emergency_contact_relationship` varchar(50) DEFAULT NULL,
   `emergency_contact_phone` varchar(20) DEFAULT NULL,
+  -- Educational Background Fields
+  `highest_education_level` enum('Elementary','High School','Vocational/Technical','Associate Degree','Bachelor''s Degree','Master''s Degree','Doctorate','Other') DEFAULT NULL,
+  `field_of_study` varchar(100) DEFAULT NULL,
+  `institution_name` varchar(150) DEFAULT NULL,
+  `graduation_year` year DEFAULT NULL,
+  `certifications` text DEFAULT NULL,
+  `additional_training` text DEFAULT NULL,
   `created_at` timestamp NOT NULL DEFAULT current_timestamp(),
   `updated_at` timestamp NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp()
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
@@ -1296,22 +1763,22 @@ CREATE TABLE `personal_information` (
 -- Dumping data for table `personal_information`
 --
 
-INSERT INTO `personal_information` (`personal_info_id`, `first_name`, `last_name`, `date_of_birth`, `gender`, `marital_status`, `nationality`, `tax_id`, `social_security_number`, `phone_number`, `emergency_contact_name`, `emergency_contact_relationship`, `emergency_contact_phone`, `created_at`, `updated_at`) VALUES
-(1, 'Maria', 'Santos', '1985-03-12', 'Female', 'Married', 'Filipino', '123-45-6789', '123456789', '0917-123-4567', 'Carlos Santos', 'Spouse', '0917-567-8901', '2025-09-09 02:00:15', '2025-09-09 02:00:15'),
-(2, 'Roberto', 'Cruz', '1978-07-20', 'Male', 'Married', 'Filipino', '234-56-7890', '234567890', '0917-234-5678', 'Elena Cruz', 'Spouse', '0917-678-9012', '2025-09-09 02:00:15', '2025-09-09 02:00:15'),
-(3, 'Jennifer', 'Reyes', '1988-11-08', 'Female', 'Single', 'Filipino', '345-67-8901', '345678901', '0917-345-6789', 'Mark Reyes', 'Brother', '0917-789-0123', '2025-09-09 02:00:15', '2025-09-09 02:00:15'),
-(4, 'Antonio', 'Garcia', '1975-01-25', 'Male', 'Married', 'Filipino', '456-78-9012', '456789012', '0917-456-7890', 'Rosa Garcia', 'Spouse', '0917-890-1234', '2025-09-09 02:00:15', '2025-09-09 02:00:15'),
-(5, 'Lisa', 'Mendoza', '1982-09-14', 'Female', 'Divorced', 'Filipino', '567-89-0123', '567890123', '0917-567-8901', 'John Mendoza', 'Father', '0917-901-2345', '2025-09-09 02:00:15', '2025-09-09 02:00:15'),
-(6, 'Michael', 'Torres', '1980-06-03', 'Male', 'Married', 'Filipino', '678-90-1234', '678901234', '0917-678-9012', 'Anna Torres', 'Spouse', '0917-012-3456', '2025-09-09 02:00:15', '2025-09-09 02:00:15'),
-(7, 'Carmen', 'Dela Cruz', '1987-12-18', 'Female', 'Single', 'Filipino', '789-01-2345', '789012345', '0917-789-0123', 'Pedro Dela Cruz', 'Father', '0917-123-4567', '2025-09-09 02:00:15', '2025-09-09 02:00:15'),
-(8, 'Ricardo', 'Villanueva', '1970-04-07', 'Male', 'Married', 'Filipino', '890-12-3456', '890123456', '0917-890-1234', 'Diana Villanueva', 'Spouse', '0917-234-5678', '2025-09-09 02:00:15', '2025-09-09 02:00:15'),
-(9, 'Sandra', 'Pascual', '1984-08-29', 'Female', 'Married', 'Filipino', '901-23-4567', '901234567', '0917-901-2345', 'Luis Pascual', 'Spouse', '0917-345-6789', '2025-09-09 02:00:15', '2025-09-09 02:00:15'),
-(10, 'Jose', 'Ramos', '1972-05-15', 'Male', 'Married', 'Filipino', '012-34-5678', '012345678', '0917-012-3456', 'Teresa Ramos', 'Spouse', '0917-456-7890', '2025-09-09 02:00:15', '2025-09-09 02:00:15'),
-(11, 'Ana', 'Morales', '1986-10-30', 'Female', 'Single', 'Filipino', '123-56-7890', '123567890', '0917-135-7890', 'Maria Morales', 'Mother', '0917-579-0123', '2025-09-09 02:00:15', '2025-09-09 02:00:15'),
-(12, 'Pablo', 'Fernandez', '1979-02-22', 'Male', 'Married', 'Filipino', '234-67-8901', '234678901', '0917-246-7890', 'Carmen Fernandez', 'Spouse', '0917-680-1234', '2025-09-09 02:00:15', '2025-09-09 02:00:15'),
-(13, 'Grace', 'Lopez', '1983-09-07', 'Female', 'Married', 'Filipino', '345-78-9012', '345789012', '0917-357-8901', 'David Lopez', 'Spouse', '0917-791-2345', '2025-09-09 02:00:15', '2025-09-09 02:00:15'),
-(14, 'Eduardo', 'Hernandez', '1977-12-03', 'Male', 'Married', 'Filipino', '456-89-0123', '456890123', '0917-468-9012', 'Sofia Hernandez', 'Spouse', '0917-802-3456', '2025-09-09 02:00:15', '2025-09-09 02:00:15'),
-(15, 'Rosario', 'Gonzales', '1989-06-28', 'Female', 'Single', 'Filipino', '567-90-1234', '567901234', '0917-579-0123', 'Miguel Gonzales', 'Father', '0917-913-4567', '2025-09-09 02:00:15', '2025-09-09 02:00:15');
+INSERT INTO `personal_information` (`personal_info_id`, `first_name`, `last_name`, `date_of_birth`, `gender`, `marital_status`, `nationality`, `tax_id`, `social_security_number`, `pag_ibig_id`, `philhealth_id`, `phone_number`, `emergency_contact_name`, `emergency_contact_relationship`, `emergency_contact_phone`, `highest_education_level`, `field_of_study`, `institution_name`, `graduation_year`, `certifications`, `additional_training`, `created_at`, `updated_at`) VALUES
+(1, 'Maria', 'Santos', '1985-03-12', 'Female', 'Married', 'Filipino', '123-45-6789', '123456789', NULL, NULL, '0917-123-4567', 'Carlos Santos', 'Spouse', '0917-567-8901', 'Bachelor''s Degree', 'Business Administration', 'University of the Philippines', 2007, 'Certified Public Accountant (CPA)', 'Advanced Excel Training, Leadership Workshop', '2025-09-09 02:00:15', '2025-09-09 02:00:15'),
+(2, 'Roberto', 'Cruz', '1978-07-20', 'Male', 'Married', 'Filipino', '234-56-7890', '234567890', NULL, NULL, '0917-234-5678', 'Elena Cruz', 'Spouse', '0917-678-9012', 'Master''s Degree', 'Information Technology', 'Ateneo de Manila University', 2002, 'Project Management Professional (PMP), ITIL Foundation', 'Agile Scrum Master Training', '2025-09-09 02:00:15', '2025-09-09 02:00:15'),
+(3, 'Jennifer', 'Reyes', '1988-11-08', 'Female', 'Single', 'Filipino', '345-67-8901', '345678901', NULL, NULL, '0917-345-6789', 'Mark Reyes', 'Brother', '0917-789-0123', 'Bachelor''s Degree', 'Marketing', 'De La Salle University', 2010, 'Google Analytics Certification, Digital Marketing Certificate', 'Social Media Marketing Bootcamp', '2025-09-09 02:00:15', '2025-09-09 02:00:15'),
+(4, 'Antonio', 'Garcia', '1975-01-25', 'Male', 'Married', 'Filipino', '456-78-9012', '456789012', NULL, NULL, '0917-456-7890', 'Rosa Garcia', 'Spouse', '0917-890-1234', 'Vocational/Technical', 'Automotive Technology', 'Technical Education and Skills Development Authority (TESDA)', 1995, 'NC II Automotive Servicing, Welding NC II', 'Heavy Equipment Operation Training', '2025-09-09 02:00:15', '2025-09-09 02:00:15'),
+(5, 'Lisa', 'Mendoza', '1982-09-14', 'Female', 'Divorced', 'Filipino', '567-89-0123', '567890123', NULL, NULL, '0917-567-8901', 'John Mendoza', 'Father', '0917-901-2345', 'Bachelor''s Degree', 'Nursing', 'University of Santo Tomas', 2004, 'Registered Nurse (RN), Basic Life Support (BLS)', 'Intensive Care Unit (ICU) Specialized Training', '2025-09-09 02:00:15', '2025-09-09 02:00:15'),
+(6, 'Michael', 'Torres', '1980-06-03', 'Male', 'Married', 'Filipino', '678-90-1234', '678901234', NULL, NULL, '0917-678-9012', 'Anna Torres', 'Spouse', '0917-012-3456', 'Bachelor''s Degree', 'Civil Engineering', 'Mapua University', 2002, 'Licensed Civil Engineer, LEED Green Associate', 'Construction Management Seminar', '2025-09-09 02:00:15', '2025-09-09 02:00:15'),
+(7, 'Carmen', 'Dela Cruz', '1987-12-18', 'Female', 'Single', 'Filipino', '789-01-2345', '789012345', NULL, NULL, '0917-789-0123', 'Pedro Dela Cruz', 'Father', '0917-123-4567', 'Bachelor''s Degree', 'Education', 'Philippine Normal University', 2009, 'Licensed Professional Teacher (LPT)', 'Child Psychology Training, Montessori Method Workshop', '2025-09-09 02:00:15', '2025-09-09 02:00:15'),
+(8, 'Ricardo', 'Villanueva', '1970-04-07', 'Male', 'Married', 'Filipino', '890-12-3456', '890123456', NULL, NULL, '0917-890-1234', 'Diana Villanueva', 'Spouse', '0917-234-5678', 'High School', NULL, 'San Juan National High School', 1988, 'Sales Excellence Certificate', 'Customer Service Training, Product Knowledge Seminars', '2025-09-09 02:00:15', '2025-09-09 02:00:15'),
+(9, 'Sandra', 'Pascual', '1984-08-29', 'Female', 'Married', 'Filipino', '901-23-4567', '901234567', NULL, NULL, '0917-901-2345', 'Luis Pascual', 'Spouse', '0917-345-6789', 'Master''s Degree', 'Human Resource Management', 'Asian Institute of Management', 2008, 'SHRM-CP, Certified Compensation Professional', 'Organizational Development Training', '2025-09-09 02:00:15', '2025-09-09 02:00:15'),
+(10, 'Jose', 'Ramos', '1972-05-15', 'Male', 'Married', 'Filipino', '012-34-5678', '012345678', NULL, NULL, '0917-012-3456', 'Teresa Ramos', 'Spouse', '0917-456-7890', 'Bachelor''s Degree', 'Electrical Engineering', 'Polytechnic University of the Philippines', 1994, 'Licensed Electrical Engineer', 'Power Systems Analysis Training', '2025-09-09 02:00:15', '2025-09-09 02:00:15'),
+(11, 'Ana', 'Morales', '1986-10-30', 'Female', 'Single', 'Filipino', '123-56-7890', '123567890', NULL, NULL, '0917-135-7890', 'Maria Morales', 'Mother', '0917-579-0123', 'Bachelor''s Degree', 'Psychology', 'University of the Philippines', 2008, 'Licensed Psychologist, Certified Career Coach', 'Cognitive Behavioral Therapy Workshop', '2025-09-09 02:00:15', '2025-09-09 02:00:15'),
+(12, 'Pablo', 'Fernandez', '1979-02-22', 'Male', 'Married', 'Filipino', '234-67-8901', '234678901', NULL, NULL, '0917-246-7890', 'Carmen Fernandez', 'Spouse', '0917-680-1234', 'Vocational/Technical', 'Computer Technology', 'TESDA', 1998, 'Computer Systems Servicing NC II', 'Web Development Bootcamp, Network Administration', '2025-09-09 02:00:15', '2025-09-09 02:00:15'),
+(13, 'Grace', 'Lopez', '1983-09-07', 'Female', 'Married', 'Filipino', '345-78-9012', '345789012', NULL, NULL, '0917-357-8901', 'David Lopez', 'Spouse', '0917-791-2345', 'Bachelor''s Degree', 'Accountancy', 'Far Eastern University', 2005, 'Certified Public Accountant (CPA), Certified Internal Auditor', 'Tax Planning and Management Seminar', '2025-09-09 02:00:15', '2025-09-09 02:00:15'),
+(14, 'Eduardo', 'Hernandez', '1977-12-03', 'Male', 'Married', 'Filipino', '456-89-0123', '456890123', NULL, NULL, '0917-468-9012', 'Sofia Hernandez', 'Spouse', '0917-802-3456', 'Bachelor''s Degree', 'Architecture', 'University of Santo Tomas', 2000, 'Licensed Architect', 'Sustainable Design Workshop, BIM Training', '2025-09-09 02:00:15', '2025-09-09 02:00:15'),
+(15, 'Rosario', 'Gonzales', '1989-06-28', 'Female', 'Single', 'Filipino', '567-90-1234', '567901234', NULL, NULL, '0917-579-0123', 'Miguel Gonzales', 'Father', '0917-913-4567', 'Bachelor''s Degree', 'Communication Arts', 'University of the Philippines', 2011, 'Certified Digital Content Creator', 'Video Production Workshop, Social Media Strategy Training', '2025-09-09 02:00:15', '2025-09-09 02:00:15');
 
 -- --------------------------------------------------------
 
@@ -1321,14 +1788,17 @@ INSERT INTO `personal_information` (`personal_info_id`, `first_name`, `last_name
 
 CREATE TABLE `post_exit_surveys` (
   `survey_id` int(11) NOT NULL,
-  `employee_id` int(11) NOT NULL,
+  `employee_id` int(11) DEFAULT NULL,
   `exit_id` int(11) NOT NULL,
   `survey_date` date NOT NULL,
   `survey_response` text DEFAULT NULL,
   `satisfaction_rating` int(11) DEFAULT NULL,
   `submitted_date` timestamp NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp(),
   `created_at` timestamp NOT NULL DEFAULT current_timestamp(),
-  `updated_at` timestamp NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp()
+  `updated_at` timestamp NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp(),
+  `is_anonymous` tinyint(1) NOT NULL DEFAULT 0,
+  `evaluation_score` int(11) DEFAULT 0,
+  `evaluation_criteria` text DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 -- --------------------------------------------------------
@@ -1373,6 +1843,7 @@ INSERT INTO `public_holidays` (`holiday_id`, `holiday_date`, `holiday_name`, `de
 (20, '2025-12-30', 'Rizal Day', 'Araw ng Kamatayan ni Dr. Jose Rizal', '2025-09-09 02:00:57', '2025-09-09 02:00:57'),
 (21, '2025-12-31', 'Last Day of The Year', 'Huling Araw ng Taon', '2025-09-09 02:00:57', '2025-09-09 02:00:57');
 
+-- --------------------------------------------------------
 
 --
 -- Table structure for table `recruitment_analytics`
@@ -1674,9 +2145,30 @@ INSERT INTO `user_roles` (`role_id`, `role_name`, `description`) VALUES
 (2, 'hr', 'Human Resources role with access to employee and payroll management.'),
 (3, 'employee', 'Standard employee role with limited access to personal information and timesheets.');
 
+-- --------------------------------------------------------
+
+--
+-- Structure for view `exit_clearance_summary`
+--
+DROP TABLE IF EXISTS `exit_clearance_summary`;
+
+CREATE ALGORITHM=UNDEFINED DEFINER=`root`@`localhost` SQL SECURITY DEFINER VIEW `exit_clearance_summary`  AS SELECT `e`.`exit_id` AS `exit_id`, `e`.`employee_id` AS `employee_id`, concat(`pi`.`first_name`,' ',`pi`.`last_name`) AS `employee_name`, `ep`.`employee_number` AS `employee_number`, `e`.`exit_date` AS `exit_date`, count(`ec`.`checklist_id`) AS `total_items`, sum(case when `ec`.`status` = 'Completed' then 1 else 0 end) AS `completed_items`, sum(case when `ec`.`approval_status` = 'Approved' then 1 else 0 end) AS `approved_items`, sum(case when `ec`.`clearance_status` = 'Cleared' then 1 else 0 end) AS `cleared_items`, CASE WHEN count(`ec`.`checklist_id`) = sum(case when `ec`.`clearance_status` = 'Cleared' then 1 else 0 end) THEN 'Fully Cleared' WHEN sum(case when `ec`.`clearance_status` = 'Cleared' then 1 else 0 end) > 0 THEN 'Partially Cleared' ELSE 'Not Cleared' END AS `overall_clearance_status` FROM (((`exits` `e` left join `employee_profiles` `ep` on(`e`.`employee_id` = `ep`.`employee_id`)) left join `personal_information` `pi` on(`ep`.`personal_info_id` = `pi`.`personal_info_id`)) left join `exit_checklist` `ec` on(`e`.`exit_id` = `ec`.`exit_id`)) GROUP BY `e`.`exit_id`, `e`.`employee_id`, `pi`.`first_name`, `pi`.`last_name`, `ep`.`employee_number`, `e`.`exit_date` ;
+
 --
 -- Indexes for dumped tables
 --
+
+--
+-- Indexes for table `archive_storage`
+--
+ALTER TABLE `archive_storage`
+  ADD PRIMARY KEY (`archive_id`),
+  ADD KEY `source_table` (`source_table`),
+  ADD KEY `record_id` (`record_id`),
+  ADD KEY `employee_id` (`employee_id`),
+  ADD KEY `archived_by` (`archived_by`),
+  ADD KEY `archived_at` (`archived_at`),
+  ADD KEY `archive_storage_ibfk_2` (`restored_by`);
 
 --
 -- Indexes for table `attendance`
@@ -1729,6 +2221,14 @@ ALTER TABLE `career_path_stages`
   ADD KEY `job_role_id` (`job_role_id`);
 
 --
+-- Indexes for table `pds_data`
+--
+ALTER TABLE `pds_data`
+  ADD PRIMARY KEY (`pds_id`),
+  ADD KEY `idx_candidate` (`candidate_id`),
+  ADD KEY `idx_email` (`email`);
+
+--
 -- Indexes for table `compensation_packages`
 --
 ALTER TABLE `compensation_packages`
@@ -1768,6 +2268,13 @@ ALTER TABLE `development_plans`
 ALTER TABLE `document_management`
   ADD PRIMARY KEY (`document_id`),
   ADD KEY `employee_id` (`employee_id`);
+
+--
+-- Indexes for table `educational_background`
+--
+ALTER TABLE `educational_background`
+  ADD PRIMARY KEY (`education_id`),
+  ADD KEY `personal_info_id` (`personal_info_id`);
 
 --
 -- Indexes for table `employee_benefits`
@@ -1864,6 +2371,31 @@ ALTER TABLE `exits`
 --
 ALTER TABLE `exit_checklist`
   ADD PRIMARY KEY (`checklist_id`),
+  ADD KEY `exit_id` (`exit_id`),
+  ADD KEY `idx_approval_status` (`approval_status`),
+  ADD KEY `idx_clearance_status` (`clearance_status`),
+  ADD KEY `idx_item_type` (`item_type`),
+  ADD KEY `idx_serial_number` (`serial_number`);
+
+--
+-- Indexes for table `exit_checklist_approvals`
+--
+ALTER TABLE `exit_checklist_approvals`
+  ADD PRIMARY KEY (`approval_id`),
+  ADD KEY `checklist_id` (`checklist_id`);
+
+--
+-- Indexes for table `exit_checklist_audit`
+--
+ALTER TABLE `exit_checklist_audit`
+  ADD PRIMARY KEY (`audit_id`),
+  ADD KEY `checklist_id` (`checklist_id`);
+
+--
+-- Indexes for table `exit_clearance_tracking`
+--
+ALTER TABLE `exit_clearance_tracking`
+  ADD PRIMARY KEY (`clearance_id`),
   ADD KEY `exit_id` (`exit_id`);
 
 --
@@ -1881,6 +2413,37 @@ ALTER TABLE `exit_interviews`
   ADD PRIMARY KEY (`interview_id`),
   ADD KEY `exit_id` (`exit_id`),
   ADD KEY `employee_id` (`employee_id`);
+
+--
+-- Indexes for table `exit_physical_items`
+--
+ALTER TABLE `exit_physical_items`
+  ADD PRIMARY KEY (`item_id`),
+  ADD KEY `checklist_id` (`checklist_id`);
+
+--
+-- Indexes for table `feedback_cycles`
+--
+ALTER TABLE `feedback_cycles`
+  ADD PRIMARY KEY (`cycle_id`),
+  ADD KEY `created_by` (`created_by`);
+
+--
+-- Indexes for table `feedback_requests`
+--
+ALTER TABLE `feedback_requests`
+  ADD PRIMARY KEY (`request_id`),
+  ADD KEY `employee_id` (`employee_id`),
+  ADD KEY `reviewer_id` (`reviewer_id`),
+  ADD KEY `cycle_id` (`cycle_id`);
+
+--
+-- Indexes for table `feedback_responses`
+--
+ALTER TABLE `feedback_responses`
+  ADD PRIMARY KEY (`response_id`),
+  ADD KEY `request_id` (`request_id`),
+  ADD KEY `reviewer_id` (`reviewer_id`);
 
 --
 -- Indexes for table `goals`
@@ -1977,6 +2540,13 @@ ALTER TABLE `leave_requests`
 --
 ALTER TABLE `leave_types`
   ADD PRIMARY KEY (`leave_type_id`);
+
+--
+-- Indexes for table `marital_status_history`
+--
+ALTER TABLE `marital_status_history`
+  ADD PRIMARY KEY (`status_history_id`),
+  ADD KEY `personal_info_id` (`personal_info_id`);
 
 --
 -- Indexes for table `onboarding_tasks`
@@ -2160,6 +2730,12 @@ ALTER TABLE `user_roles`
 --
 
 --
+-- AUTO_INCREMENT for table `archive_storage`
+--
+ALTER TABLE `archive_storage`
+  MODIFY `archive_id` int(11) NOT NULL AUTO_INCREMENT;
+
+--
 -- AUTO_INCREMENT for table `attendance`
 --
 ALTER TABLE `attendance`
@@ -2202,6 +2778,12 @@ ALTER TABLE `career_path_stages`
   MODIFY `stage_id` int(11) NOT NULL AUTO_INCREMENT;
 
 --
+-- AUTO_INCREMENT for table `pds_data`
+--
+ALTER TABLE `pds_data`
+  MODIFY `pds_id` int(11) NOT NULL AUTO_INCREMENT;
+
+--
 -- AUTO_INCREMENT for table `compensation_packages`
 --
 ALTER TABLE `compensation_packages`
@@ -2223,19 +2805,25 @@ ALTER TABLE `departments`
 -- AUTO_INCREMENT for table `development_activities`
 --
 ALTER TABLE `development_activities`
-  MODIFY `activity_id` int(11) NOT NULL AUTO_INCREMENT;
+  MODIFY `activity_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=8;
 
 --
 -- AUTO_INCREMENT for table `development_plans`
 --
 ALTER TABLE `development_plans`
-  MODIFY `plan_id` int(11) NOT NULL AUTO_INCREMENT;
+  MODIFY `plan_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=27;
 
 --
 -- AUTO_INCREMENT for table `document_management`
 --
 ALTER TABLE `document_management`
   MODIFY `document_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=33;
+
+--
+-- AUTO_INCREMENT for table `educational_background`
+--
+ALTER TABLE `educational_background`
+  MODIFY `education_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=6;
 
 --
 -- AUTO_INCREMENT for table `employee_benefits`
@@ -2304,6 +2892,24 @@ ALTER TABLE `exit_checklist`
   MODIFY `checklist_id` int(11) NOT NULL AUTO_INCREMENT;
 
 --
+-- AUTO_INCREMENT for table `exit_checklist_approvals`
+--
+ALTER TABLE `exit_checklist_approvals`
+  MODIFY `approval_id` int(11) NOT NULL AUTO_INCREMENT;
+
+--
+-- AUTO_INCREMENT for table `exit_checklist_audit`
+--
+ALTER TABLE `exit_checklist_audit`
+  MODIFY `audit_id` int(11) NOT NULL AUTO_INCREMENT;
+
+--
+-- AUTO_INCREMENT for table `exit_clearance_tracking`
+--
+ALTER TABLE `exit_clearance_tracking`
+  MODIFY `clearance_id` int(11) NOT NULL AUTO_INCREMENT;
+
+--
 -- AUTO_INCREMENT for table `exit_documents`
 --
 ALTER TABLE `exit_documents`
@@ -2314,6 +2920,30 @@ ALTER TABLE `exit_documents`
 --
 ALTER TABLE `exit_interviews`
   MODIFY `interview_id` int(11) NOT NULL AUTO_INCREMENT;
+
+--
+-- AUTO_INCREMENT for table `exit_physical_items`
+--
+ALTER TABLE `exit_physical_items`
+  MODIFY `item_id` int(11) NOT NULL AUTO_INCREMENT;
+
+--
+-- AUTO_INCREMENT for table `feedback_cycles`
+--
+ALTER TABLE `feedback_cycles`
+  MODIFY `cycle_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=3;
+
+--
+-- AUTO_INCREMENT for table `feedback_requests`
+--
+ALTER TABLE `feedback_requests`
+  MODIFY `request_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=3;
+
+--
+-- AUTO_INCREMENT for table `feedback_responses`
+--
+ALTER TABLE `feedback_responses`
+  MODIFY `response_id` int(11) NOT NULL AUTO_INCREMENT;
 
 --
 -- AUTO_INCREMENT for table `goals`
@@ -2394,6 +3024,12 @@ ALTER TABLE `leave_types`
   MODIFY `leave_type_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=6;
 
 --
+-- AUTO_INCREMENT for table `marital_status_history`
+--
+ALTER TABLE `marital_status_history`
+  MODIFY `status_history_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=6;
+
+--
 -- AUTO_INCREMENT for table `onboarding_tasks`
 --
 ALTER TABLE `onboarding_tasks`
@@ -2439,7 +3075,7 @@ ALTER TABLE `performance_reviews`
 -- AUTO_INCREMENT for table `performance_review_cycles`
 --
 ALTER TABLE `performance_review_cycles`
-  MODIFY `cycle_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=4;
+  MODIFY `cycle_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=5;
 
 --
 -- AUTO_INCREMENT for table `personal_information`
@@ -2548,6 +3184,13 @@ ALTER TABLE `user_roles`
 --
 
 --
+-- Constraints for table `archive_storage`
+--
+ALTER TABLE `archive_storage`
+  ADD CONSTRAINT `archive_storage_ibfk_1` FOREIGN KEY (`archived_by`) REFERENCES `users` (`user_id`) ON DELETE CASCADE,
+  ADD CONSTRAINT `archive_storage_ibfk_2` FOREIGN KEY (`restored_by`) REFERENCES `users` (`user_id`) ON DELETE SET NULL;
+
+--
 -- Constraints for table `attendance`
 --
 ALTER TABLE `attendance`
@@ -2580,6 +3223,12 @@ ALTER TABLE `career_path_stages`
   ADD CONSTRAINT `career_path_stages_ibfk_2` FOREIGN KEY (`job_role_id`) REFERENCES `job_roles` (`job_role_id`) ON DELETE CASCADE;
 
 --
+-- Constraints for table `pds_data`
+--
+ALTER TABLE `pds_data`
+  ADD CONSTRAINT `pds_data_ibfk_1` FOREIGN KEY (`candidate_id`) REFERENCES `candidates` (`candidate_id`) ON DELETE CASCADE;
+
+--
 -- Constraints for table `compensation_packages`
 --
 ALTER TABLE `compensation_packages`
@@ -2608,6 +3257,12 @@ ALTER TABLE `development_plans`
 --
 ALTER TABLE `document_management`
   ADD CONSTRAINT `document_management_ibfk_1` FOREIGN KEY (`employee_id`) REFERENCES `employee_profiles` (`employee_id`) ON DELETE CASCADE;
+
+--
+-- Constraints for table `educational_background`
+--
+ALTER TABLE `educational_background`
+  ADD CONSTRAINT `educational_background_ibfk_1` FOREIGN KEY (`personal_info_id`) REFERENCES `personal_information` (`personal_info_id`) ON DELETE CASCADE;
 
 --
 -- Constraints for table `employee_benefits`
@@ -2694,6 +3349,24 @@ ALTER TABLE `exit_checklist`
   ADD CONSTRAINT `exit_checklist_ibfk_1` FOREIGN KEY (`exit_id`) REFERENCES `exits` (`exit_id`) ON DELETE CASCADE;
 
 --
+-- Constraints for table `exit_checklist_approvals`
+--
+ALTER TABLE `exit_checklist_approvals`
+  ADD CONSTRAINT `exit_checklist_approvals_ibfk_1` FOREIGN KEY (`checklist_id`) REFERENCES `exit_checklist` (`checklist_id`) ON DELETE CASCADE;
+
+--
+-- Constraints for table `exit_checklist_audit`
+--
+ALTER TABLE `exit_checklist_audit`
+  ADD CONSTRAINT `exit_checklist_audit_ibfk_1` FOREIGN KEY (`checklist_id`) REFERENCES `exit_checklist` (`checklist_id`) ON DELETE CASCADE;
+
+--
+-- Constraints for table `exit_clearance_tracking`
+--
+ALTER TABLE `exit_clearance_tracking`
+  ADD CONSTRAINT `exit_clearance_tracking_ibfk_1` FOREIGN KEY (`exit_id`) REFERENCES `exits` (`exit_id`) ON DELETE CASCADE;
+
+--
 -- Constraints for table `exit_documents`
 --
 ALTER TABLE `exit_documents`
@@ -2706,6 +3379,12 @@ ALTER TABLE `exit_documents`
 ALTER TABLE `exit_interviews`
   ADD CONSTRAINT `exit_interviews_ibfk_1` FOREIGN KEY (`exit_id`) REFERENCES `exits` (`exit_id`) ON DELETE CASCADE,
   ADD CONSTRAINT `exit_interviews_ibfk_2` FOREIGN KEY (`employee_id`) REFERENCES `employee_profiles` (`employee_id`) ON DELETE CASCADE;
+
+--
+-- Constraints for table `exit_physical_items`
+--
+ALTER TABLE `exit_physical_items`
+  ADD CONSTRAINT `exit_physical_items_ibfk_1` FOREIGN KEY (`checklist_id`) REFERENCES `exit_checklist` (`checklist_id`) ON DELETE CASCADE;
 
 --
 -- Constraints for table `goals`
@@ -2752,7 +3431,9 @@ ALTER TABLE `job_offers`
 --
 ALTER TABLE `job_openings`
   ADD CONSTRAINT `job_openings_ibfk_1` FOREIGN KEY (`job_role_id`) REFERENCES `job_roles` (`job_role_id`) ON DELETE CASCADE,
-  ADD CONSTRAINT `job_openings_ibfk_2` FOREIGN KEY (`department_id`) REFERENCES `departments` (`department_id`) ON DELETE CASCADE;
+  ADD CONSTRAINT `job_openings_ibfk_2` FOREIGN KEY (`department_id`) REFERENCES `departments` (`department_id`) ON DELETE CASCADE,
+  ADD CONSTRAINT `fk_job_created_by` FOREIGN KEY (`created_by`) REFERENCES `users` (`user_id`) ON DELETE SET NULL,
+  ADD CONSTRAINT `fk_job_approved_by` FOREIGN KEY (`approved_by`) REFERENCES `users` (`user_id`) ON DELETE SET NULL;
 
 --
 -- Constraints for table `knowledge_transfers`
@@ -2774,6 +3455,12 @@ ALTER TABLE `leave_balances`
 ALTER TABLE `leave_requests`
   ADD CONSTRAINT `leave_requests_ibfk_1` FOREIGN KEY (`employee_id`) REFERENCES `employee_profiles` (`employee_id`) ON DELETE CASCADE,
   ADD CONSTRAINT `leave_requests_ibfk_2` FOREIGN KEY (`leave_type_id`) REFERENCES `leave_types` (`leave_type_id`) ON DELETE CASCADE;
+
+--
+-- Constraints for table `marital_status_history`
+--
+ALTER TABLE `marital_status_history`
+  ADD CONSTRAINT `marital_status_history_ibfk_1` FOREIGN KEY (`personal_info_id`) REFERENCES `personal_information` (`personal_info_id`) ON DELETE CASCADE;
 
 --
 -- Constraints for table `onboarding_tasks`
@@ -2880,377 +3567,6 @@ ALTER TABLE `users`
   ADD CONSTRAINT `users_ibfk_1` FOREIGN KEY (`employee_id`) REFERENCES `employee_profiles` (`employee_id`) ON DELETE SET NULL;
 COMMIT;
 
--- --------------------------------------------------------
---
--- Unified Archive Storage Table
--- Handles archiving for: employee_profiles, personal_information, 
--- employment_history, and document_management
---
-
-CREATE TABLE `archive_storage` (
-  `archive_id` int(11) NOT NULL AUTO_INCREMENT,
-  `source_table` enum('employee_profiles','personal_information','employment_history','document_management') NOT NULL,
-  `record_id` int(11) NOT NULL COMMENT 'Original primary key from source table',
-  `employee_id` int(11) DEFAULT NULL COMMENT 'Employee reference for all archived records',
-  `record_data` longtext CHARACTER SET utf8mb4 COLLATE utf8mb4_bin NOT NULL COMMENT 'JSON containing all original data',
-  `archive_reason` enum('Termination','Resignation','Retirement','Data Cleanup','System Migration','Expired Document','Other') NOT NULL,
-  `archive_reason_details` text DEFAULT NULL,
-  `archived_by` int(11) NOT NULL COMMENT 'User ID who archived the record',
-  `archived_at` timestamp NOT NULL DEFAULT current_timestamp(),
-  `can_restore` tinyint(1) DEFAULT 1 COMMENT 'Whether this record can be restored',
-  `restored_at` timestamp NULL DEFAULT NULL,
-  `restored_by` int(11) DEFAULT NULL,
-  `notes` text DEFAULT NULL,
-  `created_at` timestamp NOT NULL DEFAULT current_timestamp(),
-  `updated_at` timestamp NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp(),
-  PRIMARY KEY (`archive_id`),
-  KEY `source_table` (`source_table`),
-  KEY `record_id` (`record_id`),
-  KEY `employee_id` (`employee_id`),
-  KEY `archived_by` (`archived_by`),
-  KEY `archived_at` (`archived_at`),
-  CONSTRAINT `archive_storage_ibfk_1` FOREIGN KEY (`archived_by`) REFERENCES `users` (`user_id`) ON DELETE CASCADE,
-  CONSTRAINT `archive_storage_ibfk_2` FOREIGN KEY (`restored_by`) REFERENCES `users` (`user_id`) ON DELETE SET NULL,
-  CONSTRAINT CHK_record_data CHECK (json_valid(`record_data`))
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
-
--- --------------------------------------------------------
---
--- Sample Data for Unified Archive Storage
---
-
--- Example 1: Archived Employee Profile (Terminated)
-INSERT INTO `archive_storage` 
-(`source_table`, `record_id`, `employee_id`, `record_data`, `archive_reason`, 
-`archive_reason_details`, `archived_by`, `archived_at`, `can_restore`, `notes`) 
-VALUES
-('employee_profiles', 16, 16, 
-'{
-  "employee_id": 16,
-  "personal_info_id": 16,
-  "job_role_id": 29,
-  "employee_number": "MUN016",
-  "hire_date": "2018-03-15",
-  "employment_status": "Terminated",
-  "current_salary": 30000.00,
-  "work_email": "pedro.santos@municipality.gov.ph",
-  "work_phone": "034-123-0016",
-  "location": "Municipal Civil Registrar\'s Office",
-  "remote_work": 0,
-  "created_at": "2018-03-15 02:00:00",
-  "updated_at": "2025-08-14 05:20:00"
-}', 
-'Termination', 'Employee terminated due to prolonged absence without notice (AWOL)', 
-1, '2025-08-15 08:30:00', 0, 'Final clearance completed. All equipment returned.');
-
--- Example 2: Archived Personal Information (Terminated Employee)
-INSERT INTO `archive_storage` 
-(`source_table`, `record_id`, `employee_id`, `record_data`, `archive_reason`, 
-`archive_reason_details`, `archived_by`, `archived_at`, `can_restore`, `notes`) 
-VALUES
-('personal_information', 16, 16, 
-'{
-  "personal_info_id": 16,
-  "first_name": "Pedro",
-  "last_name": "Santos",
-  "date_of_birth": "1985-05-20",
-  "gender": "Male",
-  "marital_status": "Single",
-  "nationality": "Filipino",
-  "tax_id": "678-91-2345",
-  "social_security_number": "678912345",
-  "phone_number": "0917-680-1234",
-  "emergency_contact_name": "Maria Santos",
-  "emergency_contact_relationship": "Sister",
-  "emergency_contact_phone": "0917-024-5678",
-  "created_at": "2018-03-15 02:00:00",
-  "updated_at": "2022-06-10 03:15:00"
-}', 
-'Termination', 'Personal information archived with employee termination', 
-1, '2025-08-15 08:30:00', 0, 'Sensitive data retained as per retention policy.');
-
--- Example 3: Archived Employment History (Terminated Employee)
-INSERT INTO `archive_storage` 
-(`source_table`, `record_id`, `employee_id`, `record_data`, `archive_reason`, 
-`archive_reason_details`, `archived_by`, `archived_at`, `can_restore`, `notes`) 
-VALUES
-('employment_history', 16, 16, 
-'{
-  "history_id": 16,
-  "employee_id": 16,
-  "job_title": "Clerk",
-  "department_id": 8,
-  "employment_type": "Full-time",
-  "start_date": "2018-03-15",
-  "end_date": "2025-08-14",
-  "employment_status": "Terminated",
-  "reporting_manager_id": null,
-  "location": "Municipal Civil Registrar\'s Office",
-  "base_salary": 30000.00,
-  "allowances": 1000.00,
-  "bonuses": 0.00,
-  "salary_adjustments": 0.00,
-  "reason_for_change": "Terminated due to AWOL",
-  "promotions_transfers": null,
-  "duties_responsibilities": "Maintained registry records, assisted clients with civil documents.",
-  "performance_evaluations": "Last rating was Satisfactory in 2024 review",
-  "training_certifications": "Civil Registration Training",
-  "contract_details": "Fixed-term contract terminated early",
-  "remarks": "Multiple written warnings for attendance issues before termination",
-  "created_at": "2018-03-15 02:00:00",
-  "updated_at": "2025-08-14 05:20:00"
-}', 
-'Termination', 'Employment history archived upon termination', 
-1, '2025-08-15 08:30:00', 0, 'Complete employment record preserved for legal compliance.');
-
--- Example 4: Archived Document (Expired Contract)
-INSERT INTO `archive_storage` 
-(`source_table`, `record_id`, `employee_id`, `record_data`, `archive_reason`, 
-`archive_reason_details`, `archived_by`, `archived_at`, `can_restore`, `notes`) 
-VALUES
-('document_management', 33, 16, 
-'{
-  "document_id": 33,
-  "employee_id": 16,
-  "document_type": "Contract",
-  "document_name": "Employment Contract - Clerk",
-  "file_path": "/documents/contracts/pedro_santos_contract.pdf",
-  "upload_date": "2018-03-15 02:00:00",
-  "expiry_date": "2025-03-15",
-  "document_status": "Expired",
-  "notes": "Civil registrar office clerk contract",
-  "created_at": "2018-03-15 02:00:00",
-  "updated_at": "2025-08-14 05:20:00"
-}', 
-'Expired Document', 'Document archived after employee termination and contract expiry', 
-1, '2025-08-15 08:30:00', 0, 'Physical document retained in secure storage.');
-
--- Example 5: Archived Employee Profile (Retired)
-INSERT INTO `archive_storage` 
-(`source_table`, `record_id`, `employee_id`, `record_data`, `archive_reason`, 
-`archive_reason_details`, `archived_by`, `archived_at`, `can_restore`, `notes`) 
-VALUES
-('employee_profiles', 17, 17, 
-'{
-  "employee_id": 17,
-  "personal_info_id": 17,
-  "job_role_id": 34,
-  "employee_number": "MUN017",
-  "hire_date": "1995-06-01",
-  "employment_status": "Full-time",
-  "current_salary": 25000.00,
-  "work_email": "ramon.reyes@municipality.gov.ph",
-  "work_phone": "034-123-0017",
-  "location": "General Services Office",
-  "remote_work": 0,
-  "created_at": "1995-06-01 02:00:00",
-  "updated_at": "2025-06-29 08:00:00"
-}', 
-'Retirement', 'Employee retired after 30 years of exemplary service', 
-2, '2025-06-30 16:00:00', 0, 'Retirement ceremony held on June 28, 2025. Plaque of appreciation awarded.');
-
--- Example 6: Archived Personal Information (Retired Employee)
-INSERT INTO `archive_storage` 
-(`source_table`, `record_id`, `employee_id`, `record_data`, `archive_reason`, 
-`archive_reason_details`, `archived_by`, `archived_at`, `can_restore`, `notes`) 
-VALUES
-('personal_information', 17, 17, 
-'{
-  "personal_info_id": 17,
-  "first_name": "Ramon",
-  "last_name": "Reyes",
-  "date_of_birth": "1960-02-15",
-  "gender": "Male",
-  "marital_status": "Married",
-  "nationality": "Filipino",
-  "tax_id": "789-02-3456",
-  "social_security_number": "789023456",
-  "phone_number": "0917-791-2345",
-  "emergency_contact_name": "Elena Reyes",
-  "emergency_contact_relationship": "Spouse",
-  "emergency_contact_phone": "0917-135-6789",
-  "created_at": "1995-06-01 02:00:00",
-  "updated_at": "2020-03-10 04:20:00"
-}', 
-'Retirement', 'Personal information archived upon retirement', 
-2, '2025-06-30 16:00:00', 0, 'Contact information maintained for pension processing.');
-
--- Example 7: Archived Document (Data Cleanup - Old Resume)
-INSERT INTO `archive_storage` 
-(`source_table`, `record_id`, `employee_id`, `record_data`, `archive_reason`, 
-`archive_reason_details`, `archived_by`, `archived_at`, `can_restore`, `notes`) 
-VALUES
-('document_management', 35, 11, 
-'{
-  "document_id": 35,
-  "employee_id": 11,
-  "document_type": "Resume",
-  "document_name": "Resume - Ana Morales (2020 Version)",
-  "file_path": "/documents/resumes/ana_morales_resume_2020.pdf",
-  "upload_date": "2020-04-15 02:00:00",
-  "expiry_date": null,
-  "document_status": "Active",
-  "notes": "Outdated resume replaced with newer version",
-  "created_at": "2020-04-15 02:00:00",
-  "updated_at": "2025-10-01 03:15:00"
-}', 
-'Data Cleanup', 'Old version archived after employee submitted updated resume', 
-2, '2025-10-01 10:00:00', 1, 'Previous version archived for historical records.');
-
--- Example 8: Archived Employment History (Resigned Employee)
-INSERT INTO `archive_storage` 
-(`source_table`, `record_id`, `employee_id`, `record_data`, `archive_reason`, 
-`archive_reason_details`, `archived_by`, `archived_at`, `can_restore`, `notes`) 
-VALUES
-('employment_history', 18, 18, 
-'{
-  "history_id": 18,
-  "employee_id": 18,
-  "job_title": "Budget Analyst",
-  "department_id": 4,
-  "employment_type": "Full-time",
-  "start_date": "2019-09-01",
-  "end_date": "2025-09-30",
-  "employment_status": "Resigned",
-  "reporting_manager_id": null,
-  "location": "Municipal Budget Office",
-  "base_salary": 42000.00,
-  "allowances": 3000.00,
-  "bonuses": 5000.00,
-  "salary_adjustments": 2000.00,
-  "reason_for_change": "Resigned for career advancement opportunity abroad",
-  "promotions_transfers": "Promoted from Administrative Aide in 2021",
-  "duties_responsibilities": "Analyzed budget data and prepared financial reports for municipal operations.",
-  "performance_evaluations": "Consistently rated Outstanding. Received Best Employee Award 2023.",
-  "training_certifications": "Financial Planning Certification, Advanced Excel Training",
-  "contract_details": "Regular plantilla position",
-  "remarks": "Excellent employee. Provided comprehensive turnover documentation. Eligible for rehire.",
-  "created_at": "2019-09-01 02:00:00",
-  "updated_at": "2025-09-30 10:15:00"
-}', 
-'Resignation', 'Employee resigned in good standing for overseas employment', 
-1, '2025-09-30 14:00:00', 1, 'Exit clearance completed. Certificate of Employment issued.');
-
-
--- Step 1: Add new columns to personal_information table
-ALTER TABLE `personal_information`
-ADD COLUMN `highest_educational_attainment` ENUM('Elementary', 'High School', 'Vocational', 'Associate Degree', 'Bachelor\'s Degree', 'Master\'s Degree', 'Doctoral Degree') DEFAULT NULL AFTER `emergency_contact_phone`,
-ADD COLUMN `course_degree` VARCHAR(150) DEFAULT NULL AFTER `highest_educational_attainment`,
-ADD COLUMN `school_university` VARCHAR(150) DEFAULT NULL AFTER `course_degree`,
-ADD COLUMN `year_graduated` YEAR DEFAULT NULL AFTER `school_university`,
-ADD COLUMN `marital_status_date` DATE DEFAULT NULL COMMENT 'Date of marriage or divorce' AFTER `marital_status`,
-ADD COLUMN `marital_status_document_url` VARCHAR(255) DEFAULT NULL COMMENT 'Marriage certificate or divorce decree' AFTER `marital_status_date`;
-
--- Step 2: Create educational_background table for detailed education history
-CREATE TABLE `educational_background` (
-  `education_id` INT(11) NOT NULL AUTO_INCREMENT,
-  `personal_info_id` INT(11) NOT NULL,
-  `education_level` ENUM('Elementary', 'High School', 'Vocational', 'Associate Degree', 'Bachelor\'s Degree', 'Master\'s Degree', 'Doctoral Degree', 'Other') NOT NULL,
-  `school_name` VARCHAR(150) NOT NULL,
-  `course_degree` VARCHAR(150) DEFAULT NULL COMMENT 'Course or degree program',
-  `major_specialization` VARCHAR(100) DEFAULT NULL,
-  `year_started` YEAR DEFAULT NULL,
-  `year_graduated` YEAR DEFAULT NULL,
-  `honors_awards` VARCHAR(255) DEFAULT NULL,
-  `is_highest_attainment` TINYINT(1) DEFAULT 0,
-  `document_url` VARCHAR(255) DEFAULT NULL COMMENT 'Diploma or certificate',
-  `created_at` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  `updated_at` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-  PRIMARY KEY (`education_id`),
-  KEY `personal_info_id` (`personal_info_id`),
-  CONSTRAINT `educational_background_ibfk_1` FOREIGN KEY (`personal_info_id`) REFERENCES `personal_information` (`personal_info_id`) ON DELETE CASCADE
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
-
--- Step 3: Create marital_status_history table for tracking changes
-CREATE TABLE `marital_status_history` (
-  `status_history_id` INT(11) NOT NULL AUTO_INCREMENT,
-  `personal_info_id` INT(11) NOT NULL,
-  `marital_status` ENUM('Single', 'Married', 'Divorced', 'Widowed', 'Separated', 'Annulled') NOT NULL,
-  `status_date` DATE NOT NULL COMMENT 'Date of marriage, divorce, etc.',
-  `spouse_name` VARCHAR(100) DEFAULT NULL,
-  `supporting_document_type` ENUM('Marriage Certificate', 'Divorce Decree', 'Death Certificate', 'Annulment Certificate', 'Separation Agreement') DEFAULT NULL,
-  `document_url` VARCHAR(255) DEFAULT NULL,
-  `document_number` VARCHAR(50) DEFAULT NULL COMMENT 'Certificate or decree number',
-  `issuing_authority` VARCHAR(150) DEFAULT NULL,
-  `remarks` TEXT DEFAULT NULL,
-  `is_current` TINYINT(1) DEFAULT 1 COMMENT '1 = current status, 0 = historical',
-  `created_at` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  `updated_at` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-  PRIMARY KEY (`status_history_id`),
-  KEY `personal_info_id` (`personal_info_id`),
-  CONSTRAINT `marital_status_history_ibfk_1` FOREIGN KEY (`personal_info_id`) REFERENCES `personal_information` (`personal_info_id`) ON DELETE CASCADE
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
-
--- Step 4: Sample data for educational_background
-INSERT INTO `educational_background` 
-(`personal_info_id`, `education_level`, `school_name`, `course_degree`, `major_specialization`, `year_started`, `year_graduated`, `honors_awards`, `is_highest_attainment`, `document_url`) 
-VALUES
-(1, 'Bachelor\'s Degree', 'University of the Philippines', 'Bachelor of Science in Accountancy', 'Accountancy', 2003, 2007, 'Cum Laude', 1, '/documents/diplomas/maria_santos_bsa.pdf'),
-(2, 'Bachelor\'s Degree', 'De La Salle University', 'Bachelor of Science in Civil Engineering', 'Civil Engineering', 1996, 2000, NULL, 1, '/documents/diplomas/roberto_cruz_bsce.pdf'),
-(3, 'Bachelor\'s Degree', 'Far Eastern University', 'Bachelor of Science in Nursing', 'Nursing', 2006, 2010, NULL, 1, '/documents/diplomas/jennifer_reyes_bsn.pdf'),
-(4, 'Vocational', 'Technical Education and Skills Development Authority', 'Computer-Aided Design', 'CAD Operations', 1993, 1995, NULL, 1, '/documents/certificates/antonio_garcia_cad_cert.pdf'),
-(5, 'Master\'s Degree', 'University of Santo Tomas', 'Master of Social Work', 'Community Development', 2008, 2012, NULL, 1, '/documents/diplomas/lisa_mendoza_msw.pdf');
-
--- Step 5: Sample data for marital_status_history
-INSERT INTO `marital_status_history` 
-(`personal_info_id`, `marital_status`, `status_date`, `spouse_name`, `supporting_document_type`, `document_url`, `document_number`, `issuing_authority`, `is_current`) 
-VALUES
-(1, 'Married', '2012-05-15', 'Carlos Santos', 'Marriage Certificate', '/documents/marital/maria_santos_marriage_cert.pdf', 'MC-2012-05-001234', 'Manila City Civil Registrar', 1),
-(2, 'Married', '2005-11-20', 'Elena Cruz', 'Marriage Certificate', '/documents/marital/roberto_cruz_marriage_cert.pdf', 'MC-2005-11-005678', 'Quezon City Civil Registrar', 1),
-(4, 'Married', '2001-03-10', 'Rosa Garcia', 'Marriage Certificate', '/documents/marital/antonio_garcia_marriage_cert.pdf', 'MC-2001-03-009012', 'Makati City Civil Registrar', 1),
-(5, 'Divorced', '2018-08-22', 'John Mendoza', 'Divorce Decree', '/documents/marital/lisa_mendoza_divorce_decree.pdf', 'DD-2018-08-003456', 'Family Court Manila', 1),
-(6, 'Married', '2008-07-14', 'Anna Torres', 'Marriage Certificate', '/documents/marital/michael_torres_marriage_cert.pdf', 'MC-2008-07-007890', 'Pasig City Civil Registrar', 1);
-
--- Step 6: Update existing personal_information records with educational data
-UPDATE `personal_information` SET 
-  `highest_educational_attainment` = 'Bachelor\'s Degree',
-  `course_degree` = 'Bachelor of Science in Accountancy',
-  `school_university` = 'University of the Philippines',
-  `year_graduated` = 2007,
-  `marital_status_date` = '2012-05-15',
-  `marital_status_document_url` = '/documents/marital/maria_santos_marriage_cert.pdf'
-WHERE `personal_info_id` = 1;
-
-UPDATE `personal_information` SET 
-  `highest_educational_attainment` = 'Bachelor\'s Degree',
-  `course_degree` = 'Bachelor of Science in Civil Engineering',
-  `school_university` = 'De La Salle University',
-  `year_graduated` = 2000,
-  `marital_status_date` = '2005-11-20',
-  `marital_status_document_url` = '/documents/marital/roberto_cruz_marriage_cert.pdf'
-WHERE `personal_info_id` = 2;
-
-UPDATE `personal_information` SET 
-  `highest_educational_attainment` = 'Bachelor\'s Degree',
-  `course_degree` = 'Bachelor of Science in Nursing',
-  `school_university` = 'Far Eastern University',
-  `year_graduated` = 2010
-WHERE `personal_info_id` = 3;
-
-UPDATE `personal_information` SET 
-  `highest_educational_attainment` = 'Vocational',
-  `course_degree` = 'Computer-Aided Design',
-  `school_university` = 'TESDA',
-  `year_graduated` = 1995,
-  `marital_status_date` = '2001-03-10',
-  `marital_status_document_url` = '/documents/marital/antonio_garcia_marriage_cert.pdf'
-WHERE `personal_info_id` = 4;
-
-UPDATE `personal_information` SET 
-  `highest_educational_attainment` = 'Master\'s Degree',
-  `course_degree` = 'Master of Social Work',
-  `school_university` = 'University of Santo Tomas',
-  `year_graduated` = 2012,
-  `marital_status_date` = '2018-08-22',
-  `marital_status_document_url` = '/documents/marital/lisa_mendoza_divorce_decree.pdf'
-WHERE `personal_info_id` = 5;
-
--- Step 7: Create uploads directory structure (Note: This needs to be done manually on the server)
--- Create these directories in your project root:
--- /uploads/education_documents/
--- /uploads/marital_documents/
-
 /*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;
 /*!40101 SET CHARACTER_SET_RESULTS=@OLD_CHARACTER_SET_RESULTS */;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
-

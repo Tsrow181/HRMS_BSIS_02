@@ -12,9 +12,10 @@ if ($employee_id <= 0) {
 
 try {
     $sql = "
-        SELECT 
+        SELECT
             ec.employee_id,
             ec.competency_id,
+            ec.cycle_id,
             ec.rating,
             ec.assessment_date,
             ec.comments,
