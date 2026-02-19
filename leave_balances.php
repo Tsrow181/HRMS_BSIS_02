@@ -81,6 +81,26 @@ foreach ($leaveTypesData as $lt) {
     $defaultDays[$lt['leave_type_name']] = (float)($lt['default_days'] ?? 0);
 }
 
+// Build per-employee leave balance map for all leave types (current year)
+$employeeLeaveMap = [];
+try {
+    $sql = "SELECT employee_id, leave_type_id, leaves_remaining 
+            FROM leave_balances 
+            WHERE year = YEAR(CURDATE())";
+    $stmt = $conn->query($sql);
+    $rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
+    foreach ($rows as $row) {
+        $empId = $row['employee_id'];
+        $typeId = $row['leave_type_id'];
+        if (!isset($employeeLeaveMap[$empId])) {
+            $employeeLeaveMap[$empId] = [];
+        }
+        $employeeLeaveMap[$empId][$typeId] = (float)$row['leaves_remaining'];
+    }
+} catch (PDOException $e) {
+    $employeeLeaveMap = [];
+}
+
 // Calculate actual totals from database data
 $vacationTotal = 0;
 $sickTotal = 0;
@@ -236,10 +256,9 @@ $specialLeaveTotal = [
                                             <tr>
                                                 <th>Employee</th>
                                                 <th>Department</th>
-                                                <th>Vacation Leave</th>
-                                                <th>Sick Leave</th>
-                                                <th>Maternity Leave</th>
-                                                <th>Paternity Leave</th>
+                                                <?php foreach ($leaveTypesData as $lt): ?>
+                                                    <th><?= htmlspecialchars($lt['leave_type_name']); ?></th>
+                                                <?php endforeach; ?>
                                                 <th>Total Balance</th>
                                                 <th>Actions</th>
                                             </tr>
@@ -247,6 +266,11 @@ $specialLeaveTotal = [
                                         <tbody>
                                             <?php if (!empty($leaveBalances)): ?>
                                                 <?php foreach ($leaveBalances as $employee): ?>
+                                                    <?php
+                                                        $empId = $employee['employee_id'];
+                                                        $gender = $employee['gender'] ?? '';
+                                                        $totalBalance = 0;
+                                                    ?>
                                                     <tr>
                                                         <td>
                                                             <div class="d-flex align-items-center">
@@ -259,28 +283,55 @@ $specialLeaveTotal = [
                                                             </div>
                                                         </td>
                                                         <td><?= htmlspecialchars($employee['department_name'] ?? 'N/A') ?></td>
+                                                        <?php foreach ($leaveTypesData as $lt): ?>
+                                                            <?php
+                                                                $leaveTypeId = $lt['leave_type_id'];
+                                                                $leaveTypeName = $lt['leave_type_name'];
+
+                                                                // Handle gender-restricted leave types as N/A where appropriate
+                                                                $isNotApplicable = false;
+                                                                if ($leaveTypeName === 'Maternity Leave' && $gender !== 'Female') {
+                                                                    $isNotApplicable = true;
+                                                                }
+                                                                if ($leaveTypeName === 'Paternity Leave' && $gender !== 'Male') {
+                                                                    $isNotApplicable = true;
+                                                                }
+                                                                if ($leaveTypeName === 'Menstrual Disorder Leave' && $gender !== 'Female') {
+                                                                    $isNotApplicable = true;
+                                                                }
+
+                                                                if ($isNotApplicable) {
+                                                                    $badgeClass = 'badge-secondary';
+                                                                    $displayValue = 'N/A';
+                                                                } else {
+                                                                    $remaining = $employeeLeaveMap[$empId][$leaveTypeId] ?? ($lt['default_days'] ?? 0);
+                                                                    $totalBalance += (float)$remaining;
+
+                                                                    // Choose badge color based on known leave types
+                                                                    $badgeClass = 'badge-secondary';
+                                                                    if ($leaveTypeName === 'Vacation Leave') {
+                                                                        $badgeClass = 'badge-primary';
+                                                                    } elseif ($leaveTypeName === 'Sick Leave') {
+                                                                        $badgeClass = 'badge-success';
+                                                                    } elseif ($leaveTypeName === 'Maternity Leave') {
+                                                                        $badgeClass = 'badge-info';
+                                                                    } elseif ($leaveTypeName === 'Paternity Leave') {
+                                                                        $badgeClass = 'badge-warning';
+                                                                    }
+
+                                                                    $displayValue = (int)$remaining . ' days';
+                                                                }
+                                                            ?>
+                                                            <td>
+                                                                <?php if ($displayValue === 'N/A'): ?>
+                                                                    <span class="badge badge-secondary" title="Not applicable for <?= htmlspecialchars($gender); ?> employees">N/A</span>
+                                                                <?php else: ?>
+                                                                    <span class="badge <?= $badgeClass ?>"><?= $displayValue; ?></span>
+                                                                <?php endif; ?>
+                                                            </td>
+                                                        <?php endforeach; ?>
                                                         <td>
-                                                            <span class="badge badge-primary"><?= (int)($employee['vacation_leave'] ?? 0) ?> days</span>
-                                                        </td>
-                                                        <td>
-                                                            <span class="badge badge-success"><?= (int)($employee['sick_leave'] ?? 0) ?> days</span>
-                                                        </td>
-                                                        <td>
-                                                            <?php if ($employee['gender'] === 'Female'): ?>
-                                                                <span class="badge badge-info"><?= (int)($employee['maternity_leave'] ?? 0) ?> days</span>
-                                                            <?php else: ?>
-                                                                <span class="badge badge-secondary" title="Not applicable for <?= $employee['gender'] ?> employees">N/A</span>
-                                                            <?php endif; ?>
-                                                        </td>
-                                                        <td>
-                                                            <?php if ($employee['gender'] === 'Male'): ?>
-                                                                <span class="badge badge-warning"><?= (int)($employee['paternity_leave'] ?? 0) ?> days</span>
-                                                            <?php else: ?>
-                                                                <span class="badge badge-secondary" title="Not applicable for <?= $employee['gender'] ?> employees">N/A</span>
-                                                            <?php endif; ?>
-                                                        </td>
-                                                        <td>
-                                                            <strong><?= (int)($employee['total_balance'] ?? 0) ?> days</strong>
+                                                            <strong><?= (int)$totalBalance ?> days</strong>
                                                         </td>
                                                         <td>
                                                             <button class="btn btn-sm btn-outline-primary">
@@ -326,18 +377,6 @@ $specialLeaveTotal = [
                                 </div>
                                 <h5>Sick Leave</h5>
                                 <h3 class="text-success"><?= (int)$sickLeaveTotal['total_remaining'] ?>/<?= (int)$sickLeaveTotal['total_allocated'] ?> days</h3>
-                                <small class="text-muted">Average utilization</small>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="col-md-4">
-                        <div class="card balance-card">
-                            <div class="card-body text-center">
-                                <div class="progress-circle mb-3" style="--percentage: <?= $specialLeaveTotal['utilization_percentage'] ?>%">
-                                    <span class="progress-text"><?= $specialLeaveTotal['utilization_percentage'] ?>%</span>
-                                </div>
-                                <h5>Special Leave</h5>
-                                <h3 class="text-info"><?= (int)$specialLeaveTotal['total_remaining'] ?>/<?= (int)$specialLeaveTotal['total_allocated'] ?> days</h3>
                                 <small class="text-muted">Average utilization</small>
                             </div>
                         </div>
