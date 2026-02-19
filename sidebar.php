@@ -235,11 +235,7 @@ $sidebar_stats = getSidebarStats();
                             <i class="fas fa-comment-dots"></i> Feedback 360
                         </a>
                     </li>
-                    <li class="nav-item">
-                        <a class="nav-link <?php echo isActiveMenu('goals.php'); ?>" href="goals.php">
-                            <i class="fas fa-bullseye"></i> Goals
-                        </a>
-                    </li>
+                    
                     <li class="nav-item">
                         <a class="nav-link <?php echo isActiveMenu('goal_updates.php'); ?>" href="goal_updates.php">
                             <i class="fas fa-tasks"></i> Goal Updates
@@ -248,6 +244,12 @@ $sidebar_stats = getSidebarStats();
                     <li class="nav-item">
                         <a class="nav-link <?php echo isActiveMenu('performance_metrics.php'); ?>" href="performance_metrics.php">
                             <i class="fas fa-chart-bar"></i> Performance Metrics
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link <?php echo isActiveMenu('ai_performance_interface.php'); ?>" href="ai_performance_interface.php">
+                            <i class="fas fa-brain"></i> AI Performance Tools
+                            <span class="badge badge-danger ml-2">NEW</span>
                         </a>
                     </li>
                     <li class="nav-item">
@@ -372,12 +374,6 @@ $sidebar_stats = getSidebarStats();
             <div class="collapse" id="recruitmentCollapse">
                 <ul class="nav flex-column pl-4">
                     <li class="nav-item">
-                        <a class="nav-link <?php echo isActiveMenu('ai_config_page.php'); ?>" href="ai_config_page.php">
-                            <i class="fas fa-cog"></i> Config AI
-                        </a>
-                    </li>
-
-                    <li class="nav-item">
                         <a class="nav-link <?php echo isActiveMenu('job_openings.php'); ?>" href="job_openings.php">
                             <i class="fas fa-briefcase"></i> Job Openings
                         </a>
@@ -435,7 +431,6 @@ $sidebar_stats = getSidebarStats();
                             <i class="fas fa-file-contract"></i> Job Offers
                         </a>
                     </li>
-
                 </ul>
             </div>
         </li>
