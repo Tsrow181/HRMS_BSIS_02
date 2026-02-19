@@ -109,6 +109,8 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                     
                     $authenticated = true;
                     
+                    $_SESSION['employee_id'] = $row['employee_id'];
+
                     // Redirect based on role
                     if ($user['role'] === 'employee') {
                         header("location: employee_index.php");

@@ -171,3 +171,37 @@
 2026-01-17 07:06:33 Exception: Call to undefined method PDOStatement::bind_param() in C:\xampp\htdocs\HRMS_BSIS_02\file_resignation.php on line 65
 2026-01-17 07:06:49 Exception: Call to undefined method PDOStatement::bind_param() in C:\xampp\htdocs\HRMS_BSIS_02\file_resignation.php on line 65
 2026-01-17 07:06:49 Exception: Call to undefined method PDOStatement::bind_param() in C:\xampp\htdocs\HRMS_BSIS_02\file_resignation.php on line 65
+2026-02-10 11:14:31 Exception: SQLSTATE[42S22]: Column not found: 1054 Unknown column 'ep.position' in 'field list' in C:\xampp\htdocs\HRMS_BSIS_02\exit_documents.php on line 161
+2026-02-10 11:14:43 Exception: SQLSTATE[42S22]: Column not found: 1054 Unknown column 'ep.position' in 'field list' in C:\xampp\htdocs\HRMS_BSIS_02\exit_documents.php on line 161
+2026-02-12 11:59:24 Exception: Call to undefined method PDOStatement::bind_param() in C:\xampp\htdocs\HRMS_BSIS_02\file_resignation.php on line 65
+2026-02-12 11:59:32 Exception: Call to undefined method PDOStatement::bind_param() in C:\xampp\htdocs\HRMS_BSIS_02\file_resignation.php on line 65
+2026-02-12 12:04:09 Exception: Call to undefined method PDOStatement::bind_param() in C:\xampp\htdocs\HRMS_BSIS_02\file_resignation.php on line 65
+2026-02-12 12:08:47 Exception: SQLSTATE[42S02]: Base table or view not found: 1146 Table 'hr_system.employees' doesn't exist in C:\xampp\htdocs\HRMS_BSIS_02\file_resignation.php on line 65
+2026-02-12 12:08:49 Exception: SQLSTATE[42S02]: Base table or view not found: 1146 Table 'hr_system.employees' doesn't exist in C:\xampp\htdocs\HRMS_BSIS_02\file_resignation.php on line 65
+2026-02-12 12:08:49 Exception: SQLSTATE[42S02]: Base table or view not found: 1146 Table 'hr_system.employees' doesn't exist in C:\xampp\htdocs\HRMS_BSIS_02\file_resignation.php on line 65
+2026-02-12 12:08:49 Exception: SQLSTATE[42S02]: Base table or view not found: 1146 Table 'hr_system.employees' doesn't exist in C:\xampp\htdocs\HRMS_BSIS_02\file_resignation.php on line 65
+2026-02-12 12:08:49 Exception: SQLSTATE[42S02]: Base table or view not found: 1146 Table 'hr_system.employees' doesn't exist in C:\xampp\htdocs\HRMS_BSIS_02\file_resignation.php on line 65
+2026-02-12 12:08:54 Exception: SQLSTATE[42S02]: Base table or view not found: 1146 Table 'hr_system.employees' doesn't exist in C:\xampp\htdocs\HRMS_BSIS_02\file_resignation.php on line 65
+2026-02-12 12:13:43 Exception: SQLSTATE[42S02]: Base table or view not found: 1146 Table 'hr_system.employees' doesn't exist in C:\xampp\htdocs\HRMS_BSIS_02\file_resignation.php on line 69
+2026-02-12 12:13:44 Exception: SQLSTATE[42S02]: Base table or view not found: 1146 Table 'hr_system.employees' doesn't exist in C:\xampp\htdocs\HRMS_BSIS_02\file_resignation.php on line 69
+2026-02-12 12:13:44 Exception: SQLSTATE[42S02]: Base table or view not found: 1146 Table 'hr_system.employees' doesn't exist in C:\xampp\htdocs\HRMS_BSIS_02\file_resignation.php on line 69
+2026-02-12 12:13:44 Exception: SQLSTATE[42S02]: Base table or view not found: 1146 Table 'hr_system.employees' doesn't exist in C:\xampp\htdocs\HRMS_BSIS_02\file_resignation.php on line 69
+2026-02-12 12:13:44 Exception: SQLSTATE[42S02]: Base table or view not found: 1146 Table 'hr_system.employees' doesn't exist in C:\xampp\htdocs\HRMS_BSIS_02\file_resignation.php on line 69
+2026-02-12 12:13:46 Exception: SQLSTATE[42S02]: Base table or view not found: 1146 Table 'hr_system.employees' doesn't exist in C:\xampp\htdocs\HRMS_BSIS_02\file_resignation.php on line 69
+2026-02-14 01:37:49 Exception: SQLSTATE[42S02]: Base table or view not found: 1146 Table 'hr_system.employees' doesn't exist in C:\xampp\htdocs\HRMS_BSIS_02\file_resignation.php on line 69
+2026-02-14 01:42:09 Exception: SQLSTATE[42S22]: Column not found: 1054 Unknown column 'ex.last_working_day' in 'field list' in C:\xampp\htdocs\HRMS_BSIS_02\employee_exit_survey.php on line 118
+2026-02-14 01:42:10 Exception: SQLSTATE[42S22]: Column not found: 1054 Unknown column 'ex.last_working_day' in 'field list' in C:\xampp\htdocs\HRMS_BSIS_02\employee_exit_survey.php on line 118
+2026-02-14 01:42:10 Exception: SQLSTATE[42S22]: Column not found: 1054 Unknown column 'ex.last_working_day' in 'field list' in C:\xampp\htdocs\HRMS_BSIS_02\employee_exit_survey.php on line 118
+2026-02-14 01:42:10 Exception: SQLSTATE[42S22]: Column not found: 1054 Unknown column 'ex.last_working_day' in 'field list' in C:\xampp\htdocs\HRMS_BSIS_02\employee_exit_survey.php on line 118
+2026-02-14 01:43:21 Exception: SQLSTATE[42S22]: Column not found: 1054 Unknown column 'ex.last_working_day' in 'field list' in C:\xampp\htdocs\HRMS_BSIS_02\employee_exit_survey.php on line 123
+2026-02-14 01:43:24 Exception: SQLSTATE[42S22]: Column not found: 1054 Unknown column 'ex.last_working_day' in 'field list' in C:\xampp\htdocs\HRMS_BSIS_02\employee_exit_survey.php on line 123
+2026-02-14 01:46:19 Exception: SQLSTATE[42S02]: Base table or view not found: 1146 Table 'hr_system.employees' doesn't exist in C:\xampp\htdocs\HRMS_BSIS_02\file_resignation.php on line 69
+2026-02-14 01:50:34 Exception: SQLSTATE[42S02]: Base table or view not found: 1146 Table 'hr_system.employees' doesn't exist in C:\xampp\htdocs\HRMS_BSIS_02\file_resignation.php on line 69
+2026-02-16 11:53:17 Exception: SQLSTATE[42S02]: Base table or view not found: 1146 Table 'hr_system.employees' doesn't exist in C:\xampp\htdocs\HRMS_BSIS_02\file_resignation.php on line 69
+2026-02-16 11:56:29 Exception: SQLSTATE[42S02]: Base table or view not found: 1146 Table 'hr_system.employees' doesn't exist in C:\xampp\htdocs\HRMS_BSIS_02\file_resignation.php on line 69
+2026-02-16 11:59:35 Exception: SQLSTATE[42S02]: Base table or view not found: 1146 Table 'hr_system.employees' doesn't exist in C:\xampp\htdocs\HRMS_BSIS_02\file_resignation.php on line 68
+2026-02-16 14:31:19 Exception: SQLSTATE[42S22]: Column not found: 1054 Unknown column 'e.approved_by' in 'on clause' in C:\xampp\htdocs\HRMS_BSIS_02\exits.php on line 245
+2026-02-16 14:31:27 Exception: SQLSTATE[42S22]: Column not found: 1054 Unknown column 'e.approved_by' in 'on clause' in C:\xampp\htdocs\HRMS_BSIS_02\exits.php on line 245
+2026-02-16 14:34:19 Exception: SQLSTATE[42S22]: Column not found: 1054 Unknown column 'e.approved_by' in 'on clause' in C:\xampp\htdocs\HRMS_BSIS_02\exits.php on line 245
+2026-02-18 11:09:45 Exception: SQLSTATE[42S22]: Column not found: 1054 Unknown column 'kt.supervisor_id' in 'on clause' in C:\xampp\htdocs\HRMS_BSIS_02\knowledge_transfers.php on line 75
+2026-02-18 11:09:54 Exception: SQLSTATE[42S22]: Column not found: 1054 Unknown column 'kt.supervisor_id' in 'on clause' in C:\xampp\htdocs\HRMS_BSIS_02\knowledge_transfers.php on line 75

@@ -502,7 +502,6 @@ $employees = $stmt->fetchAll(PDO::FETCH_ASSOC);
             border-radius: 4px;
             font-weight: 600;
             color: transparent;
-            cursor: pointer;
             position: relative;
             display: inline-block;
             min-width: 120px;
@@ -515,18 +514,14 @@ $employees = $stmt->fetchAll(PDO::FETCH_ASSOC);
         }
 
         .amount-masked::after {
-            content: '🔒 Hidden';
+            content: '********';
             position: absolute;
             left: 0;
             right: 0;
             color: #666;
-            font-size: 12px;
+            font-size: 16px;
             font-weight: 600;
-        }
-
-        .amount-masked:hover {
-            opacity: 0.8;
-            transform: scale(1.05);
+            letter-spacing: 2px;
         }
 
         .sensitive-badge {
@@ -682,7 +677,7 @@ $employees = $stmt->fetchAll(PDO::FETCH_ASSOC);
                                     <td><?= htmlspecialchars($settlement['exit_type']) ?></td>
                                     <td><?= date('M d, Y', strtotime($settlement['last_working_day'])) ?></td>
                                     <td>
-                                        <div class="amount-masked" onclick="viewSettlementDetails(<?= $settlement['settlement_id'] ?>)" title="Click to view"></div>
+                                        <div class="amount-masked"></div>
                                     </td>
                                     <td><?= $settlement['payment_date'] ? date('M d, Y', strtotime($settlement['payment_date'])) : '<em>Not set</em>' ?></td>
                                     <td>
