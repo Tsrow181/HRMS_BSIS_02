@@ -1,6 +1,6 @@
 <?php
 header('Content-Type: application/json');
-require_once 'dp.php';
+require_once 'config.php';
 
 try {
     $cycle_id = filter_input(INPUT_GET, 'cycle_id', FILTER_VALIDATE_INT);
