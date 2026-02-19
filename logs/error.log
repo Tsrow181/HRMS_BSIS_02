@@ -3284,3 +3284,838 @@
 2026-01-17 11:47:29 Error: [2] Undefined array key "work_email" - C:\xampp\htdocs\HRMS_BSIS_02\exits.php:55
 2026-01-17 11:47:29 Error: [2] Undefined array key "work_phone" - C:\xampp\htdocs\HRMS_BSIS_02\exits.php:56
 2026-01-17 11:47:29 Error: [2] Undefined array key "location" - C:\xampp\htdocs\HRMS_BSIS_02\exits.php:57
+2026-01-18 13:46:59 Error: [2] Undefined array key "is_read" - C:\xampp\htdocs\HRMS_BSIS_02\notifications.php:1153
+2026-01-18 13:46:59 Error: [2] Undefined array key "id" - C:\xampp\htdocs\HRMS_BSIS_02\notifications.php:1155
+2026-01-18 13:46:59 Error: [2] Undefined array key "created_at" - C:\xampp\htdocs\HRMS_BSIS_02\notifications.php:1181
+2026-01-18 13:46:59 Error: [8192] strtotime(): Passing null to parameter #1 ($datetime) of type string is deprecated - C:\xampp\htdocs\HRMS_BSIS_02\notifications.php:1181
+2026-01-18 13:46:59 Error: [2] Undefined array key "is_read" - C:\xampp\htdocs\HRMS_BSIS_02\notifications.php:1208
+2026-01-18 13:46:59 Error: [2] Undefined array key "is_read" - C:\xampp\htdocs\HRMS_BSIS_02\notifications.php:1218
+2026-01-18 13:46:59 Error: [2] Undefined array key "is_read" - C:\xampp\htdocs\HRMS_BSIS_02\notifications.php:1220
+2026-01-18 13:46:59 Error: [2] Undefined array key "id" - C:\xampp\htdocs\HRMS_BSIS_02\notifications.php:1225
+2026-01-18 13:46:59 Error: [2] Undefined array key "id" - C:\xampp\htdocs\HRMS_BSIS_02\notifications.php:1229
+2026-01-18 13:46:59 Error: [2] Undefined array key "is_read" - C:\xampp\htdocs\HRMS_BSIS_02\notifications.php:1238
+2026-01-18 13:46:59 Error: [2] Undefined array key "is_read" - C:\xampp\htdocs\HRMS_BSIS_02\notifications.php:1245
+2026-01-18 13:46:59 Error: [2] Undefined array key "id" - C:\xampp\htdocs\HRMS_BSIS_02\notifications.php:1250
+2026-01-18 13:46:59 Error: [2] Undefined array key "id" - C:\xampp\htdocs\HRMS_BSIS_02\notifications.php:1259
+2026-01-18 13:46:59 Error: [2] Undefined array key "is_read" - C:\xampp\htdocs\HRMS_BSIS_02\notifications.php:1153
+2026-01-18 13:46:59 Error: [2] Undefined array key "id" - C:\xampp\htdocs\HRMS_BSIS_02\notifications.php:1155
+2026-01-18 13:46:59 Error: [2] Undefined array key "created_at" - C:\xampp\htdocs\HRMS_BSIS_02\notifications.php:1181
+2026-01-18 13:46:59 Error: [8192] strtotime(): Passing null to parameter #1 ($datetime) of type string is deprecated - C:\xampp\htdocs\HRMS_BSIS_02\notifications.php:1181
+2026-01-18 13:46:59 Error: [2] Undefined array key "is_read" - C:\xampp\htdocs\HRMS_BSIS_02\notifications.php:1208
+2026-01-18 13:46:59 Error: [2] Undefined array key "is_read" - C:\xampp\htdocs\HRMS_BSIS_02\notifications.php:1218
+2026-01-18 13:46:59 Error: [2] Undefined array key "is_read" - C:\xampp\htdocs\HRMS_BSIS_02\notifications.php:1220
+2026-01-18 13:46:59 Error: [2] Undefined array key "id" - C:\xampp\htdocs\HRMS_BSIS_02\notifications.php:1225
+2026-01-18 13:46:59 Error: [2] Undefined array key "id" - C:\xampp\htdocs\HRMS_BSIS_02\notifications.php:1229
+2026-01-18 13:46:59 Error: [2] Undefined array key "is_read" - C:\xampp\htdocs\HRMS_BSIS_02\notifications.php:1238
+2026-01-18 13:46:59 Error: [2] Undefined array key "is_read" - C:\xampp\htdocs\HRMS_BSIS_02\notifications.php:1245
+2026-01-18 13:46:59 Error: [2] Undefined array key "id" - C:\xampp\htdocs\HRMS_BSIS_02\notifications.php:1250
+2026-01-18 13:46:59 Error: [2] Undefined array key "id" - C:\xampp\htdocs\HRMS_BSIS_02\notifications.php:1259
+2026-01-18 13:46:59 Error: [2] Undefined array key "is_read" - C:\xampp\htdocs\HRMS_BSIS_02\notifications.php:1153
+2026-01-18 13:46:59 Error: [2] Undefined array key "id" - C:\xampp\htdocs\HRMS_BSIS_02\notifications.php:1155
+2026-01-18 13:46:59 Error: [2] Undefined array key "created_at" - C:\xampp\htdocs\HRMS_BSIS_02\notifications.php:1181
+2026-01-18 13:46:59 Error: [8192] strtotime(): Passing null to parameter #1 ($datetime) of type string is deprecated - C:\xampp\htdocs\HRMS_BSIS_02\notifications.php:1181
+2026-01-18 13:46:59 Error: [2] Undefined array key "is_read" - C:\xampp\htdocs\HRMS_BSIS_02\notifications.php:1208
+2026-01-18 13:46:59 Error: [2] Undefined array key "is_read" - C:\xampp\htdocs\HRMS_BSIS_02\notifications.php:1218
+2026-01-18 13:46:59 Error: [2] Undefined array key "is_read" - C:\xampp\htdocs\HRMS_BSIS_02\notifications.php:1220
+2026-01-18 13:46:59 Error: [2] Undefined array key "id" - C:\xampp\htdocs\HRMS_BSIS_02\notifications.php:1225
+2026-01-18 13:46:59 Error: [2] Undefined array key "id" - C:\xampp\htdocs\HRMS_BSIS_02\notifications.php:1229
+2026-01-18 13:46:59 Error: [2] Undefined array key "is_read" - C:\xampp\htdocs\HRMS_BSIS_02\notifications.php:1238
+2026-01-18 13:46:59 Error: [2] Undefined array key "is_read" - C:\xampp\htdocs\HRMS_BSIS_02\notifications.php:1245
+2026-01-18 13:46:59 Error: [2] Undefined array key "id" - C:\xampp\htdocs\HRMS_BSIS_02\notifications.php:1250
+2026-01-18 13:46:59 Error: [2] Undefined array key "id" - C:\xampp\htdocs\HRMS_BSIS_02\notifications.php:1259
+2026-01-18 13:47:13 Error: [2] Undefined array key "is_read" - C:\xampp\htdocs\HRMS_BSIS_02\notifications.php:1153
+2026-01-18 13:47:13 Error: [2] Undefined array key "id" - C:\xampp\htdocs\HRMS_BSIS_02\notifications.php:1155
+2026-01-18 13:47:13 Error: [2] Undefined array key "created_at" - C:\xampp\htdocs\HRMS_BSIS_02\notifications.php:1181
+2026-01-18 13:47:13 Error: [8192] strtotime(): Passing null to parameter #1 ($datetime) of type string is deprecated - C:\xampp\htdocs\HRMS_BSIS_02\notifications.php:1181
+2026-01-18 13:47:13 Error: [2] Undefined array key "is_read" - C:\xampp\htdocs\HRMS_BSIS_02\notifications.php:1208
+2026-01-18 13:47:13 Error: [2] Undefined array key "is_read" - C:\xampp\htdocs\HRMS_BSIS_02\notifications.php:1218
+2026-01-18 13:47:13 Error: [2] Undefined array key "is_read" - C:\xampp\htdocs\HRMS_BSIS_02\notifications.php:1220
+2026-01-18 13:47:13 Error: [2] Undefined array key "id" - C:\xampp\htdocs\HRMS_BSIS_02\notifications.php:1225
+2026-01-18 13:47:13 Error: [2] Undefined array key "id" - C:\xampp\htdocs\HRMS_BSIS_02\notifications.php:1229
+2026-01-18 13:47:13 Error: [2] Undefined array key "is_read" - C:\xampp\htdocs\HRMS_BSIS_02\notifications.php:1238
+2026-01-18 13:47:13 Error: [2] Undefined array key "is_read" - C:\xampp\htdocs\HRMS_BSIS_02\notifications.php:1245
+2026-01-18 13:47:13 Error: [2] Undefined array key "id" - C:\xampp\htdocs\HRMS_BSIS_02\notifications.php:1250
+2026-01-18 13:47:13 Error: [2] Undefined array key "id" - C:\xampp\htdocs\HRMS_BSIS_02\notifications.php:1259
+2026-01-18 13:47:13 Error: [2] Undefined array key "is_read" - C:\xampp\htdocs\HRMS_BSIS_02\notifications.php:1153
+2026-01-18 13:47:13 Error: [2] Undefined array key "id" - C:\xampp\htdocs\HRMS_BSIS_02\notifications.php:1155
+2026-01-18 13:47:13 Error: [2] Undefined array key "created_at" - C:\xampp\htdocs\HRMS_BSIS_02\notifications.php:1181
+2026-01-18 13:47:13 Error: [8192] strtotime(): Passing null to parameter #1 ($datetime) of type string is deprecated - C:\xampp\htdocs\HRMS_BSIS_02\notifications.php:1181
+2026-01-18 13:47:13 Error: [2] Undefined array key "is_read" - C:\xampp\htdocs\HRMS_BSIS_02\notifications.php:1208
+2026-01-18 13:47:13 Error: [2] Undefined array key "is_read" - C:\xampp\htdocs\HRMS_BSIS_02\notifications.php:1218
+2026-01-18 13:47:13 Error: [2] Undefined array key "is_read" - C:\xampp\htdocs\HRMS_BSIS_02\notifications.php:1220
+2026-01-18 13:47:13 Error: [2] Undefined array key "id" - C:\xampp\htdocs\HRMS_BSIS_02\notifications.php:1225
+2026-01-18 13:47:13 Error: [2] Undefined array key "id" - C:\xampp\htdocs\HRMS_BSIS_02\notifications.php:1229
+2026-01-18 13:47:13 Error: [2] Undefined array key "is_read" - C:\xampp\htdocs\HRMS_BSIS_02\notifications.php:1238
+2026-01-18 13:47:13 Error: [2] Undefined array key "is_read" - C:\xampp\htdocs\HRMS_BSIS_02\notifications.php:1245
+2026-01-18 13:47:13 Error: [2] Undefined array key "id" - C:\xampp\htdocs\HRMS_BSIS_02\notifications.php:1250
+2026-01-18 13:47:13 Error: [2] Undefined array key "id" - C:\xampp\htdocs\HRMS_BSIS_02\notifications.php:1259
+2026-01-18 13:47:13 Error: [2] Undefined array key "is_read" - C:\xampp\htdocs\HRMS_BSIS_02\notifications.php:1153
+2026-01-18 13:47:13 Error: [2] Undefined array key "id" - C:\xampp\htdocs\HRMS_BSIS_02\notifications.php:1155
+2026-01-18 13:47:13 Error: [2] Undefined array key "created_at" - C:\xampp\htdocs\HRMS_BSIS_02\notifications.php:1181
+2026-01-18 13:47:13 Error: [8192] strtotime(): Passing null to parameter #1 ($datetime) of type string is deprecated - C:\xampp\htdocs\HRMS_BSIS_02\notifications.php:1181
+2026-01-18 13:47:13 Error: [2] Undefined array key "is_read" - C:\xampp\htdocs\HRMS_BSIS_02\notifications.php:1208
+2026-01-18 13:47:13 Error: [2] Undefined array key "is_read" - C:\xampp\htdocs\HRMS_BSIS_02\notifications.php:1218
+2026-01-18 13:47:13 Error: [2] Undefined array key "is_read" - C:\xampp\htdocs\HRMS_BSIS_02\notifications.php:1220
+2026-01-18 13:47:13 Error: [2] Undefined array key "id" - C:\xampp\htdocs\HRMS_BSIS_02\notifications.php:1225
+2026-01-18 13:47:13 Error: [2] Undefined array key "id" - C:\xampp\htdocs\HRMS_BSIS_02\notifications.php:1229
+2026-01-18 13:47:13 Error: [2] Undefined array key "is_read" - C:\xampp\htdocs\HRMS_BSIS_02\notifications.php:1238
+2026-01-18 13:47:13 Error: [2] Undefined array key "is_read" - C:\xampp\htdocs\HRMS_BSIS_02\notifications.php:1245
+2026-01-18 13:47:13 Error: [2] Undefined array key "id" - C:\xampp\htdocs\HRMS_BSIS_02\notifications.php:1250
+2026-01-18 13:47:13 Error: [2] Undefined array key "id" - C:\xampp\htdocs\HRMS_BSIS_02\notifications.php:1259
+2026-02-08 07:33:11 Error: [2] Undefined property: PDOStatement::$num_rows - C:\xampp\htdocs\HRMS_BSIS_02\development_activities.php:374
+2026-02-08 08:30:02 Error: [2] Undefined array key "personal_info_id" - C:\xampp\htdocs\HRMS_BSIS_02\exits.php:73
+2026-02-08 08:30:02 Error: [2] Undefined array key "job_role_id" - C:\xampp\htdocs\HRMS_BSIS_02\exits.php:74
+2026-02-08 08:30:02 Error: [2] Undefined array key "employee_number" - C:\xampp\htdocs\HRMS_BSIS_02\exits.php:75
+2026-02-08 08:30:02 Error: [2] Undefined array key "hire_date" - C:\xampp\htdocs\HRMS_BSIS_02\exits.php:76
+2026-02-08 08:30:02 Error: [2] Undefined array key "employment_status" - C:\xampp\htdocs\HRMS_BSIS_02\exits.php:77
+2026-02-08 08:30:02 Error: [2] Undefined array key "current_salary" - C:\xampp\htdocs\HRMS_BSIS_02\exits.php:78
+2026-02-08 08:30:02 Error: [2] Undefined array key "work_email" - C:\xampp\htdocs\HRMS_BSIS_02\exits.php:79
+2026-02-08 08:30:02 Error: [2] Undefined array key "work_phone" - C:\xampp\htdocs\HRMS_BSIS_02\exits.php:80
+2026-02-08 08:30:02 Error: [2] Undefined array key "location" - C:\xampp\htdocs\HRMS_BSIS_02\exits.php:81
+2026-02-08 08:30:03 Error: [8192] htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated - C:\xampp\htdocs\HRMS_BSIS_02\exits.php:632
+2026-02-08 08:30:03 Error: [8192] htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated - C:\xampp\htdocs\HRMS_BSIS_02\exits.php:682
+2026-02-08 08:35:30 Error: [8192] htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated - C:\xampp\htdocs\HRMS_BSIS_02\exit_checklist.php:943
+2026-02-08 08:35:30 Error: [8192] htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated - C:\xampp\htdocs\HRMS_BSIS_02\exit_checklist.php:1036
+2026-02-08 08:35:56 Error: [8192] htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated - C:\xampp\htdocs\HRMS_BSIS_02\exits.php:632
+2026-02-08 08:35:56 Error: [8192] htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated - C:\xampp\htdocs\HRMS_BSIS_02\exits.php:682
+2026-02-08 08:36:46 Error: [8192] htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated - C:\xampp\htdocs\HRMS_BSIS_02\exit_interviews.php:968
+2026-02-08 08:36:46 Error: [8192] htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated - C:\xampp\htdocs\HRMS_BSIS_02\exit_interviews.php:980
+2026-02-08 08:36:46 Error: [8192] htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated - C:\xampp\htdocs\HRMS_BSIS_02\exit_interviews.php:980
+2026-02-08 08:36:48 Error: [8192] htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated - C:\xampp\htdocs\HRMS_BSIS_02\exit_checklist.php:943
+2026-02-08 08:36:48 Error: [8192] htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated - C:\xampp\htdocs\HRMS_BSIS_02\exit_checklist.php:1036
+2026-02-08 08:39:53 Error: [8192] htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated - C:\xampp\htdocs\HRMS_BSIS_02\exit_interviews.php:968
+2026-02-08 08:39:53 Error: [8192] htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated - C:\xampp\htdocs\HRMS_BSIS_02\exit_interviews.php:980
+2026-02-08 08:39:53 Error: [8192] htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated - C:\xampp\htdocs\HRMS_BSIS_02\exit_interviews.php:980
+2026-02-08 08:47:14 Error: [8192] htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated - C:\xampp\htdocs\HRMS_BSIS_02\knowledge_transfers.php:624
+2026-02-08 08:47:45 Error: [8192] htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated - C:\xampp\htdocs\HRMS_BSIS_02\settlements.php:677
+2026-02-08 08:47:45 Error: [8192] htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated - C:\xampp\htdocs\HRMS_BSIS_02\settlements.php:679
+2026-02-08 08:48:07 Error: [8192] htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated - C:\xampp\htdocs\HRMS_BSIS_02\settlements.php:677
+2026-02-08 08:48:07 Error: [8192] htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated - C:\xampp\htdocs\HRMS_BSIS_02\settlements.php:679
+2026-02-08 08:48:11 Error: [8192] htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated - C:\xampp\htdocs\HRMS_BSIS_02\settlements.php:677
+2026-02-08 08:48:11 Error: [8192] htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated - C:\xampp\htdocs\HRMS_BSIS_02\settlements.php:679
+2026-02-08 08:48:21 Error: [8192] htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated - C:\xampp\htdocs\HRMS_BSIS_02\exit_documents.php:696
+2026-02-08 08:48:21 Error: [8192] htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated - C:\xampp\htdocs\HRMS_BSIS_02\exit_documents.php:709
+2026-02-08 08:48:25 Error: [8192] htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated - C:\xampp\htdocs\HRMS_BSIS_02\settlements.php:677
+2026-02-08 08:48:25 Error: [8192] htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated - C:\xampp\htdocs\HRMS_BSIS_02\settlements.php:679
+2026-02-08 08:48:54 Error: [8192] htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated - C:\xampp\htdocs\HRMS_BSIS_02\exit_documents.php:696
+2026-02-08 08:48:54 Error: [8192] htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated - C:\xampp\htdocs\HRMS_BSIS_02\exit_documents.php:709
+2026-02-08 08:51:03 Error: [8192] htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated - C:\xampp\htdocs\HRMS_BSIS_02\post_exit_surveys.php:1012
+2026-02-08 08:51:03 Error: [8192] htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated - C:\xampp\htdocs\HRMS_BSIS_02\post_exit_surveys.php:1023
+2026-02-08 08:52:43 Error: [8192] htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated - C:\xampp\htdocs\HRMS_BSIS_02\settlements.php:677
+2026-02-08 08:52:43 Error: [8192] htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated - C:\xampp\htdocs\HRMS_BSIS_02\settlements.php:679
+2026-02-08 08:52:44 Error: [8192] htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated - C:\xampp\htdocs\HRMS_BSIS_02\exit_documents.php:696
+2026-02-08 08:52:44 Error: [8192] htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated - C:\xampp\htdocs\HRMS_BSIS_02\exit_documents.php:709
+2026-02-08 08:53:42 Error: [8192] htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated - C:\xampp\htdocs\HRMS_BSIS_02\post_exit_surveys.php:1012
+2026-02-08 08:53:42 Error: [8192] htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated - C:\xampp\htdocs\HRMS_BSIS_02\post_exit_surveys.php:1023
+2026-02-08 08:58:11 Error: [8192] htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated - C:\xampp\htdocs\HRMS_BSIS_02\post_exit_surveys.php:1012
+2026-02-08 08:58:11 Error: [8192] htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated - C:\xampp\htdocs\HRMS_BSIS_02\post_exit_surveys.php:1023
+2026-02-10 10:52:36 Error: [8192] htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated - C:\xampp\htdocs\HRMS_BSIS_02\exits.php:632
+2026-02-10 10:52:36 Error: [8192] htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated - C:\xampp\htdocs\HRMS_BSIS_02\exits.php:682
+2026-02-10 10:53:36 Error: [8192] htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated - C:\xampp\htdocs\HRMS_BSIS_02\exit_interviews.php:968
+2026-02-10 10:53:36 Error: [8192] htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated - C:\xampp\htdocs\HRMS_BSIS_02\exit_interviews.php:980
+2026-02-10 10:53:36 Error: [8192] htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated - C:\xampp\htdocs\HRMS_BSIS_02\exit_interviews.php:980
+2026-02-10 11:00:40 Error: [8192] htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated - C:\xampp\htdocs\HRMS_BSIS_02\exit_interviews.php:968
+2026-02-10 11:00:40 Error: [8192] htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated - C:\xampp\htdocs\HRMS_BSIS_02\exit_interviews.php:980
+2026-02-10 11:00:40 Error: [8192] htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated - C:\xampp\htdocs\HRMS_BSIS_02\exit_interviews.php:980
+2026-02-10 11:00:41 Error: [8192] htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated - C:\xampp\htdocs\HRMS_BSIS_02\exit_interviews.php:968
+2026-02-10 11:00:41 Error: [8192] htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated - C:\xampp\htdocs\HRMS_BSIS_02\exit_interviews.php:980
+2026-02-10 11:00:41 Error: [8192] htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated - C:\xampp\htdocs\HRMS_BSIS_02\exit_interviews.php:980
+2026-02-10 11:00:41 Error: [8192] htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated - C:\xampp\htdocs\HRMS_BSIS_02\exit_interviews.php:968
+2026-02-10 11:00:41 Error: [8192] htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated - C:\xampp\htdocs\HRMS_BSIS_02\exit_interviews.php:980
+2026-02-10 11:00:41 Error: [8192] htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated - C:\xampp\htdocs\HRMS_BSIS_02\exit_interviews.php:980
+2026-02-10 11:01:10 Error: [2] Undefined array key "interview_date" - C:\xampp\htdocs\HRMS_BSIS_02\exit_interviews.php:40
+2026-02-10 11:01:10 Error: [8192] htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated - C:\xampp\htdocs\HRMS_BSIS_02\exit_interviews.php:968
+2026-02-10 11:01:10 Error: [8192] htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated - C:\xampp\htdocs\HRMS_BSIS_02\exit_interviews.php:980
+2026-02-10 11:01:10 Error: [8192] htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated - C:\xampp\htdocs\HRMS_BSIS_02\exit_interviews.php:980
+2026-02-10 11:04:59 Error: [8192] htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated - C:\xampp\htdocs\HRMS_BSIS_02\exit_interviews.php:979
+2026-02-10 11:04:59 Error: [8192] htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated - C:\xampp\htdocs\HRMS_BSIS_02\exit_interviews.php:991
+2026-02-10 11:04:59 Error: [8192] htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated - C:\xampp\htdocs\HRMS_BSIS_02\exit_interviews.php:991
+2026-02-10 11:05:07 Error: [8192] htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated - C:\xampp\htdocs\HRMS_BSIS_02\exit_interviews.php:979
+2026-02-10 11:05:07 Error: [8192] htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated - C:\xampp\htdocs\HRMS_BSIS_02\exit_interviews.php:991
+2026-02-10 11:05:07 Error: [8192] htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated - C:\xampp\htdocs\HRMS_BSIS_02\exit_interviews.php:991
+2026-02-10 11:14:26 Error: [8192] htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated - C:\xampp\htdocs\HRMS_BSIS_02\exit_interviews.php:968
+2026-02-10 11:14:26 Error: [8192] htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated - C:\xampp\htdocs\HRMS_BSIS_02\exit_interviews.php:980
+2026-02-10 11:14:26 Error: [8192] htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated - C:\xampp\htdocs\HRMS_BSIS_02\exit_interviews.php:980
+2026-02-10 11:14:27 Error: [8192] htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated - C:\xampp\htdocs\HRMS_BSIS_02\exit_interviews.php:968
+2026-02-10 11:14:27 Error: [8192] htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated - C:\xampp\htdocs\HRMS_BSIS_02\exit_interviews.php:980
+2026-02-10 11:14:27 Error: [8192] htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated - C:\xampp\htdocs\HRMS_BSIS_02\exit_interviews.php:980
+2026-02-10 11:14:27 Error: [8192] htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated - C:\xampp\htdocs\HRMS_BSIS_02\exit_interviews.php:968
+2026-02-10 11:14:27 Error: [8192] htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated - C:\xampp\htdocs\HRMS_BSIS_02\exit_interviews.php:980
+2026-02-10 11:14:27 Error: [8192] htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated - C:\xampp\htdocs\HRMS_BSIS_02\exit_interviews.php:980
+2026-02-10 11:14:28 Error: [8192] htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated - C:\xampp\htdocs\HRMS_BSIS_02\exit_interviews.php:968
+2026-02-10 11:14:28 Error: [8192] htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated - C:\xampp\htdocs\HRMS_BSIS_02\exit_interviews.php:980
+2026-02-10 11:14:28 Error: [8192] htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated - C:\xampp\htdocs\HRMS_BSIS_02\exit_interviews.php:980
+2026-02-10 11:14:28 Error: [8192] htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated - C:\xampp\htdocs\HRMS_BSIS_02\exit_interviews.php:968
+2026-02-10 11:14:28 Error: [8192] htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated - C:\xampp\htdocs\HRMS_BSIS_02\exit_interviews.php:980
+2026-02-10 11:14:28 Error: [8192] htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated - C:\xampp\htdocs\HRMS_BSIS_02\exit_interviews.php:980
+2026-02-10 11:18:28 Error: [8192] htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated - C:\xampp\htdocs\HRMS_BSIS_02\exit_interviews.php:968
+2026-02-10 11:18:28 Error: [8192] htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated - C:\xampp\htdocs\HRMS_BSIS_02\exit_interviews.php:980
+2026-02-10 11:18:28 Error: [8192] htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated - C:\xampp\htdocs\HRMS_BSIS_02\exit_interviews.php:980
+2026-02-10 11:18:29 Error: [8192] htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated - C:\xampp\htdocs\HRMS_BSIS_02\exit_interviews.php:968
+2026-02-10 11:18:29 Error: [8192] htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated - C:\xampp\htdocs\HRMS_BSIS_02\exit_interviews.php:980
+2026-02-10 11:18:29 Error: [8192] htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated - C:\xampp\htdocs\HRMS_BSIS_02\exit_interviews.php:980
+2026-02-10 11:18:30 Error: [8192] htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated - C:\xampp\htdocs\HRMS_BSIS_02\exit_interviews.php:968
+2026-02-10 11:18:30 Error: [8192] htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated - C:\xampp\htdocs\HRMS_BSIS_02\exit_interviews.php:980
+2026-02-10 11:18:30 Error: [8192] htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated - C:\xampp\htdocs\HRMS_BSIS_02\exit_interviews.php:980
+2026-02-10 11:18:34 Error: [8192] htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated - C:\xampp\htdocs\HRMS_BSIS_02\exit_documents.php:696
+2026-02-10 11:18:34 Error: [8192] htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated - C:\xampp\htdocs\HRMS_BSIS_02\exit_documents.php:709
+2026-02-10 11:22:50 Error: [8192] htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated - C:\xampp\htdocs\HRMS_BSIS_02\exit_documents.php:696
+2026-02-10 11:22:50 Error: [8192] htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated - C:\xampp\htdocs\HRMS_BSIS_02\exit_documents.php:709
+2026-02-10 11:24:51 Error: [8192] htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated - C:\xampp\htdocs\HRMS_BSIS_02\exit_documents.php:696
+2026-02-10 11:24:51 Error: [8192] htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated - C:\xampp\htdocs\HRMS_BSIS_02\exit_documents.php:709
+2026-02-10 11:24:53 Error: [8192] htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated - C:\xampp\htdocs\HRMS_BSIS_02\exit_documents.php:696
+2026-02-10 11:24:53 Error: [8192] htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated - C:\xampp\htdocs\HRMS_BSIS_02\exit_documents.php:709
+2026-02-10 11:25:36 Error: [8192] htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated - C:\xampp\htdocs\HRMS_BSIS_02\exit_interviews.php:968
+2026-02-10 11:25:36 Error: [8192] htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated - C:\xampp\htdocs\HRMS_BSIS_02\exit_interviews.php:980
+2026-02-10 11:25:36 Error: [8192] htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated - C:\xampp\htdocs\HRMS_BSIS_02\exit_interviews.php:980
+2026-02-10 11:25:37 Error: [8192] htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated - C:\xampp\htdocs\HRMS_BSIS_02\exit_interviews.php:968
+2026-02-10 11:25:37 Error: [8192] htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated - C:\xampp\htdocs\HRMS_BSIS_02\exit_interviews.php:980
+2026-02-10 11:25:37 Error: [8192] htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated - C:\xampp\htdocs\HRMS_BSIS_02\exit_interviews.php:980
+2026-02-10 11:34:08 Error: [8192] htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated - C:\xampp\htdocs\HRMS_BSIS_02\settlements.php:677
+2026-02-10 11:34:08 Error: [8192] htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated - C:\xampp\htdocs\HRMS_BSIS_02\settlements.php:679
+2026-02-10 11:34:20 Error: [8192] htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated - C:\xampp\htdocs\HRMS_BSIS_02\post_exit_surveys.php:1012
+2026-02-10 11:34:20 Error: [8192] htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated - C:\xampp\htdocs\HRMS_BSIS_02\post_exit_surveys.php:1023
+2026-02-10 11:39:01 Error: [8192] htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated - C:\xampp\htdocs\HRMS_BSIS_02\exit_documents.php:696
+2026-02-10 11:39:01 Error: [8192] htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated - C:\xampp\htdocs\HRMS_BSIS_02\exit_documents.php:709
+2026-02-10 11:39:29 Error: [8192] htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated - C:\xampp\htdocs\HRMS_BSIS_02\post_exit_surveys.php:1012
+2026-02-10 11:39:29 Error: [8192] htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated - C:\xampp\htdocs\HRMS_BSIS_02\post_exit_surveys.php:1023
+2026-02-10 11:39:38 Error: [8192] htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated - C:\xampp\htdocs\HRMS_BSIS_02\post_exit_surveys.php:1012
+2026-02-10 11:39:38 Error: [8192] htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated - C:\xampp\htdocs\HRMS_BSIS_02\post_exit_surveys.php:1023
+2026-02-10 11:40:07 Error: [8192] htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated - C:\xampp\htdocs\HRMS_BSIS_02\post_exit_surveys.php:1012
+2026-02-10 11:40:07 Error: [8192] htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated - C:\xampp\htdocs\HRMS_BSIS_02\post_exit_surveys.php:1023
+2026-02-10 11:40:26 Error: [8192] htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated - C:\xampp\htdocs\HRMS_BSIS_02\post_exit_surveys.php:1012
+2026-02-10 11:40:26 Error: [8192] htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated - C:\xampp\htdocs\HRMS_BSIS_02\post_exit_surveys.php:1023
+2026-02-10 11:40:39 Error: [8192] htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated - C:\xampp\htdocs\HRMS_BSIS_02\post_exit_surveys.php:1012
+2026-02-10 11:40:39 Error: [8192] htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated - C:\xampp\htdocs\HRMS_BSIS_02\post_exit_surveys.php:1023
+2026-02-10 11:40:41 Error: [8192] htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated - C:\xampp\htdocs\HRMS_BSIS_02\exit_documents.php:696
+2026-02-10 11:40:41 Error: [8192] htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated - C:\xampp\htdocs\HRMS_BSIS_02\exit_documents.php:709
+2026-02-10 11:42:22 Error: [8192] htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated - C:\xampp\htdocs\HRMS_BSIS_02\post_exit_surveys.php:1012
+2026-02-10 11:42:22 Error: [8192] htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated - C:\xampp\htdocs\HRMS_BSIS_02\post_exit_surveys.php:1023
+2026-02-10 11:47:17 Error: [8192] htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated - C:\xampp\htdocs\HRMS_BSIS_02\exit_documents.php:696
+2026-02-10 11:47:17 Error: [8192] htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated - C:\xampp\htdocs\HRMS_BSIS_02\exit_documents.php:709
+2026-02-10 11:47:54 Error: [8192] htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated - C:\xampp\htdocs\HRMS_BSIS_02\exit_documents.php:696
+2026-02-10 11:47:54 Error: [8192] htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated - C:\xampp\htdocs\HRMS_BSIS_02\exit_documents.php:709
+2026-02-10 11:48:22 Error: [8192] htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated - C:\xampp\htdocs\HRMS_BSIS_02\exit_documents.php:699
+2026-02-10 11:48:22 Error: [8192] htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated - C:\xampp\htdocs\HRMS_BSIS_02\exit_documents.php:712
+2026-02-10 11:49:50 Error: [8192] htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated - C:\xampp\htdocs\HRMS_BSIS_02\exit_documents.php:696
+2026-02-10 11:49:50 Error: [8192] htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated - C:\xampp\htdocs\HRMS_BSIS_02\exit_documents.php:709
+2026-02-10 11:49:55 Error: [8192] htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated - C:\xampp\htdocs\HRMS_BSIS_02\exit_documents.php:699
+2026-02-10 11:49:55 Error: [8192] htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated - C:\xampp\htdocs\HRMS_BSIS_02\exit_documents.php:712
+2026-02-10 11:50:00 Error: [8192] htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated - C:\xampp\htdocs\HRMS_BSIS_02\exit_documents.php:699
+2026-02-10 11:50:00 Error: [8192] htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated - C:\xampp\htdocs\HRMS_BSIS_02\exit_documents.php:712
+2026-02-10 11:55:54 Error: [8192] htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated - C:\xampp\htdocs\HRMS_BSIS_02\exit_documents.php:700
+2026-02-10 11:55:54 Error: [8192] htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated - C:\xampp\htdocs\HRMS_BSIS_02\exit_documents.php:713
+2026-02-10 11:55:54 Error: [8192] htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated - C:\xampp\htdocs\HRMS_BSIS_02\exit_documents.php:700
+2026-02-10 11:55:54 Error: [8192] htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated - C:\xampp\htdocs\HRMS_BSIS_02\exit_documents.php:713
+2026-02-10 11:55:54 Error: [8192] htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated - C:\xampp\htdocs\HRMS_BSIS_02\exit_documents.php:700
+2026-02-10 11:55:54 Error: [8192] htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated - C:\xampp\htdocs\HRMS_BSIS_02\exit_documents.php:713
+2026-02-10 11:55:54 Error: [8192] htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated - C:\xampp\htdocs\HRMS_BSIS_02\exit_documents.php:700
+2026-02-10 11:55:54 Error: [8192] htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated - C:\xampp\htdocs\HRMS_BSIS_02\exit_documents.php:713
+2026-02-10 11:57:34 Error: [8192] htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated - C:\xampp\htdocs\HRMS_BSIS_02\exit_documents.php:700
+2026-02-10 11:57:34 Error: [8192] htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated - C:\xampp\htdocs\HRMS_BSIS_02\exit_documents.php:713
+2026-02-10 11:57:50 Error: [8192] htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated - C:\xampp\htdocs\HRMS_BSIS_02\exit_documents.php:699
+2026-02-10 11:57:50 Error: [8192] htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated - C:\xampp\htdocs\HRMS_BSIS_02\exit_documents.php:712
+2026-02-10 11:57:50 Error: [8192] htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated - C:\xampp\htdocs\HRMS_BSIS_02\exit_documents.php:699
+2026-02-10 11:57:51 Error: [8192] htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated - C:\xampp\htdocs\HRMS_BSIS_02\exit_documents.php:712
+2026-02-10 11:57:51 Error: [8192] htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated - C:\xampp\htdocs\HRMS_BSIS_02\exit_documents.php:699
+2026-02-10 11:57:51 Error: [8192] htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated - C:\xampp\htdocs\HRMS_BSIS_02\exit_documents.php:712
+2026-02-10 12:14:07 Error: [8192] htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated - C:\xampp\htdocs\HRMS_BSIS_02\exit_documents.php:699
+2026-02-10 12:14:07 Error: [8192] htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated - C:\xampp\htdocs\HRMS_BSIS_02\exit_documents.php:712
+2026-02-10 12:22:49 Error: [8192] htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated - C:\xampp\htdocs\HRMS_BSIS_02\exit_documents.php:699
+2026-02-10 12:22:49 Error: [8192] htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated - C:\xampp\htdocs\HRMS_BSIS_02\exit_documents.php:712
+2026-02-10 12:22:50 Error: [8192] htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated - C:\xampp\htdocs\HRMS_BSIS_02\exit_documents.php:699
+2026-02-10 12:22:50 Error: [8192] htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated - C:\xampp\htdocs\HRMS_BSIS_02\exit_documents.php:712
+2026-02-10 12:22:50 Error: [8192] htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated - C:\xampp\htdocs\HRMS_BSIS_02\exit_documents.php:699
+2026-02-10 12:22:50 Error: [8192] htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated - C:\xampp\htdocs\HRMS_BSIS_02\exit_documents.php:712
+2026-02-10 12:25:30 Error: [8192] htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated - C:\xampp\htdocs\HRMS_BSIS_02\exit_documents.php:699
+2026-02-10 12:25:30 Error: [8192] htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated - C:\xampp\htdocs\HRMS_BSIS_02\exit_documents.php:712
+2026-02-10 12:27:10 Error: [8192] htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated - C:\xampp\htdocs\HRMS_BSIS_02\exit_documents.php:699
+2026-02-10 12:27:10 Error: [8192] htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated - C:\xampp\htdocs\HRMS_BSIS_02\exit_documents.php:712
+2026-02-10 12:27:10 Error: [8192] htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated - C:\xampp\htdocs\HRMS_BSIS_02\exit_documents.php:699
+2026-02-10 12:27:10 Error: [8192] htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated - C:\xampp\htdocs\HRMS_BSIS_02\exit_documents.php:712
+2026-02-10 12:27:10 Error: [8192] htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated - C:\xampp\htdocs\HRMS_BSIS_02\exit_documents.php:699
+2026-02-10 12:27:10 Error: [8192] htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated - C:\xampp\htdocs\HRMS_BSIS_02\exit_documents.php:712
+2026-02-10 12:30:01 Error: [8192] htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated - C:\xampp\htdocs\HRMS_BSIS_02\exit_documents.php:699
+2026-02-10 12:30:01 Error: [8192] htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated - C:\xampp\htdocs\HRMS_BSIS_02\exit_documents.php:712
+2026-02-10 12:40:03 Error: [8192] htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated - C:\xampp\htdocs\HRMS_BSIS_02\exit_documents.php:699
+2026-02-10 12:40:04 Error: [8192] htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated - C:\xampp\htdocs\HRMS_BSIS_02\exit_documents.php:712
+2026-02-10 13:10:25 Error: [8192] htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated - C:\xampp\htdocs\HRMS_BSIS_02\post_exit_surveys.php:1012
+2026-02-10 13:10:25 Error: [8192] htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated - C:\xampp\htdocs\HRMS_BSIS_02\post_exit_surveys.php:1023
+2026-02-10 13:10:27 Error: [8192] htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated - C:\xampp\htdocs\HRMS_BSIS_02\exit_interviews.php:968
+2026-02-10 13:10:27 Error: [8192] htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated - C:\xampp\htdocs\HRMS_BSIS_02\exit_interviews.php:980
+2026-02-10 13:10:27 Error: [8192] htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated - C:\xampp\htdocs\HRMS_BSIS_02\exit_interviews.php:980
+2026-02-10 13:10:47 Error: [8192] htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated - C:\xampp\htdocs\HRMS_BSIS_02\exit_interviews.php:968
+2026-02-10 13:10:47 Error: [8192] htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated - C:\xampp\htdocs\HRMS_BSIS_02\exit_interviews.php:980
+2026-02-10 13:10:47 Error: [8192] htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated - C:\xampp\htdocs\HRMS_BSIS_02\exit_interviews.php:980
+2026-02-10 13:11:12 Error: [8192] htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated - C:\xampp\htdocs\HRMS_BSIS_02\exit_interviews.php:968
+2026-02-10 13:11:12 Error: [8192] htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated - C:\xampp\htdocs\HRMS_BSIS_02\exit_interviews.php:980
+2026-02-10 13:11:12 Error: [8192] htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated - C:\xampp\htdocs\HRMS_BSIS_02\exit_interviews.php:980
+2026-02-10 13:11:16 Error: [8192] htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated - C:\xampp\htdocs\HRMS_BSIS_02\exit_documents.php:699
+2026-02-10 13:11:16 Error: [8192] htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated - C:\xampp\htdocs\HRMS_BSIS_02\exit_documents.php:712
+2026-02-10 13:11:20 Error: [8192] htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated - C:\xampp\htdocs\HRMS_BSIS_02\exit_interviews.php:968
+2026-02-10 13:11:20 Error: [8192] htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated - C:\xampp\htdocs\HRMS_BSIS_02\exit_interviews.php:980
+2026-02-10 13:11:20 Error: [8192] htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated - C:\xampp\htdocs\HRMS_BSIS_02\exit_interviews.php:980
+2026-02-10 13:12:06 Error: [8192] htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated - C:\xampp\htdocs\HRMS_BSIS_02\exit_checklist.php:943
+2026-02-10 13:12:06 Error: [8192] htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated - C:\xampp\htdocs\HRMS_BSIS_02\exit_checklist.php:1036
+2026-02-10 13:12:08 Error: [8192] htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated - C:\xampp\htdocs\HRMS_BSIS_02\exits.php:632
+2026-02-10 13:12:08 Error: [8192] htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated - C:\xampp\htdocs\HRMS_BSIS_02\exits.php:682
+2026-02-10 13:12:11 Error: [8192] htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated - C:\xampp\htdocs\HRMS_BSIS_02\exit_documents.php:699
+2026-02-10 13:12:11 Error: [8192] htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated - C:\xampp\htdocs\HRMS_BSIS_02\exit_documents.php:712
+2026-02-12 11:01:48 Error: [8192] htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated - C:\xampp\htdocs\HRMS_BSIS_02\exits.php:632
+2026-02-12 11:01:49 Error: [8192] htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated - C:\xampp\htdocs\HRMS_BSIS_02\exits.php:682
+2026-02-12 11:02:03 Error: [8192] htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated - C:\xampp\htdocs\HRMS_BSIS_02\exits.php:632
+2026-02-12 11:02:03 Error: [8192] htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated - C:\xampp\htdocs\HRMS_BSIS_02\exits.php:682
+2026-02-12 11:02:13 Error: [8192] htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated - C:\xampp\htdocs\HRMS_BSIS_02\exit_checklist.php:943
+2026-02-12 11:02:13 Error: [8192] htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated - C:\xampp\htdocs\HRMS_BSIS_02\exit_checklist.php:1036
+2026-02-12 11:02:34 Error: [8192] htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated - C:\xampp\htdocs\HRMS_BSIS_02\exits.php:632
+2026-02-12 11:02:34 Error: [8192] htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated - C:\xampp\htdocs\HRMS_BSIS_02\exits.php:682
+2026-02-12 11:03:01 Error: [2] Undefined array key "personal_info_id" - C:\xampp\htdocs\HRMS_BSIS_02\exits.php:49
+2026-02-12 11:03:01 Error: [2] Undefined array key "job_role_id" - C:\xampp\htdocs\HRMS_BSIS_02\exits.php:50
+2026-02-12 11:03:01 Error: [2] Undefined array key "employee_number" - C:\xampp\htdocs\HRMS_BSIS_02\exits.php:51
+2026-02-12 11:03:01 Error: [2] Undefined array key "hire_date" - C:\xampp\htdocs\HRMS_BSIS_02\exits.php:52
+2026-02-12 11:03:01 Error: [2] Undefined array key "employment_status" - C:\xampp\htdocs\HRMS_BSIS_02\exits.php:53
+2026-02-12 11:03:01 Error: [2] Undefined array key "current_salary" - C:\xampp\htdocs\HRMS_BSIS_02\exits.php:54
+2026-02-12 11:03:01 Error: [2] Undefined array key "work_email" - C:\xampp\htdocs\HRMS_BSIS_02\exits.php:55
+2026-02-12 11:03:01 Error: [2] Undefined array key "work_phone" - C:\xampp\htdocs\HRMS_BSIS_02\exits.php:56
+2026-02-12 11:03:01 Error: [2] Undefined array key "location" - C:\xampp\htdocs\HRMS_BSIS_02\exits.php:57
+2026-02-12 11:03:04 Error: [2] Undefined array key "employee_id" - C:\xampp\htdocs\HRMS_BSIS_02\exits.php:97
+2026-02-12 11:03:10 Error: [8192] htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated - C:\xampp\htdocs\HRMS_BSIS_02\exit_interviews.php:980
+2026-02-12 11:03:10 Error: [8192] htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated - C:\xampp\htdocs\HRMS_BSIS_02\exit_interviews.php:980
+2026-02-12 11:03:11 Error: [8192] htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated - C:\xampp\htdocs\HRMS_BSIS_02\exits.php:682
+2026-02-12 11:03:48 Error: [8192] htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated - C:\xampp\htdocs\HRMS_BSIS_02\exits.php:682
+2026-02-12 11:05:51 Error: [8192] htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated - C:\xampp\htdocs\HRMS_BSIS_02\exit_interviews.php:980
+2026-02-12 11:05:51 Error: [8192] htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated - C:\xampp\htdocs\HRMS_BSIS_02\exit_interviews.php:980
+2026-02-12 11:05:54 Error: [8192] htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated - C:\xampp\htdocs\HRMS_BSIS_02\exit_documents.php:712
+2026-02-12 11:07:12 Error: [8192] htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated - C:\xampp\htdocs\HRMS_BSIS_02\exit_documents.php:712
+2026-02-12 11:15:28 Error: [8192] htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated - C:\xampp\htdocs\HRMS_BSIS_02\exit_documents.php:712
+2026-02-12 11:23:24 Error: [8192] htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated - C:\xampp\htdocs\HRMS_BSIS_02\exit_documents.php:712
+2026-02-12 11:35:49 Error: [8192] htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated - C:\xampp\htdocs\HRMS_BSIS_02\exit_documents.php:714
+2026-02-12 11:38:43 Error: [8192] htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated - C:\xampp\htdocs\HRMS_BSIS_02\post_exit_surveys.php:1012
+2026-02-12 11:40:13 Error: [8192] htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated - C:\xampp\htdocs\HRMS_BSIS_02\exits.php:682
+2026-02-12 11:59:30 Error: [8192] htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated - C:\xampp\htdocs\HRMS_BSIS_02\my_profile.php:452
+2026-02-12 11:59:30 Error: [8192] htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated - C:\xampp\htdocs\HRMS_BSIS_02\my_profile.php:453
+2026-02-12 11:59:30 Error: [8192] htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated - C:\xampp\htdocs\HRMS_BSIS_02\my_profile.php:454
+2026-02-12 11:59:30 Error: [2] Undefined array key "email" - C:\xampp\htdocs\HRMS_BSIS_02\my_profile.php:493
+2026-02-12 11:59:30 Error: [2] Undefined array key "address" - C:\xampp\htdocs\HRMS_BSIS_02\my_profile.php:513
+2026-02-12 11:59:30 Error: [8192] htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated - C:\xampp\htdocs\HRMS_BSIS_02\my_profile.php:542
+2026-02-12 11:59:30 Error: [8192] htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated - C:\xampp\htdocs\HRMS_BSIS_02\my_profile.php:549
+2026-02-12 11:59:30 Error: [2] Undefined array key "address" - C:\xampp\htdocs\HRMS_BSIS_02\my_profile.php:578
+2026-02-12 11:59:30 Error: [8192] htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated - C:\xampp\htdocs\HRMS_BSIS_02\my_profile.php:578
+2026-02-12 11:59:30 Error: [2] Undefined array key "email" - C:\xampp\htdocs\HRMS_BSIS_02\my_profile.php:589
+2026-02-12 11:59:30 Error: [8192] htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated - C:\xampp\htdocs\HRMS_BSIS_02\my_profile.php:589
+2026-02-12 11:59:30 Error: [8192] htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated - C:\xampp\htdocs\HRMS_BSIS_02\my_profile.php:596
+2026-02-12 11:59:30 Error: [8192] htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated - C:\xampp\htdocs\HRMS_BSIS_02\my_profile.php:606
+2026-02-12 11:59:30 Error: [8192] htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated - C:\xampp\htdocs\HRMS_BSIS_02\my_profile.php:613
+2026-02-12 11:59:30 Error: [8192] htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated - C:\xampp\htdocs\HRMS_BSIS_02\my_profile.php:626
+2026-02-12 12:27:11 Error: [2] Undefined variable $row - C:\xampp\htdocs\HRMS_BSIS_02\login.php:112
+2026-02-12 12:27:11 Error: [2] Trying to access array offset on value of type null - C:\xampp\htdocs\HRMS_BSIS_02\login.php:112
+2026-02-14 01:16:17 Error: [2] Undefined variable $row - C:\xampp\htdocs\HRMS_BSIS_02\login.php:112
+2026-02-14 01:16:17 Error: [2] Trying to access array offset on value of type null - C:\xampp\htdocs\HRMS_BSIS_02\login.php:112
+2026-02-14 01:16:55 Error: [2] Undefined variable $row - C:\xampp\htdocs\HRMS_BSIS_02\login.php:112
+2026-02-14 01:16:55 Error: [2] Trying to access array offset on value of type null - C:\xampp\htdocs\HRMS_BSIS_02\login.php:112
+2026-02-14 01:17:01 Error: [8192] htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated - C:\xampp\htdocs\HRMS_BSIS_02\exits.php:682
+2026-02-14 01:17:31 Error: [8192] htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated - C:\xampp\htdocs\HRMS_BSIS_02\exit_documents.php:714
+2026-02-14 01:17:40 Error: [8192] htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated - C:\xampp\htdocs\HRMS_BSIS_02\post_exit_surveys.php:1012
+2026-02-14 01:27:38 Error: [8192] htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated - C:\xampp\htdocs\HRMS_BSIS_02\post_exit_surveys.php:1012
+2026-02-14 01:35:56 Error: [8192] htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated - C:\xampp\htdocs\HRMS_BSIS_02\post_exit_surveys.php:1012
+2026-02-14 01:35:59 Error: [8192] htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated - C:\xampp\htdocs\HRMS_BSIS_02\post_exit_surveys.php:1012
+2026-02-14 01:37:08 Error: [8192] htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated - C:\xampp\htdocs\HRMS_BSIS_02\post_exit_surveys.php:1012
+2026-02-14 01:37:13 Error: [8192] htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated - C:\xampp\htdocs\HRMS_BSIS_02\exits.php:682
+2026-02-14 01:37:43 Error: [2] Undefined variable $row - C:\xampp\htdocs\HRMS_BSIS_02\login.php:112
+2026-02-14 01:37:43 Error: [2] Trying to access array offset on value of type null - C:\xampp\htdocs\HRMS_BSIS_02\login.php:112
+2026-02-14 01:38:02 Error: [2] Undefined variable $row - C:\xampp\htdocs\HRMS_BSIS_02\login.php:112
+2026-02-14 01:38:02 Error: [2] Trying to access array offset on value of type null - C:\xampp\htdocs\HRMS_BSIS_02\login.php:112
+2026-02-14 01:38:46 Error: [8192] htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated - C:\xampp\htdocs\HRMS_BSIS_02\employee_profile.php:577
+2026-02-14 01:38:46 Error: [8192] htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated - C:\xampp\htdocs\HRMS_BSIS_02\employee_profile.php:578
+2026-02-14 01:38:46 Error: [8192] htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated - C:\xampp\htdocs\HRMS_BSIS_02\employee_profile.php:581
+2026-02-14 01:38:46 Error: [8192] htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated - C:\xampp\htdocs\HRMS_BSIS_02\employee_profile.php:582
+2026-02-14 01:38:46 Error: [8192] htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated - C:\xampp\htdocs\HRMS_BSIS_02\employee_profile.php:583
+2026-02-14 01:38:56 Error: [8192] htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated - C:\xampp\htdocs\HRMS_BSIS_02\document_management.php:988
+2026-02-14 01:40:30 Error: [2] Undefined variable $row - C:\xampp\htdocs\HRMS_BSIS_02\login.php:112
+2026-02-14 01:40:30 Error: [2] Trying to access array offset on value of type null - C:\xampp\htdocs\HRMS_BSIS_02\login.php:112
+2026-02-14 01:46:48 Error: [2] Undefined variable $row - C:\xampp\htdocs\HRMS_BSIS_02\login.php:112
+2026-02-14 01:46:48 Error: [2] Trying to access array offset on value of type null - C:\xampp\htdocs\HRMS_BSIS_02\login.php:112
+2026-02-14 01:46:52 Error: [8192] htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated - C:\xampp\htdocs\HRMS_BSIS_02\exit_documents.php:714
+2026-02-14 01:50:32 Error: [2] Undefined variable $row - C:\xampp\htdocs\HRMS_BSIS_02\login.php:112
+2026-02-14 01:50:32 Error: [2] Trying to access array offset on value of type null - C:\xampp\htdocs\HRMS_BSIS_02\login.php:112
+2026-02-16 11:52:41 Error: [2] Undefined variable $row - C:\xampp\htdocs\HRMS_BSIS_02\login.php:112
+2026-02-16 11:52:41 Error: [2] Trying to access array offset on value of type null - C:\xampp\htdocs\HRMS_BSIS_02\login.php:112
+2026-02-16 11:52:45 Error: [8192] htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated - C:\xampp\htdocs\HRMS_BSIS_02\exits.php:682
+2026-02-16 11:52:56 Error: [8192] htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated - C:\xampp\htdocs\HRMS_BSIS_02\exit_interviews.php:980
+2026-02-16 11:52:56 Error: [8192] htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated - C:\xampp\htdocs\HRMS_BSIS_02\exit_interviews.php:980
+2026-02-16 11:53:06 Error: [8192] htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated - C:\xampp\htdocs\HRMS_BSIS_02\exits.php:682
+2026-02-16 11:53:16 Error: [2] Undefined variable $row - C:\xampp\htdocs\HRMS_BSIS_02\login.php:112
+2026-02-16 11:53:16 Error: [2] Trying to access array offset on value of type null - C:\xampp\htdocs\HRMS_BSIS_02\login.php:112
+2026-02-16 12:21:21 Error: [2] Undefined variable $row - C:\xampp\htdocs\HRMS_BSIS_02\login.php:112
+2026-02-16 12:21:21 Error: [2] Trying to access array offset on value of type null - C:\xampp\htdocs\HRMS_BSIS_02\login.php:112
+2026-02-16 12:21:26 Error: [8192] htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated - C:\xampp\htdocs\HRMS_BSIS_02\exits.php:682
+2026-02-16 12:21:27 Error: [8192] htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated - C:\xampp\htdocs\HRMS_BSIS_02\exits.php:682
+2026-02-16 12:22:06 Error: [2] Undefined variable $row - C:\xampp\htdocs\HRMS_BSIS_02\login.php:112
+2026-02-16 12:22:06 Error: [2] Trying to access array offset on value of type null - C:\xampp\htdocs\HRMS_BSIS_02\login.php:112
+2026-02-16 12:54:48 Error: [2] Undefined variable $row - C:\xampp\htdocs\HRMS_BSIS_02\login.php:112
+2026-02-16 12:54:48 Error: [2] Trying to access array offset on value of type null - C:\xampp\htdocs\HRMS_BSIS_02\login.php:112
+2026-02-16 12:54:51 Error: [8192] htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated - C:\xampp\htdocs\HRMS_BSIS_02\exits.php:682
+2026-02-16 12:54:52 Error: [8192] htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated - C:\xampp\htdocs\HRMS_BSIS_02\exits.php:682
+2026-02-16 12:55:00 Error: [2] Undefined array key "personal_info_id" - C:\xampp\htdocs\HRMS_BSIS_02\exits.php:73
+2026-02-16 12:55:00 Error: [2] Undefined array key "job_role_id" - C:\xampp\htdocs\HRMS_BSIS_02\exits.php:74
+2026-02-16 12:55:00 Error: [2] Undefined array key "employee_number" - C:\xampp\htdocs\HRMS_BSIS_02\exits.php:75
+2026-02-16 12:55:00 Error: [2] Undefined array key "hire_date" - C:\xampp\htdocs\HRMS_BSIS_02\exits.php:76
+2026-02-16 12:55:00 Error: [2] Undefined array key "employment_status" - C:\xampp\htdocs\HRMS_BSIS_02\exits.php:77
+2026-02-16 12:55:00 Error: [2] Undefined array key "current_salary" - C:\xampp\htdocs\HRMS_BSIS_02\exits.php:78
+2026-02-16 12:55:00 Error: [2] Undefined array key "work_email" - C:\xampp\htdocs\HRMS_BSIS_02\exits.php:79
+2026-02-16 12:55:00 Error: [2] Undefined array key "work_phone" - C:\xampp\htdocs\HRMS_BSIS_02\exits.php:80
+2026-02-16 12:55:00 Error: [2] Undefined array key "location" - C:\xampp\htdocs\HRMS_BSIS_02\exits.php:81
+2026-02-16 12:55:00 Error: [8192] htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated - C:\xampp\htdocs\HRMS_BSIS_02\exits.php:682
+2026-02-16 12:55:04 Error: [8192] htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated - C:\xampp\htdocs\HRMS_BSIS_02\exits.php:682
+2026-02-16 12:55:17 Error: [2] Undefined variable $row - C:\xampp\htdocs\HRMS_BSIS_02\login.php:112
+2026-02-16 12:55:17 Error: [2] Trying to access array offset on value of type null - C:\xampp\htdocs\HRMS_BSIS_02\login.php:112
+2026-02-16 13:26:50 Error: [2] Undefined variable $row - C:\xampp\htdocs\HRMS_BSIS_02\login.php:112
+2026-02-16 13:26:50 Error: [2] Trying to access array offset on value of type null - C:\xampp\htdocs\HRMS_BSIS_02\login.php:112
+2026-02-16 13:27:19 Error: [2] Undefined variable $row - C:\xampp\htdocs\HRMS_BSIS_02\login.php:112
+2026-02-16 13:27:19 Error: [2] Trying to access array offset on value of type null - C:\xampp\htdocs\HRMS_BSIS_02\login.php:112
+2026-02-16 13:27:32 Error: [2] Undefined variable $row - C:\xampp\htdocs\HRMS_BSIS_02\login.php:112
+2026-02-16 13:27:32 Error: [2] Trying to access array offset on value of type null - C:\xampp\htdocs\HRMS_BSIS_02\login.php:112
+2026-02-16 13:27:35 Error: [8192] htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated - C:\xampp\htdocs\HRMS_BSIS_02\employee_profile.php:577
+2026-02-16 13:27:35 Error: [8192] htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated - C:\xampp\htdocs\HRMS_BSIS_02\employee_profile.php:578
+2026-02-16 13:27:35 Error: [8192] htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated - C:\xampp\htdocs\HRMS_BSIS_02\employee_profile.php:581
+2026-02-16 13:27:35 Error: [8192] htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated - C:\xampp\htdocs\HRMS_BSIS_02\employee_profile.php:582
+2026-02-16 13:27:35 Error: [8192] htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated - C:\xampp\htdocs\HRMS_BSIS_02\employee_profile.php:583
+2026-02-16 13:27:56 Error: [2] Undefined variable $row - C:\xampp\htdocs\HRMS_BSIS_02\login.php:112
+2026-02-16 13:27:56 Error: [2] Trying to access array offset on value of type null - C:\xampp\htdocs\HRMS_BSIS_02\login.php:112
+2026-02-16 13:28:11 Error: [2] Undefined variable $row - C:\xampp\htdocs\HRMS_BSIS_02\login.php:112
+2026-02-16 13:28:11 Error: [2] Trying to access array offset on value of type null - C:\xampp\htdocs\HRMS_BSIS_02\login.php:112
+2026-02-16 13:28:14 Error: [8192] htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated - C:\xampp\htdocs\HRMS_BSIS_02\employee_profile.php:577
+2026-02-16 13:28:14 Error: [8192] htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated - C:\xampp\htdocs\HRMS_BSIS_02\employee_profile.php:578
+2026-02-16 13:28:14 Error: [8192] htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated - C:\xampp\htdocs\HRMS_BSIS_02\employee_profile.php:581
+2026-02-16 13:28:14 Error: [8192] htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated - C:\xampp\htdocs\HRMS_BSIS_02\employee_profile.php:582
+2026-02-16 13:28:14 Error: [8192] htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated - C:\xampp\htdocs\HRMS_BSIS_02\employee_profile.php:583
+2026-02-16 13:28:30 Error: [8192] htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated - C:\xampp\htdocs\HRMS_BSIS_02\employment_history.php:732
+2026-02-16 13:28:30 Error: [8192] htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated - C:\xampp\htdocs\HRMS_BSIS_02\employment_history.php:837
+2026-02-16 13:29:10 Error: [2] Undefined variable $row - C:\xampp\htdocs\HRMS_BSIS_02\login.php:112
+2026-02-16 13:29:10 Error: [2] Trying to access array offset on value of type null - C:\xampp\htdocs\HRMS_BSIS_02\login.php:112
+2026-02-16 13:32:25 Error: [2] Undefined variable $row - C:\xampp\htdocs\HRMS_BSIS_02\login.php:112
+2026-02-16 13:32:25 Error: [2] Trying to access array offset on value of type null - C:\xampp\htdocs\HRMS_BSIS_02\login.php:112
+2026-02-16 13:32:28 Error: [8192] htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated - C:\xampp\htdocs\HRMS_BSIS_02\employee_profile.php:577
+2026-02-16 13:32:28 Error: [8192] htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated - C:\xampp\htdocs\HRMS_BSIS_02\employee_profile.php:578
+2026-02-16 13:32:28 Error: [8192] htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated - C:\xampp\htdocs\HRMS_BSIS_02\employee_profile.php:581
+2026-02-16 13:32:28 Error: [8192] htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated - C:\xampp\htdocs\HRMS_BSIS_02\employee_profile.php:582
+2026-02-16 13:32:28 Error: [8192] htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated - C:\xampp\htdocs\HRMS_BSIS_02\employee_profile.php:583
+2026-02-16 13:35:52 Error: [2] Undefined variable $row - C:\xampp\htdocs\HRMS_BSIS_02\login.php:112
+2026-02-16 13:35:52 Error: [2] Trying to access array offset on value of type null - C:\xampp\htdocs\HRMS_BSIS_02\login.php:112
+2026-02-16 13:43:16 Error: [2] Undefined variable $row - C:\xampp\htdocs\HRMS_BSIS_02\login.php:112
+2026-02-16 13:43:16 Error: [2] Trying to access array offset on value of type null - C:\xampp\htdocs\HRMS_BSIS_02\login.php:112
+2026-02-16 13:43:18 Error: [8192] htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated - C:\xampp\htdocs\HRMS_BSIS_02\exits.php:632
+2026-02-16 13:43:18 Error: [8192] htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated - C:\xampp\htdocs\HRMS_BSIS_02\exits.php:682
+2026-02-16 13:43:20 Error: [8192] htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated - C:\xampp\htdocs\HRMS_BSIS_02\exits.php:632
+2026-02-16 13:43:20 Error: [8192] htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated - C:\xampp\htdocs\HRMS_BSIS_02\exits.php:682
+2026-02-16 13:43:21 Error: [8192] htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated - C:\xampp\htdocs\HRMS_BSIS_02\exits.php:632
+2026-02-16 13:43:21 Error: [8192] htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated - C:\xampp\htdocs\HRMS_BSIS_02\exits.php:682
+2026-02-16 13:43:21 Error: [8192] htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated - C:\xampp\htdocs\HRMS_BSIS_02\exits.php:632
+2026-02-16 13:43:21 Error: [8192] htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated - C:\xampp\htdocs\HRMS_BSIS_02\exits.php:682
+2026-02-16 13:43:40 Error: [8192] htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated - C:\xampp\htdocs\HRMS_BSIS_02\employee_profile.php:577
+2026-02-16 13:43:40 Error: [8192] htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated - C:\xampp\htdocs\HRMS_BSIS_02\employee_profile.php:578
+2026-02-16 13:43:40 Error: [8192] htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated - C:\xampp\htdocs\HRMS_BSIS_02\employee_profile.php:581
+2026-02-16 13:43:40 Error: [8192] htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated - C:\xampp\htdocs\HRMS_BSIS_02\employee_profile.php:582
+2026-02-16 13:43:40 Error: [8192] htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated - C:\xampp\htdocs\HRMS_BSIS_02\employee_profile.php:583
+2026-02-16 13:43:57 Error: [8192] htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated - C:\xampp\htdocs\HRMS_BSIS_02\exits.php:632
+2026-02-16 13:43:57 Error: [8192] htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated - C:\xampp\htdocs\HRMS_BSIS_02\exits.php:682
+2026-02-16 13:47:31 Error: [2] Undefined array key "employee_id" - C:\xampp\htdocs\HRMS_BSIS_02\exits.php:97
+2026-02-16 13:48:49 Error: [2] Undefined variable $row - C:\xampp\htdocs\HRMS_BSIS_02\login.php:112
+2026-02-16 13:48:49 Error: [2] Trying to access array offset on value of type null - C:\xampp\htdocs\HRMS_BSIS_02\login.php:112
+2026-02-16 13:49:07 Error: [2] Undefined variable $row - C:\xampp\htdocs\HRMS_BSIS_02\login.php:112
+2026-02-16 13:49:07 Error: [2] Trying to access array offset on value of type null - C:\xampp\htdocs\HRMS_BSIS_02\login.php:112
+2026-02-16 13:56:19 Error: [2] Undefined variable $row - C:\xampp\htdocs\HRMS_BSIS_02\login.php:112
+2026-02-16 13:56:19 Error: [2] Trying to access array offset on value of type null - C:\xampp\htdocs\HRMS_BSIS_02\login.php:112
+2026-02-16 13:56:22 Error: [8192] htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated - C:\xampp\htdocs\HRMS_BSIS_02\exits.php:903
+2026-02-16 13:56:24 Error: [8192] htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated - C:\xampp\htdocs\HRMS_BSIS_02\exits.php:903
+2026-02-16 13:56:44 Error: [8192] htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated - C:\xampp\htdocs\HRMS_BSIS_02\exits.php:903
+2026-02-16 13:56:49 Error: [8192] htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated - C:\xampp\htdocs\HRMS_BSIS_02\exits.php:903
+2026-02-16 13:58:07 Error: [2] Undefined variable $row - C:\xampp\htdocs\HRMS_BSIS_02\login.php:112
+2026-02-16 13:58:07 Error: [2] Trying to access array offset on value of type null - C:\xampp\htdocs\HRMS_BSIS_02\login.php:112
+2026-02-16 13:58:55 Error: [2] Undefined variable $row - C:\xampp\htdocs\HRMS_BSIS_02\login.php:112
+2026-02-16 13:58:55 Error: [2] Trying to access array offset on value of type null - C:\xampp\htdocs\HRMS_BSIS_02\login.php:112
+2026-02-16 13:58:58 Error: [8192] htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated - C:\xampp\htdocs\HRMS_BSIS_02\exits.php:682
+2026-02-16 13:58:59 Error: [8192] htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated - C:\xampp\htdocs\HRMS_BSIS_02\exits.php:682
+2026-02-16 13:59:00 Error: [8192] htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated - C:\xampp\htdocs\HRMS_BSIS_02\exits.php:682
+2026-02-16 13:59:05 Error: [2] Undefined array key "personal_info_id" - C:\xampp\htdocs\HRMS_BSIS_02\exits.php:73
+2026-02-16 13:59:05 Error: [2] Undefined array key "job_role_id" - C:\xampp\htdocs\HRMS_BSIS_02\exits.php:74
+2026-02-16 13:59:05 Error: [2] Undefined array key "employee_number" - C:\xampp\htdocs\HRMS_BSIS_02\exits.php:75
+2026-02-16 13:59:05 Error: [2] Undefined array key "hire_date" - C:\xampp\htdocs\HRMS_BSIS_02\exits.php:76
+2026-02-16 13:59:05 Error: [2] Undefined array key "employment_status" - C:\xampp\htdocs\HRMS_BSIS_02\exits.php:77
+2026-02-16 13:59:05 Error: [2] Undefined array key "current_salary" - C:\xampp\htdocs\HRMS_BSIS_02\exits.php:78
+2026-02-16 13:59:05 Error: [2] Undefined array key "work_email" - C:\xampp\htdocs\HRMS_BSIS_02\exits.php:79
+2026-02-16 13:59:05 Error: [2] Undefined array key "work_phone" - C:\xampp\htdocs\HRMS_BSIS_02\exits.php:80
+2026-02-16 13:59:05 Error: [2] Undefined array key "location" - C:\xampp\htdocs\HRMS_BSIS_02\exits.php:81
+2026-02-16 13:59:05 Error: [8192] htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated - C:\xampp\htdocs\HRMS_BSIS_02\exits.php:682
+2026-02-16 13:59:09 Error: [2] Undefined array key "personal_info_id" - C:\xampp\htdocs\HRMS_BSIS_02\exits.php:73
+2026-02-16 13:59:09 Error: [2] Undefined array key "job_role_id" - C:\xampp\htdocs\HRMS_BSIS_02\exits.php:74
+2026-02-16 13:59:09 Error: [2] Undefined array key "employee_number" - C:\xampp\htdocs\HRMS_BSIS_02\exits.php:75
+2026-02-16 13:59:09 Error: [2] Undefined array key "hire_date" - C:\xampp\htdocs\HRMS_BSIS_02\exits.php:76
+2026-02-16 13:59:09 Error: [2] Undefined array key "employment_status" - C:\xampp\htdocs\HRMS_BSIS_02\exits.php:77
+2026-02-16 13:59:09 Error: [2] Undefined array key "current_salary" - C:\xampp\htdocs\HRMS_BSIS_02\exits.php:78
+2026-02-16 13:59:09 Error: [2] Undefined array key "work_email" - C:\xampp\htdocs\HRMS_BSIS_02\exits.php:79
+2026-02-16 13:59:09 Error: [2] Undefined array key "work_phone" - C:\xampp\htdocs\HRMS_BSIS_02\exits.php:80
+2026-02-16 13:59:09 Error: [2] Undefined array key "location" - C:\xampp\htdocs\HRMS_BSIS_02\exits.php:81
+2026-02-16 13:59:09 Error: [8192] htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated - C:\xampp\htdocs\HRMS_BSIS_02\exits.php:682
+2026-02-16 13:59:12 Error: [8192] htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated - C:\xampp\htdocs\HRMS_BSIS_02\exits.php:682
+2026-02-16 14:05:32 Error: [8192] htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated - C:\xampp\htdocs\HRMS_BSIS_02\exits.php:682
+2026-02-16 14:12:38 Error: [8192] htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated - C:\xampp\htdocs\HRMS_BSIS_02\exits.php:682
+2026-02-16 14:12:38 Error: [8192] htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated - C:\xampp\htdocs\HRMS_BSIS_02\exits.php:682
+2026-02-16 14:12:44 Error: [8192] htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated - C:\xampp\htdocs\HRMS_BSIS_02\exits.php:682
+2026-02-16 14:12:45 Error: [8192] htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated - C:\xampp\htdocs\HRMS_BSIS_02\exits.php:682
+2026-02-16 14:17:29 Error: [8192] htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated - C:\xampp\htdocs\HRMS_BSIS_02\exits.php:682
+2026-02-16 14:27:10 Error: [8192] htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated - C:\xampp\htdocs\HRMS_BSIS_02\exits.php:682
+2026-02-16 14:27:10 Error: [8192] htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated - C:\xampp\htdocs\HRMS_BSIS_02\exits.php:682
+2026-02-16 14:35:01 Error: [8192] htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated - C:\xampp\htdocs\HRMS_BSIS_02\exits.php:682
+2026-02-16 14:41:18 Error: [8192] htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated - C:\xampp\htdocs\HRMS_BSIS_02\exits.php:825
+2026-02-16 14:43:56 Error: [8192] htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated - C:\xampp\htdocs\HRMS_BSIS_02\exits.php:825
+2026-02-16 14:44:01 Error: [8192] htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated - C:\xampp\htdocs\HRMS_BSIS_02\employee_profile.php:577
+2026-02-16 14:44:01 Error: [8192] htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated - C:\xampp\htdocs\HRMS_BSIS_02\employee_profile.php:578
+2026-02-16 14:44:01 Error: [8192] htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated - C:\xampp\htdocs\HRMS_BSIS_02\employee_profile.php:581
+2026-02-16 14:44:01 Error: [8192] htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated - C:\xampp\htdocs\HRMS_BSIS_02\employee_profile.php:582
+2026-02-16 14:44:01 Error: [8192] htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated - C:\xampp\htdocs\HRMS_BSIS_02\employee_profile.php:583
+2026-02-16 14:44:21 Error: [8192] htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated - C:\xampp\htdocs\HRMS_BSIS_02\exits.php:825
+2026-02-16 14:44:23 Error: [8192] htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated - C:\xampp\htdocs\HRMS_BSIS_02\exits.php:825
+2026-02-16 14:48:38 Error: [8192] htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated - C:\xampp\htdocs\HRMS_BSIS_02\exits.php:896
+2026-02-16 14:52:54 Error: [8192] htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated - C:\xampp\htdocs\HRMS_BSIS_02\exits.php:926
+2026-02-16 14:57:22 Error: [8192] htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated - C:\xampp\htdocs\HRMS_BSIS_02\exits.php:928
+2026-02-16 14:57:33 Error: [8192] htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated - C:\xampp\htdocs\HRMS_BSIS_02\exits.php:928
+2026-02-16 15:03:32 Error: [8192] htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated - C:\xampp\htdocs\HRMS_BSIS_02\exits.php:931
+2026-02-16 15:08:22 Error: [8192] htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated - C:\xampp\htdocs\HRMS_BSIS_02\exits.php:940
+2026-02-16 15:12:32 Error: [8192] htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated - C:\xampp\htdocs\HRMS_BSIS_02\exits.php:928
+2026-02-16 15:15:45 Error: [8192] htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated - C:\xampp\htdocs\HRMS_BSIS_02\exits.php:935
+2026-02-16 15:19:31 Error: [8192] htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated - C:\xampp\htdocs\HRMS_BSIS_02\exits.php:920
+2026-02-16 15:19:31 Error: [8192] htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated - C:\xampp\htdocs\HRMS_BSIS_02\exits.php:920
+2026-02-16 15:22:52 Error: [8192] htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated - C:\xampp\htdocs\HRMS_BSIS_02\exits.php:927
+2026-02-16 15:22:52 Error: [8192] htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated - C:\xampp\htdocs\HRMS_BSIS_02\exits.php:927
+2026-02-16 15:22:53 Error: [8192] htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated - C:\xampp\htdocs\HRMS_BSIS_02\exits.php:927
+2026-02-16 15:22:53 Error: [8192] htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated - C:\xampp\htdocs\HRMS_BSIS_02\exits.php:927
+2026-02-16 15:25:24 Error: [8192] htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated - C:\xampp\htdocs\HRMS_BSIS_02\exits.php:911
+2026-02-16 15:25:25 Error: [8192] htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated - C:\xampp\htdocs\HRMS_BSIS_02\exits.php:911
+2026-02-16 15:28:42 Error: [8192] htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated - C:\xampp\htdocs\HRMS_BSIS_02\exits.php:915
+2026-02-17 12:59:02 Error: [2] Undefined variable $row - C:\xampp\htdocs\HRMS_BSIS_02\login.php:112
+2026-02-17 12:59:02 Error: [2] Trying to access array offset on value of type null - C:\xampp\htdocs\HRMS_BSIS_02\login.php:112
+2026-02-17 12:59:35 Error: [8192] htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated - C:\xampp\htdocs\HRMS_BSIS_02\exits.php:915
+2026-02-17 12:59:57 Error: [8192] htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated - C:\xampp\htdocs\HRMS_BSIS_02\exits.php:915
+2026-02-17 13:04:11 Error: [2] Undefined variable $row - C:\xampp\htdocs\HRMS_BSIS_02\login.php:112
+2026-02-17 13:04:11 Error: [2] Trying to access array offset on value of type null - C:\xampp\htdocs\HRMS_BSIS_02\login.php:112
+2026-02-17 13:04:14 Error: [8192] htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated - C:\xampp\htdocs\HRMS_BSIS_02\exits.php:915
+2026-02-17 13:13:41 Error: [8192] htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated - C:\xampp\htdocs\HRMS_BSIS_02\exits.php:920
+2026-02-17 13:21:21 Error: [8192] htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated - C:\xampp\htdocs\HRMS_BSIS_02\exits.php:920
+2026-02-17 13:21:46 Error: [2] Undefined variable $row - C:\xampp\htdocs\HRMS_BSIS_02\login.php:112
+2026-02-17 13:21:46 Error: [2] Trying to access array offset on value of type null - C:\xampp\htdocs\HRMS_BSIS_02\login.php:112
+2026-02-17 13:22:14 Error: [2] Undefined variable $row - C:\xampp\htdocs\HRMS_BSIS_02\login.php:112
+2026-02-17 13:22:14 Error: [2] Trying to access array offset on value of type null - C:\xampp\htdocs\HRMS_BSIS_02\login.php:112
+2026-02-17 13:22:18 Error: [8192] htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated - C:\xampp\htdocs\HRMS_BSIS_02\exits.php:920
+2026-02-17 13:25:23 Error: [8192] htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated - C:\xampp\htdocs\HRMS_BSIS_02\exits.php:920
+2026-02-17 13:25:31 Error: [8192] htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated - C:\xampp\htdocs\HRMS_BSIS_02\employee_profile.php:577
+2026-02-17 13:25:31 Error: [8192] htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated - C:\xampp\htdocs\HRMS_BSIS_02\employee_profile.php:578
+2026-02-17 13:25:31 Error: [8192] htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated - C:\xampp\htdocs\HRMS_BSIS_02\employee_profile.php:581
+2026-02-17 13:25:31 Error: [8192] htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated - C:\xampp\htdocs\HRMS_BSIS_02\employee_profile.php:582
+2026-02-17 13:25:31 Error: [8192] htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated - C:\xampp\htdocs\HRMS_BSIS_02\employee_profile.php:583
+2026-02-17 13:25:41 Error: [8192] htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated - C:\xampp\htdocs\HRMS_BSIS_02\employment_history.php:732
+2026-02-17 13:25:41 Error: [8192] htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated - C:\xampp\htdocs\HRMS_BSIS_02\employment_history.php:837
+2026-02-17 13:25:49 Error: [8192] htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated - C:\xampp\htdocs\HRMS_BSIS_02\document_management.php:988
+2026-02-17 13:26:31 Error: [8192] htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated - C:\xampp\htdocs\HRMS_BSIS_02\exits.php:920
+2026-02-17 13:31:20 Error: [8192] htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated - C:\xampp\htdocs\HRMS_BSIS_02\exits.php:938
+2026-02-17 13:31:22 Error: [8192] htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated - C:\xampp\htdocs\HRMS_BSIS_02\exits.php:938
+2026-02-17 13:31:22 Error: [8192] htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated - C:\xampp\htdocs\HRMS_BSIS_02\exits.php:938
+2026-02-17 13:31:22 Error: [8192] htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated - C:\xampp\htdocs\HRMS_BSIS_02\exits.php:938
+2026-02-17 13:36:39 Error: [8192] htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated - C:\xampp\htdocs\HRMS_BSIS_02\exits.php:888
+2026-02-17 13:42:22 Error: [8192] htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated - C:\xampp\htdocs\HRMS_BSIS_02\exits.php:885
+2026-02-17 13:42:23 Error: [8192] htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated - C:\xampp\htdocs\HRMS_BSIS_02\exits.php:885
+2026-02-17 13:42:23 Error: [8192] htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated - C:\xampp\htdocs\HRMS_BSIS_02\exits.php:885
+2026-02-17 13:42:56 Error: [8192] htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated - C:\xampp\htdocs\HRMS_BSIS_02\exits.php:920
+2026-02-17 13:50:50 Error: [8192] htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated - C:\xampp\htdocs\HRMS_BSIS_02\exits.php:938
+2026-02-17 13:50:51 Error: [8192] htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated - C:\xampp\htdocs\HRMS_BSIS_02\exits.php:938
+2026-02-17 13:53:31 Error: [8192] htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated - C:\xampp\htdocs\HRMS_BSIS_02\exits.php:935
+2026-02-17 13:58:49 Error: [8192] htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated - C:\xampp\htdocs\HRMS_BSIS_02\exits.php:903
+2026-02-17 14:00:37 Error: [8192] htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated - C:\xampp\htdocs\HRMS_BSIS_02\exits.php:903
+2026-02-17 14:04:59 Error: [8192] htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated - C:\xampp\htdocs\HRMS_BSIS_02\exits.php:903
+2026-02-17 14:05:01 Error: [8192] htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated - C:\xampp\htdocs\HRMS_BSIS_02\exits.php:903
+2026-02-17 14:07:21 Error: [8192] htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated - C:\xampp\htdocs\HRMS_BSIS_02\exits.php:903
+2026-02-17 14:13:06 Error: [8192] htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated - C:\xampp\htdocs\HRMS_BSIS_02\exits.php:909
+2026-02-17 14:13:08 Error: [8192] htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated - C:\xampp\htdocs\HRMS_BSIS_02\exits.php:909
+2026-02-17 14:16:51 Error: [8192] htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated - C:\xampp\htdocs\HRMS_BSIS_02\exits.php:909
+2026-02-17 14:22:36 Error: [2] Undefined variable $row - C:\xampp\htdocs\HRMS_BSIS_02\login.php:112
+2026-02-17 14:22:36 Error: [2] Trying to access array offset on value of type null - C:\xampp\htdocs\HRMS_BSIS_02\login.php:112
+2026-02-17 14:23:09 Error: [2] Undefined variable $row - C:\xampp\htdocs\HRMS_BSIS_02\login.php:112
+2026-02-17 14:23:09 Error: [2] Trying to access array offset on value of type null - C:\xampp\htdocs\HRMS_BSIS_02\login.php:112
+2026-02-17 14:23:12 Error: [8192] htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated - C:\xampp\htdocs\HRMS_BSIS_02\exits.php:909
+2026-02-17 14:41:11 Error: [8192] htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated - C:\xampp\htdocs\HRMS_BSIS_02\exits.php:917
+2026-02-17 14:41:11 Error: [8192] htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated - C:\xampp\htdocs\HRMS_BSIS_02\exits.php:917
+2026-02-17 14:41:12 Error: [8192] htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated - C:\xampp\htdocs\HRMS_BSIS_02\exits.php:917
+2026-02-17 14:41:12 Error: [8192] htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated - C:\xampp\htdocs\HRMS_BSIS_02\exits.php:917
+2026-02-17 14:41:12 Error: [8192] htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated - C:\xampp\htdocs\HRMS_BSIS_02\exits.php:917
+2026-02-17 14:41:12 Error: [8192] htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated - C:\xampp\htdocs\HRMS_BSIS_02\exits.php:917
+2026-02-17 14:41:12 Error: [8192] htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated - C:\xampp\htdocs\HRMS_BSIS_02\exits.php:917
+2026-02-17 14:41:46 Error: [8192] htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated - C:\xampp\htdocs\HRMS_BSIS_02\exits.php:909
+2026-02-17 14:46:56 Error: [8192] htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated - C:\xampp\htdocs\HRMS_BSIS_02\exits.php:915
+2026-02-17 14:49:54 Error: [8192] htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated - C:\xampp\htdocs\HRMS_BSIS_02\exits.php:930
+2026-02-17 14:49:55 Error: [8192] htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated - C:\xampp\htdocs\HRMS_BSIS_02\exits.php:930
+2026-02-17 14:49:55 Error: [8192] htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated - C:\xampp\htdocs\HRMS_BSIS_02\exits.php:930
+2026-02-17 14:50:11 Error: [8192] htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated - C:\xampp\htdocs\HRMS_BSIS_02\exits.php:915
+2026-02-18 10:36:44 Error: [2] Undefined variable $row - C:\xampp\htdocs\HRMS_BSIS_02\login.php:112
+2026-02-18 10:36:44 Error: [2] Trying to access array offset on value of type null - C:\xampp\htdocs\HRMS_BSIS_02\login.php:112
+2026-02-18 10:36:48 Error: [8192] htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated - C:\xampp\htdocs\HRMS_BSIS_02\exits.php:915
+2026-02-18 10:44:04 Error: [2] Undefined variable $row - C:\xampp\htdocs\HRMS_BSIS_02\login.php:112
+2026-02-18 10:44:04 Error: [2] Trying to access array offset on value of type null - C:\xampp\htdocs\HRMS_BSIS_02\login.php:112
+2026-02-18 10:44:46 Error: [2] Undefined variable $row - C:\xampp\htdocs\HRMS_BSIS_02\login.php:112
+2026-02-18 10:44:46 Error: [2] Trying to access array offset on value of type null - C:\xampp\htdocs\HRMS_BSIS_02\login.php:112
+2026-02-18 10:44:48 Error: [8192] htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated - C:\xampp\htdocs\HRMS_BSIS_02\exits.php:915
+2026-02-18 10:47:35 Error: [8192] htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated - C:\xampp\htdocs\HRMS_BSIS_02\exits.php:629
+2026-02-18 10:48:10 Error: [8192] htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated - C:\xampp\htdocs\HRMS_BSIS_02\exits.php:915
+2026-02-18 10:51:15 Error: [8192] htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated - C:\xampp\htdocs\HRMS_BSIS_02\exits.php:635
+2026-02-18 10:51:16 Error: [8192] htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated - C:\xampp\htdocs\HRMS_BSIS_02\exits.php:635
+2026-02-18 10:51:38 Error: [8192] htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated - C:\xampp\htdocs\HRMS_BSIS_02\exits.php:635
+2026-02-18 10:51:49 Error: [8192] htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated - C:\xampp\htdocs\HRMS_BSIS_02\exits.php:915
+2026-02-18 10:53:02 Error: [8192] htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated - C:\xampp\htdocs\HRMS_BSIS_02\exits.php:915
+2026-02-18 10:57:49 Error: [8192] htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated - C:\xampp\htdocs\HRMS_BSIS_02\exits.php:916
+2026-02-18 10:58:35 Error: [8192] htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated - C:\xampp\htdocs\HRMS_BSIS_02\exits.php:916
+2026-02-18 10:58:35 Error: [8192] htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated - C:\xampp\htdocs\HRMS_BSIS_02\exits.php:916
+2026-02-18 10:58:35 Error: [8192] htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated - C:\xampp\htdocs\HRMS_BSIS_02\exits.php:916
+2026-02-18 10:58:36 Error: [8192] htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated - C:\xampp\htdocs\HRMS_BSIS_02\exits.php:916
+2026-02-18 10:58:36 Error: [8192] htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated - C:\xampp\htdocs\HRMS_BSIS_02\exits.php:916
+2026-02-18 10:58:40 Error: [8192] htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated - C:\xampp\htdocs\HRMS_BSIS_02\exits.php:916
+2026-02-18 10:58:45 Error: [8192] htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated - C:\xampp\htdocs\HRMS_BSIS_02\exits.php:916
+2026-02-18 11:09:41 Error: [8192] htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated - C:\xampp\htdocs\HRMS_BSIS_02\exits.php:915
+2026-02-18 11:14:37 Error: [8192] htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated - C:\xampp\htdocs\HRMS_BSIS_02\exits.php:915
+2026-02-18 11:16:13 Error: [8192] htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated - C:\xampp\htdocs\HRMS_BSIS_02\employee_profile.php:577
+2026-02-18 11:16:13 Error: [8192] htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated - C:\xampp\htdocs\HRMS_BSIS_02\employee_profile.php:578
+2026-02-18 11:16:13 Error: [8192] htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated - C:\xampp\htdocs\HRMS_BSIS_02\employee_profile.php:581
+2026-02-18 11:16:13 Error: [8192] htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated - C:\xampp\htdocs\HRMS_BSIS_02\employee_profile.php:582
+2026-02-18 11:16:13 Error: [8192] htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated - C:\xampp\htdocs\HRMS_BSIS_02\employee_profile.php:583
+2026-02-18 11:16:32 Error: [2] Undefined variable $row - C:\xampp\htdocs\HRMS_BSIS_02\login.php:112
+2026-02-18 11:16:32 Error: [2] Trying to access array offset on value of type null - C:\xampp\htdocs\HRMS_BSIS_02\login.php:112
+2026-02-18 11:16:47 Error: [2] Undefined variable $row - C:\xampp\htdocs\HRMS_BSIS_02\login.php:112
+2026-02-18 11:16:47 Error: [2] Trying to access array offset on value of type null - C:\xampp\htdocs\HRMS_BSIS_02\login.php:112
+2026-02-18 11:17:17 Error: [2] Undefined variable $row - C:\xampp\htdocs\HRMS_BSIS_02\login.php:112
+2026-02-18 11:17:17 Error: [2] Trying to access array offset on value of type null - C:\xampp\htdocs\HRMS_BSIS_02\login.php:112
+2026-02-18 11:17:21 Error: [8192] htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated - C:\xampp\htdocs\HRMS_BSIS_02\exits.php:915
+2026-02-18 11:17:43 Error: [8192] htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated - C:\xampp\htdocs\HRMS_BSIS_02\exits.php:915
+2026-02-18 11:19:31 Error: [8192] htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated - C:\xampp\htdocs\HRMS_BSIS_02\exits.php:915
+2026-02-18 11:22:59 Error: [8192] htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated - C:\xampp\htdocs\HRMS_BSIS_02\exit_documents.php:714
+2026-02-18 11:23:06 Error: [8192] htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated - C:\xampp\htdocs\HRMS_BSIS_02\post_exit_surveys.php:1012
+2026-02-18 11:25:13 Error: [8192] htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated - C:\xampp\htdocs\HRMS_BSIS_02\post_exit_surveys.php:1012
+2026-02-18 11:25:14 Error: [8192] htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated - C:\xampp\htdocs\HRMS_BSIS_02\exits.php:924
+2026-02-18 11:25:15 Error: [8192] htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated - C:\xampp\htdocs\HRMS_BSIS_02\exits.php:924
+2026-02-18 11:25:15 Error: [8192] htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated - C:\xampp\htdocs\HRMS_BSIS_02\exits.php:924
+2026-02-18 11:25:15 Error: [8192] htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated - C:\xampp\htdocs\HRMS_BSIS_02\exits.php:924
+2026-02-18 11:25:46 Error: [8192] htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated - C:\xampp\htdocs\HRMS_BSIS_02\exits.php:924
+2026-02-18 11:25:47 Error: [8192] htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated - C:\xampp\htdocs\HRMS_BSIS_02\exits.php:924
+2026-02-18 11:25:47 Error: [8192] htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated - C:\xampp\htdocs\HRMS_BSIS_02\exits.php:924
+2026-02-18 11:28:43 Error: [8192] htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated - C:\xampp\htdocs\HRMS_BSIS_02\exits.php:924
+2026-02-18 11:29:48 Error: [8192] htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated - C:\xampp\htdocs\HRMS_BSIS_02\exits.php:924
+2026-02-18 11:30:37 Error: [8192] htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated - C:\xampp\htdocs\HRMS_BSIS_02\exits.php:924
+2026-02-18 11:32:54 Error: [8192] htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated - C:\xampp\htdocs\HRMS_BSIS_02\exits.php:935
+2026-02-18 11:32:54 Error: [8192] htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated - C:\xampp\htdocs\HRMS_BSIS_02\exits.php:935
+2026-02-18 11:32:55 Error: [8192] htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated - C:\xampp\htdocs\HRMS_BSIS_02\exits.php:935
+2026-02-18 11:32:55 Error: [8192] htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated - C:\xampp\htdocs\HRMS_BSIS_02\exits.php:935
+2026-02-18 11:32:55 Error: [8192] htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated - C:\xampp\htdocs\HRMS_BSIS_02\exits.php:935
+2026-02-18 11:32:56 Error: [8192] htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated - C:\xampp\htdocs\HRMS_BSIS_02\exits.php:935
+2026-02-18 11:34:56 Error: [8192] htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated - C:\xampp\htdocs\HRMS_BSIS_02\exits.php:930
+2026-02-18 11:37:32 Error: [8192] htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated - C:\xampp\htdocs\HRMS_BSIS_02\exits.php:942
+2026-02-18 11:37:33 Error: [8192] htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated - C:\xampp\htdocs\HRMS_BSIS_02\post_exit_surveys.php:1226
+2026-02-18 11:38:33 Error: [8192] htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated - C:\xampp\htdocs\HRMS_BSIS_02\post_exit_surveys.php:1226
+2026-02-18 11:38:56 Error: [8192] htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated - C:\xampp\htdocs\HRMS_BSIS_02\post_exit_surveys.php:1012
+2026-02-18 11:40:49 Error: [8192] htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated - C:\xampp\htdocs\HRMS_BSIS_02\exits.php:943
+2026-02-18 11:40:50 Error: [8192] htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated - C:\xampp\htdocs\HRMS_BSIS_02\exits.php:943
+2026-02-18 11:40:50 Error: [8192] htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated - C:\xampp\htdocs\HRMS_BSIS_02\exits.php:943
+2026-02-18 11:40:50 Error: [8192] htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated - C:\xampp\htdocs\HRMS_BSIS_02\exits.php:943
+2026-02-18 11:43:41 Error: [8192] htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated - C:\xampp\htdocs\HRMS_BSIS_02\exits.php:944
+2026-02-18 11:44:39 Error: [8192] htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated - C:\xampp\htdocs\HRMS_BSIS_02\exits.php:944
+2026-02-18 11:44:53 Error: [8192] htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated - C:\xampp\htdocs\HRMS_BSIS_02\post_exit_surveys.php:1012
+2026-02-18 11:44:55 Error: [8192] htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated - C:\xampp\htdocs\HRMS_BSIS_02\exits.php:944
+2026-02-18 11:44:56 Error: [8192] htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated - C:\xampp\htdocs\HRMS_BSIS_02\exits.php:944
+2026-02-18 11:45:00 Error: [8192] htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated - C:\xampp\htdocs\HRMS_BSIS_02\exits.php:944
+2026-02-18 11:46:35 Error: [8192] htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated - C:\xampp\htdocs\HRMS_BSIS_02\exits.php:944
+2026-02-18 11:46:36 Error: [8192] htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated - C:\xampp\htdocs\HRMS_BSIS_02\exits.php:944
+2026-02-18 11:46:36 Error: [8192] htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated - C:\xampp\htdocs\HRMS_BSIS_02\exits.php:944
+2026-02-18 11:46:37 Error: [8192] htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated - C:\xampp\htdocs\HRMS_BSIS_02\exits.php:944
+2026-02-18 11:46:37 Error: [8192] htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated - C:\xampp\htdocs\HRMS_BSIS_02\exits.php:944
+2026-02-18 11:46:37 Error: [8192] htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated - C:\xampp\htdocs\HRMS_BSIS_02\exits.php:944
+2026-02-18 11:46:41 Error: [8192] htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated - C:\xampp\htdocs\HRMS_BSIS_02\exits.php:944
+2026-02-18 11:47:27 Error: [8192] htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated - C:\xampp\htdocs\HRMS_BSIS_02\exits.php:924
+2026-02-18 11:47:27 Error: [8192] htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated - C:\xampp\htdocs\HRMS_BSIS_02\exits.php:924
+2026-02-18 11:47:27 Error: [8192] htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated - C:\xampp\htdocs\HRMS_BSIS_02\exits.php:924
+2026-02-18 11:48:15 Error: [8192] htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated - C:\xampp\htdocs\HRMS_BSIS_02\exits.php:924
+2026-02-18 12:10:58 Error: [8192] htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated - C:\xampp\htdocs\HRMS_BSIS_02\exits.php:924
+2026-02-18 12:10:59 Error: [8192] htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated - C:\xampp\htdocs\HRMS_BSIS_02\exits.php:924
+2026-02-18 12:10:59 Error: [8192] htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated - C:\xampp\htdocs\HRMS_BSIS_02\exits.php:924
+2026-02-18 12:12:28 Error: [8192] htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated - C:\xampp\htdocs\HRMS_BSIS_02\exits.php:924
+2026-02-18 12:15:41 Error: [8192] htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated - C:\xampp\htdocs\HRMS_BSIS_02\exits.php:924
+2026-02-18 12:15:42 Error: [8192] htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated - C:\xampp\htdocs\HRMS_BSIS_02\exits.php:924
+2026-02-18 12:15:42 Error: [8192] htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated - C:\xampp\htdocs\HRMS_BSIS_02\exits.php:924
+2026-02-18 12:17:27 Error: [8192] htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated - C:\xampp\htdocs\HRMS_BSIS_02\exits.php:924
+2026-02-18 12:17:27 Error: [8192] htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated - C:\xampp\htdocs\HRMS_BSIS_02\exits.php:924
+2026-02-18 12:17:28 Error: [8192] htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated - C:\xampp\htdocs\HRMS_BSIS_02\exits.php:924
+2026-02-18 12:17:28 Error: [8192] htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated - C:\xampp\htdocs\HRMS_BSIS_02\exits.php:924
+2026-02-18 12:17:28 Error: [8192] htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated - C:\xampp\htdocs\HRMS_BSIS_02\exits.php:924
+2026-02-18 12:17:32 Error: [8192] htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated - C:\xampp\htdocs\HRMS_BSIS_02\exits.php:924
+2026-02-18 12:17:36 Error: [8192] htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated - C:\xampp\htdocs\HRMS_BSIS_02\exits.php:924
+2026-02-18 12:18:54 Error: [8192] htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated - C:\xampp\htdocs\HRMS_BSIS_02\exits.php:682
+2026-02-18 12:19:00 Error: [2] Undefined array key "personal_info_id" - C:\xampp\htdocs\HRMS_BSIS_02\exits.php:73
+2026-02-18 12:19:00 Error: [2] Undefined array key "job_role_id" - C:\xampp\htdocs\HRMS_BSIS_02\exits.php:74
+2026-02-18 12:19:00 Error: [2] Undefined array key "employee_number" - C:\xampp\htdocs\HRMS_BSIS_02\exits.php:75
+2026-02-18 12:19:00 Error: [2] Undefined array key "hire_date" - C:\xampp\htdocs\HRMS_BSIS_02\exits.php:76
+2026-02-18 12:19:00 Error: [2] Undefined array key "employment_status" - C:\xampp\htdocs\HRMS_BSIS_02\exits.php:77
+2026-02-18 12:19:00 Error: [2] Undefined array key "current_salary" - C:\xampp\htdocs\HRMS_BSIS_02\exits.php:78
+2026-02-18 12:19:00 Error: [2] Undefined array key "work_email" - C:\xampp\htdocs\HRMS_BSIS_02\exits.php:79
+2026-02-18 12:19:00 Error: [2] Undefined array key "work_phone" - C:\xampp\htdocs\HRMS_BSIS_02\exits.php:80
+2026-02-18 12:19:00 Error: [2] Undefined array key "location" - C:\xampp\htdocs\HRMS_BSIS_02\exits.php:81
+2026-02-18 12:19:00 Error: [8192] htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated - C:\xampp\htdocs\HRMS_BSIS_02\exits.php:682
+2026-02-18 12:19:02 Error: [8192] htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated - C:\xampp\htdocs\HRMS_BSIS_02\exits.php:682
+2026-02-18 12:19:26 Error: [2] Undefined array key "employee_id" - C:\xampp\htdocs\HRMS_BSIS_02\exits.php:97
+2026-02-18 12:19:28 Error: [2] Undefined array key "employee_id" - C:\xampp\htdocs\HRMS_BSIS_02\exits.php:97
+2026-02-18 12:19:41 Error: [2] Undefined variable $row - C:\xampp\htdocs\HRMS_BSIS_02\login.php:112
+2026-02-18 12:19:41 Error: [2] Trying to access array offset on value of type null - C:\xampp\htdocs\HRMS_BSIS_02\login.php:112
+2026-02-18 12:20:07 Error: [2] Undefined variable $row - C:\xampp\htdocs\HRMS_BSIS_02\login.php:112
+2026-02-18 12:20:07 Error: [2] Trying to access array offset on value of type null - C:\xampp\htdocs\HRMS_BSIS_02\login.php:112
+2026-02-18 12:20:10 Error: [8192] htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated - C:\xampp\htdocs\HRMS_BSIS_02\exits.php:632
+2026-02-18 12:20:10 Error: [8192] htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated - C:\xampp\htdocs\HRMS_BSIS_02\exits.php:682
+2026-02-18 12:20:12 Error: [8192] htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated - C:\xampp\htdocs\HRMS_BSIS_02\exits.php:632
+2026-02-18 12:20:12 Error: [8192] htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated - C:\xampp\htdocs\HRMS_BSIS_02\exits.php:682
+2026-02-18 12:20:18 Error: [2] Undefined array key "personal_info_id" - C:\xampp\htdocs\HRMS_BSIS_02\exits.php:73
+2026-02-18 12:20:18 Error: [2] Undefined array key "job_role_id" - C:\xampp\htdocs\HRMS_BSIS_02\exits.php:74
+2026-02-18 12:20:18 Error: [2] Undefined array key "employee_number" - C:\xampp\htdocs\HRMS_BSIS_02\exits.php:75
+2026-02-18 12:20:18 Error: [2] Undefined array key "hire_date" - C:\xampp\htdocs\HRMS_BSIS_02\exits.php:76
+2026-02-18 12:20:18 Error: [2] Undefined array key "employment_status" - C:\xampp\htdocs\HRMS_BSIS_02\exits.php:77
+2026-02-18 12:20:18 Error: [2] Undefined array key "current_salary" - C:\xampp\htdocs\HRMS_BSIS_02\exits.php:78
+2026-02-18 12:20:18 Error: [2] Undefined array key "work_email" - C:\xampp\htdocs\HRMS_BSIS_02\exits.php:79
+2026-02-18 12:20:18 Error: [2] Undefined array key "work_phone" - C:\xampp\htdocs\HRMS_BSIS_02\exits.php:80
+2026-02-18 12:20:18 Error: [2] Undefined array key "location" - C:\xampp\htdocs\HRMS_BSIS_02\exits.php:81
+2026-02-18 12:20:18 Error: [8192] htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated - C:\xampp\htdocs\HRMS_BSIS_02\exits.php:632
+2026-02-18 12:20:18 Error: [8192] htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated - C:\xampp\htdocs\HRMS_BSIS_02\exits.php:682
+2026-02-18 12:20:20 Error: [8192] htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated - C:\xampp\htdocs\HRMS_BSIS_02\exits.php:632
+2026-02-18 12:20:20 Error: [8192] htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated - C:\xampp\htdocs\HRMS_BSIS_02\exits.php:682
+2026-02-18 12:20:55 Error: [8192] htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated - C:\xampp\htdocs\HRMS_BSIS_02\exits.php:632
+2026-02-18 12:20:55 Error: [8192] htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated - C:\xampp\htdocs\HRMS_BSIS_02\exits.php:682
+2026-02-18 12:20:55 Error: [8192] htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated - C:\xampp\htdocs\HRMS_BSIS_02\exits.php:632
+2026-02-18 12:20:55 Error: [8192] htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated - C:\xampp\htdocs\HRMS_BSIS_02\exits.php:682
+2026-02-18 12:20:56 Error: [8192] htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated - C:\xampp\htdocs\HRMS_BSIS_02\exits.php:632
+2026-02-18 12:20:56 Error: [8192] htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated - C:\xampp\htdocs\HRMS_BSIS_02\exits.php:682
+2026-02-18 12:20:56 Error: [8192] htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated - C:\xampp\htdocs\HRMS_BSIS_02\exits.php:632
+2026-02-18 12:20:56 Error: [8192] htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated - C:\xampp\htdocs\HRMS_BSIS_02\exits.php:682
+2026-02-18 12:20:59 Error: [2] Undefined array key "employee_id" - C:\xampp\htdocs\HRMS_BSIS_02\exits.php:97
+2026-02-18 12:21:04 Error: [2] Undefined array key "personal_info_id" - C:\xampp\htdocs\HRMS_BSIS_02\exits.php:73
+2026-02-18 12:21:04 Error: [2] Undefined array key "job_role_id" - C:\xampp\htdocs\HRMS_BSIS_02\exits.php:74
+2026-02-18 12:21:04 Error: [2] Undefined array key "employee_number" - C:\xampp\htdocs\HRMS_BSIS_02\exits.php:75
+2026-02-18 12:21:04 Error: [2] Undefined array key "hire_date" - C:\xampp\htdocs\HRMS_BSIS_02\exits.php:76
+2026-02-18 12:21:04 Error: [2] Undefined array key "employment_status" - C:\xampp\htdocs\HRMS_BSIS_02\exits.php:77
+2026-02-18 12:21:04 Error: [2] Undefined array key "current_salary" - C:\xampp\htdocs\HRMS_BSIS_02\exits.php:78
+2026-02-18 12:21:04 Error: [2] Undefined array key "work_email" - C:\xampp\htdocs\HRMS_BSIS_02\exits.php:79
+2026-02-18 12:21:04 Error: [2] Undefined array key "work_phone" - C:\xampp\htdocs\HRMS_BSIS_02\exits.php:80
+2026-02-18 12:21:04 Error: [2] Undefined array key "location" - C:\xampp\htdocs\HRMS_BSIS_02\exits.php:81
+2026-02-18 12:21:04 Error: [8192] htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated - C:\xampp\htdocs\HRMS_BSIS_02\exits.php:682
+2026-02-18 12:21:10 Error: [8192] htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated - C:\xampp\htdocs\HRMS_BSIS_02\exits.php:682
+2026-02-18 12:23:37 Error: [8192] htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated - C:\xampp\htdocs\HRMS_BSIS_02\exits.php:682
+2026-02-18 12:23:38 Error: [8192] htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated - C:\xampp\htdocs\HRMS_BSIS_02\exits.php:682
+2026-02-18 12:33:44 Error: [8192] htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated - C:\xampp\htdocs\HRMS_BSIS_02\exits.php:682
+2026-02-18 12:33:45 Error: [8192] htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated - C:\xampp\htdocs\HRMS_BSIS_02\exits.php:682
+2026-02-18 12:33:45 Error: [8192] htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated - C:\xampp\htdocs\HRMS_BSIS_02\exits.php:682
+2026-02-18 12:33:45 Error: [8192] htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated - C:\xampp\htdocs\HRMS_BSIS_02\exits.php:682
+2026-02-18 12:44:48 Error: [8192] htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated - C:\xampp\htdocs\HRMS_BSIS_02\exits.php:712
+2026-02-18 12:44:49 Error: [8192] htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated - C:\xampp\htdocs\HRMS_BSIS_02\exits.php:712
+2026-02-18 12:44:52 Error: [8192] htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated - C:\xampp\htdocs\HRMS_BSIS_02\exits.php:712
+2026-02-18 12:44:56 Error: [2] Undefined array key "personal_info_id" - C:\xampp\htdocs\HRMS_BSIS_02\exits.php:73
+2026-02-18 12:44:56 Error: [2] Undefined array key "job_role_id" - C:\xampp\htdocs\HRMS_BSIS_02\exits.php:74
+2026-02-18 12:44:56 Error: [2] Undefined array key "employee_number" - C:\xampp\htdocs\HRMS_BSIS_02\exits.php:75
+2026-02-18 12:44:56 Error: [2] Undefined array key "hire_date" - C:\xampp\htdocs\HRMS_BSIS_02\exits.php:76
+2026-02-18 12:44:56 Error: [2] Undefined array key "employment_status" - C:\xampp\htdocs\HRMS_BSIS_02\exits.php:77
+2026-02-18 12:44:56 Error: [2] Undefined array key "current_salary" - C:\xampp\htdocs\HRMS_BSIS_02\exits.php:78
+2026-02-18 12:44:56 Error: [2] Undefined array key "work_email" - C:\xampp\htdocs\HRMS_BSIS_02\exits.php:79
+2026-02-18 12:44:56 Error: [2] Undefined array key "work_phone" - C:\xampp\htdocs\HRMS_BSIS_02\exits.php:80
+2026-02-18 12:44:56 Error: [2] Undefined array key "location" - C:\xampp\htdocs\HRMS_BSIS_02\exits.php:81
+2026-02-18 12:44:56 Error: [8192] htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated - C:\xampp\htdocs\HRMS_BSIS_02\exits.php:712
+2026-02-18 12:44:58 Error: [8192] htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated - C:\xampp\htdocs\HRMS_BSIS_02\exits.php:712
+2026-02-18 12:49:32 Error: [8192] htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated - C:\xampp\htdocs\HRMS_BSIS_02\exits.php:740
+2026-02-18 12:49:32 Error: [8192] htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated - C:\xampp\htdocs\HRMS_BSIS_02\exits.php:740
+2026-02-18 12:49:33 Error: [8192] htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated - C:\xampp\htdocs\HRMS_BSIS_02\exits.php:740
+2026-02-18 12:49:33 Error: [8192] htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated - C:\xampp\htdocs\HRMS_BSIS_02\exits.php:740
+2026-02-18 12:55:56 Error: [8192] htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated - C:\xampp\htdocs\HRMS_BSIS_02\exits.php:712
+2026-02-18 12:56:01 Error: [2] Undefined array key "personal_info_id" - C:\xampp\htdocs\HRMS_BSIS_02\exits.php:73
+2026-02-18 12:56:01 Error: [2] Undefined array key "job_role_id" - C:\xampp\htdocs\HRMS_BSIS_02\exits.php:74
+2026-02-18 12:56:01 Error: [2] Undefined array key "employee_number" - C:\xampp\htdocs\HRMS_BSIS_02\exits.php:75
+2026-02-18 12:56:01 Error: [2] Undefined array key "hire_date" - C:\xampp\htdocs\HRMS_BSIS_02\exits.php:76
+2026-02-18 12:56:01 Error: [2] Undefined array key "employment_status" - C:\xampp\htdocs\HRMS_BSIS_02\exits.php:77
+2026-02-18 12:56:01 Error: [2] Undefined array key "current_salary" - C:\xampp\htdocs\HRMS_BSIS_02\exits.php:78
+2026-02-18 12:56:01 Error: [2] Undefined array key "work_email" - C:\xampp\htdocs\HRMS_BSIS_02\exits.php:79
+2026-02-18 12:56:01 Error: [2] Undefined array key "work_phone" - C:\xampp\htdocs\HRMS_BSIS_02\exits.php:80
+2026-02-18 12:56:01 Error: [2] Undefined array key "location" - C:\xampp\htdocs\HRMS_BSIS_02\exits.php:81
+2026-02-18 12:56:01 Error: [8192] htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated - C:\xampp\htdocs\HRMS_BSIS_02\exits.php:712
+2026-02-18 12:56:03 Error: [8192] htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated - C:\xampp\htdocs\HRMS_BSIS_02\exits.php:712
+2026-02-18 13:06:40 Error: [8192] htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated - C:\xampp\htdocs\HRMS_BSIS_02\exits.php:802
+2026-02-18 13:06:54 Error: [2] Undefined array key "personal_info_id" - C:\xampp\htdocs\HRMS_BSIS_02\exits.php:73
+2026-02-18 13:06:54 Error: [2] Undefined array key "job_role_id" - C:\xampp\htdocs\HRMS_BSIS_02\exits.php:74
+2026-02-18 13:06:54 Error: [2] Undefined array key "employee_number" - C:\xampp\htdocs\HRMS_BSIS_02\exits.php:75
+2026-02-18 13:06:54 Error: [2] Undefined array key "hire_date" - C:\xampp\htdocs\HRMS_BSIS_02\exits.php:76
+2026-02-18 13:06:54 Error: [2] Undefined array key "employment_status" - C:\xampp\htdocs\HRMS_BSIS_02\exits.php:77
+2026-02-18 13:06:54 Error: [2] Undefined array key "current_salary" - C:\xampp\htdocs\HRMS_BSIS_02\exits.php:78
+2026-02-18 13:06:54 Error: [2] Undefined array key "work_email" - C:\xampp\htdocs\HRMS_BSIS_02\exits.php:79
+2026-02-18 13:06:54 Error: [2] Undefined array key "work_phone" - C:\xampp\htdocs\HRMS_BSIS_02\exits.php:80
+2026-02-18 13:06:54 Error: [2] Undefined array key "location" - C:\xampp\htdocs\HRMS_BSIS_02\exits.php:81
+2026-02-18 13:06:57 Error: [2] Undefined array key "employee_id" - C:\xampp\htdocs\HRMS_BSIS_02\exits.php:97
+2026-02-18 13:13:06 Error: [8192] htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated - C:\xampp\htdocs\HRMS_BSIS_02\exits.php:712
+2026-02-18 13:13:07 Error: [8192] htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated - C:\xampp\htdocs\HRMS_BSIS_02\exits.php:712
+2026-02-18 13:13:09 Error: [8192] htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated - C:\xampp\htdocs\HRMS_BSIS_02\exits.php:712
+2026-02-18 13:13:10 Error: [8192] htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated - C:\xampp\htdocs\HRMS_BSIS_02\exits.php:712
+2026-02-18 13:13:19 Error: [8192] htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated - C:\xampp\htdocs\HRMS_BSIS_02\exits.php:712
+2026-02-18 13:13:19 Error: [8192] htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated - C:\xampp\htdocs\HRMS_BSIS_02\exits.php:712
+2026-02-18 13:14:36 Error: [8192] htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated - C:\xampp\htdocs\HRMS_BSIS_02\exits.php:712
+2026-02-18 13:14:36 Error: [8192] htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated - C:\xampp\htdocs\HRMS_BSIS_02\exits.php:712
+2026-02-18 13:14:45 Error: [2] Undefined variable $row - C:\xampp\htdocs\HRMS_BSIS_02\login.php:112
+2026-02-18 13:14:45 Error: [2] Trying to access array offset on value of type null - C:\xampp\htdocs\HRMS_BSIS_02\login.php:112
+2026-02-18 13:15:03 Error: [2] Undefined variable $row - C:\xampp\htdocs\HRMS_BSIS_02\login.php:112
+2026-02-18 13:15:03 Error: [2] Trying to access array offset on value of type null - C:\xampp\htdocs\HRMS_BSIS_02\login.php:112
+2026-02-18 13:15:06 Error: [8192] htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated - C:\xampp\htdocs\HRMS_BSIS_02\exits.php:712
+2026-02-18 13:19:33 Error: [8192] htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated - C:\xampp\htdocs\HRMS_BSIS_02\exits.php:793
+2026-02-18 13:21:08 Error: [8192] htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated - C:\xampp\htdocs\HRMS_BSIS_02\exits.php:783
+2026-02-18 13:21:30 Error: [8192] htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated - C:\xampp\htdocs\HRMS_BSIS_02\exits.php:793
+2026-02-18 13:21:31 Error: [8192] htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated - C:\xampp\htdocs\HRMS_BSIS_02\exits.php:793
+2026-02-18 13:21:32 Error: [8192] htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated - C:\xampp\htdocs\HRMS_BSIS_02\exits.php:793
+2026-02-18 13:21:59 Error: [8192] htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated - C:\xampp\htdocs\HRMS_BSIS_02\exits.php:793
+2026-02-18 13:22:11 Error: [8192] htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated - C:\xampp\htdocs\HRMS_BSIS_02\exits.php:793
+2026-02-18 13:22:45 Error: [2] Undefined variable $row - C:\xampp\htdocs\HRMS_BSIS_02\login.php:112
+2026-02-18 13:22:45 Error: [2] Trying to access array offset on value of type null - C:\xampp\htdocs\HRMS_BSIS_02\login.php:112
+2026-02-18 13:23:11 Error: [2] Undefined variable $row - C:\xampp\htdocs\HRMS_BSIS_02\login.php:112
+2026-02-18 13:23:11 Error: [2] Trying to access array offset on value of type null - C:\xampp\htdocs\HRMS_BSIS_02\login.php:112
+2026-02-18 13:23:14 Error: [8192] htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated - C:\xampp\htdocs\HRMS_BSIS_02\exits.php:783
+2026-02-18 13:23:16 Error: [8192] htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated - C:\xampp\htdocs\HRMS_BSIS_02\exits.php:783
+2026-02-18 13:23:22 Error: [8192] htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated - C:\xampp\htdocs\HRMS_BSIS_02\exits.php:783
+2026-02-18 13:24:18 Error: [8192] htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated - C:\xampp\htdocs\HRMS_BSIS_02\exits.php:778
+2026-02-18 13:26:39 Error: [8192] htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated - C:\xampp\htdocs\HRMS_BSIS_02\exits.php:778
+2026-02-18 13:26:41 Error: [8192] htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated - C:\xampp\htdocs\HRMS_BSIS_02\exits.php:778
+2026-02-18 13:28:09 Error: [8192] htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated - C:\xampp\htdocs\HRMS_BSIS_02\exits.php:778
+2026-02-18 13:29:00 Error: [8192] htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated - C:\xampp\htdocs\HRMS_BSIS_02\exits.php:778
+2026-02-18 13:29:03 Error: [8192] htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated - C:\xampp\htdocs\HRMS_BSIS_02\exits.php:778
+2026-02-18 13:29:20 Error: [8192] htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated - C:\xampp\htdocs\HRMS_BSIS_02\exits.php:778
+2026-02-18 13:29:20 Error: [8192] htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated - C:\xampp\htdocs\HRMS_BSIS_02\exits.php:778
+2026-02-18 13:29:24 Error: [8192] htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated - C:\xampp\htdocs\HRMS_BSIS_02\exits.php:778
+2026-02-18 13:32:29 Error: [8192] htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated - C:\xampp\htdocs\HRMS_BSIS_02\exits.php:778
+2026-02-18 13:32:34 Error: [8192] htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated - C:\xampp\htdocs\HRMS_BSIS_02\exits.php:778
+2026-02-18 13:32:35 Error: [8192] htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated - C:\xampp\htdocs\HRMS_BSIS_02\exits.php:778
+2026-02-18 13:32:35 Error: [8192] htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated - C:\xampp\htdocs\HRMS_BSIS_02\exits.php:778
+2026-02-18 13:32:35 Error: [8192] htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated - C:\xampp\htdocs\HRMS_BSIS_02\exits.php:778
+2026-02-18 13:32:36 Error: [8192] htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated - C:\xampp\htdocs\HRMS_BSIS_02\exits.php:778
+2026-02-18 13:32:44 Error: [8192] htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated - C:\xampp\htdocs\HRMS_BSIS_02\exits.php:778
+2026-02-18 13:32:49 Error: [8192] htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated - C:\xampp\htdocs\HRMS_BSIS_02\exits.php:778
+2026-02-18 13:32:51 Error: [8192] htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated - C:\xampp\htdocs\HRMS_BSIS_02\exits.php:778
+2026-02-18 13:32:52 Error: [8192] htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated - C:\xampp\htdocs\HRMS_BSIS_02\exits.php:778
+2026-02-18 13:32:55 Error: [8192] htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated - C:\xampp\htdocs\HRMS_BSIS_02\exits.php:778
+2026-02-18 13:32:55 Error: [8192] htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated - C:\xampp\htdocs\HRMS_BSIS_02\exits.php:778
+2026-02-18 13:32:59 Error: [8192] htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated - C:\xampp\htdocs\HRMS_BSIS_02\exits.php:778
+2026-02-18 13:33:21 Error: [8192] htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated - C:\xampp\htdocs\HRMS_BSIS_02\exits.php:778
+2026-02-18 13:33:21 Error: [8192] htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated - C:\xampp\htdocs\HRMS_BSIS_02\exits.php:778
+2026-02-18 13:33:22 Error: [8192] htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated - C:\xampp\htdocs\HRMS_BSIS_02\exits.php:778
+2026-02-18 13:33:22 Error: [8192] htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated - C:\xampp\htdocs\HRMS_BSIS_02\exits.php:778
+2026-02-18 13:33:22 Error: [8192] htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated - C:\xampp\htdocs\HRMS_BSIS_02\exits.php:778
+2026-02-18 13:37:15 Error: [8192] htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated - C:\xampp\htdocs\HRMS_BSIS_02\exits.php:778
+2026-02-18 13:37:15 Error: [8192] htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated - C:\xampp\htdocs\HRMS_BSIS_02\exits.php:778
+2026-02-18 13:37:15 Error: [8192] htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated - C:\xampp\htdocs\HRMS_BSIS_02\exits.php:778
+2026-02-18 13:37:15 Error: [8192] htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated - C:\xampp\htdocs\HRMS_BSIS_02\exits.php:778
+2026-02-18 13:37:32 Error: [8192] htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated - C:\xampp\htdocs\HRMS_BSIS_02\exits.php:778
+2026-02-18 13:37:34 Error: [8192] htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated - C:\xampp\htdocs\HRMS_BSIS_02\exit_interviews.php:980
+2026-02-18 13:37:34 Error: [8192] htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated - C:\xampp\htdocs\HRMS_BSIS_02\exit_interviews.php:980
+2026-02-18 13:37:36 Error: [8192] htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated - C:\xampp\htdocs\HRMS_BSIS_02\exits.php:778
+2026-02-18 13:39:10 Error: [8192] htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated - C:\xampp\htdocs\HRMS_BSIS_02\exits.php:775
+2026-02-18 13:39:12 Error: [8192] htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated - C:\xampp\htdocs\HRMS_BSIS_02\exits.php:775

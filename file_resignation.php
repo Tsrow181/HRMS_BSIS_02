@@ -1,115 +1,113 @@
 <?php
-// Enable error reporting for debugging
-error_reporting(E_ALL);
-ini_set('display_errors', 1);
-
-echo "<!-- Debug: Script started -->\n";
-
-// Start session
+// Start session first
 if (session_status() === PHP_SESSION_NONE) {
     session_start();
 }
 
-echo "<!-- Debug: Session started -->\n";
-
-// Check if user is logged in and is an employee
-if (!isset($_SESSION['loggedin']) || $_SESSION['loggedin'] !== true) {
-    echo "<!-- Debug: User not logged in -->\n";
-    header("location: login.php");
-    exit;
-}
-
-if ($_SESSION['role'] !== 'employee') {
-    echo "<!-- Debug: User is not employee, role: " . $_SESSION['role'] . " -->\n";
-    header("location: login.php");
-    exit;
-}
-
-echo "<!-- Debug: User verified as employee -->\n";
-
 // Include database configuration
-if (!file_exists('config.php')) {
-    die("Error: config.php file not found!");
-}
-
 require_once 'config.php';
 
-echo "<!-- Debug: Config loaded -->\n";
-
-// Check database connection
-if (!isset($conn)) {
-    die("Error: Database connection not established!");
+// Check if user is logged in and is an employee
+if (!isset($_SESSION['loggedin']) || $_SESSION['loggedin'] !== true || $_SESSION['role'] !== 'employee') {
+    header("location: login.php");
+    exit;
 }
 
-echo "<!-- Debug: Database connected -->\n";
-
 // Initialize variables
-$username = $_SESSION['username'] ?? 'Employee';
 $user_id = $_SESSION['user_id'] ?? 0;
+$username = $_SESSION['username'] ?? '';
 $employee_id = 0;
 $success_message = '';
 $error_message = '';
 $employee = null;
 $existing_resignation = null;
 
-echo "<!-- Debug: User ID from session: " . $user_id . " -->\n";
-echo "<!-- Debug: Username from session: " . $username . " -->\n";
-
-// Get employee_id from the employees table using the username
-if ($user_id > 0 || !empty($username)) {
+// Get employee_id from users table
+if ($user_id > 0) {
     try {
-        // First try to find employee by username
-        $lookup_query = "SELECT employee_id, first_name, last_name, employee_code, job_title, department_id, email, username 
-                        FROM employees 
-                        WHERE username = ? OR email = ?";
+        $lookup_query = "SELECT employee_id FROM users WHERE user_id = ?";
+        $stmt = $conn->prepare($lookup_query);
+        $stmt->execute([$user_id]);
+        $row = $stmt->fetch();
         
-        if ($lookup_stmt = $conn->prepare($lookup_query)) {
-            $lookup_stmt->bind_param("ss", $username, $username);
-            $lookup_stmt->execute();
-            $lookup_result = $lookup_stmt->get_result();
-            
-            if ($lookup_row = $lookup_result->fetch_assoc()) {
-                $employee_id = $lookup_row['employee_id'];
-                // Store employee_id in session for future use
-                $_SESSION['employee_id'] = $employee_id;
-                echo "<!-- Debug: Found employee_id: " . $employee_id . " for username: " . $username . " -->\n";
-            } else {
-                echo "<!-- Debug: No employee found for username: " . $username . " -->\n";
-            }
-            $lookup_stmt->close();
+        if ($row && $row['employee_id']) {
+            $employee_id = $row['employee_id'];
         }
-    } catch (Exception $e) {
-        echo "<!-- Debug: Error finding employee: " . $e->getMessage() . " -->\n";
+    } catch (PDOException $e) {
+        $error_message = "Database error: " . $e->getMessage();
     }
 }
 
 if ($employee_id == 0) {
     $error_message = "Could not find your employee record. Please contact HR to link your account.";
-    echo "<!-- Debug: employee_id is 0, cannot proceed -->\n";
 }
 
 // Get employee details
 if ($employee_id > 0) {
     try {
-        $employee_query = "SELECT e.first_name, e.last_name, e.employee_code, e.job_title, e.department_id, d.department_name 
-                           FROM employees e 
-                           LEFT JOIN departments d ON e.department_id = d.department_id 
-                           WHERE e.employee_id = ?";
+        $employee_query = "SELECT 
+                            pi.first_name, 
+                            pi.last_name, 
+                            ep.employee_number as employee_code, 
+                            jr.title as job_title, 
+                            jr.department as department_name,
+                            ep.personal_info_id,
+                            ep.job_role_id
+                           FROM employee_profiles ep
+                           LEFT JOIN personal_information pi ON ep.personal_info_id = pi.personal_info_id
+                           LEFT JOIN job_roles jr ON ep.job_role_id = jr.job_role_id
+                           WHERE ep.employee_id = ?";
         
-        if ($stmt = $conn->prepare($employee_query)) {
-            $stmt->bind_param("i", $employee_id);
-            $stmt->execute();
-            $employee_result = $stmt->get_result();
-            $employee = $employee_result->fetch_assoc();
-            $stmt->close();
-            echo "<!-- Debug: Employee data loaded -->\n";
-        } else {
-            $error_message = "Database error preparing employee query: " . $conn->error;
-            echo "<!-- Debug: " . $error_message . " -->\n";
+        $stmt = $conn->prepare($employee_query);
+        $stmt->execute([$employee_id]);
+        $employee = $stmt->fetch();
+        
+        if ($employee) {
+            // If personal info is NULL, use username as fallback
+            if (empty($employee['first_name']) && !empty($username)) {
+                // Convert username to display name (e.g., ana.morales -> Ana Morales)
+                $name_parts = explode('.', $username);
+                $employee['first_name'] = ucfirst($name_parts[0] ?? '');
+                $employee['last_name'] = ucfirst($name_parts[1] ?? '');
+            }
+            
+            // If employee_code is NULL, generate one from employee_id
+            if (empty($employee['employee_code'])) {
+                $employee['employee_code'] = 'EMP' . str_pad($employee_id, 4, '0', STR_PAD_LEFT);
+            }
+            
+            // If job_title or department is NULL, try to get from employment_history
+            if (empty($employee['job_title']) || empty($employee['department_name'])) {
+                $history_query = "SELECT eh.job_title, d.department_name 
+                                 FROM employment_history eh
+                                 LEFT JOIN departments d ON eh.department_id = d.department_id
+                                 WHERE eh.employee_id = ?
+                                 ORDER BY eh.start_date DESC LIMIT 1";
+                $history_stmt = $conn->prepare($history_query);
+                $history_stmt->execute([$employee_id]);
+                $history = $history_stmt->fetch();
+                
+                if ($history) {
+                    if (empty($employee['job_title']) && !empty($history['job_title'])) {
+                        $employee['job_title'] = $history['job_title'];
+                    }
+                    if (empty($employee['department_name']) && !empty($history['department_name'])) {
+                        $employee['department_name'] = $history['department_name'];
+                    }
+                }
+            }
+            
+            // Final fallbacks if still empty
+            if (empty($employee['job_title'])) {
+                $employee['job_title'] = 'Employee';
+            }
+            
+            if (empty($employee['department_name'])) {
+                $employee['department_name'] = 'Not Assigned';
+            }
         }
-    } catch (Exception $e) {
+    } catch (PDOException $e) {
         $error_message = "Error loading employee data: " . $e->getMessage();
-        echo "<!-- Debug: " . $error_message . " -->\n";
     }
 }
 
@@ -117,26 +115,16 @@ if ($employee_id > 0) {
 if ($employee_id > 0) {
     try {
         $check_query = "SELECT * FROM exits WHERE employee_id = ? AND status IN ('Pending', 'Processing') ORDER BY created_at DESC LIMIT 1";
-        
-        if ($check_stmt = $conn->prepare($check_query)) {
-            $check_stmt->bind_param("i", $employee_id);
-            $check_stmt->execute();
-            $check_result = $check_stmt->get_result();
-            $existing_resignation = $check_result->fetch_assoc();
-            $check_stmt->close();
-            echo "<!-- Debug: Resignation check complete -->\n";
-        } else {
-            echo "<!-- Debug: Error preparing resignation check: " . $conn->error . " -->\n";
-        }
-    } catch (Exception $e) {
-        echo "<!-- Debug: Exception checking resignation: " . $e->getMessage() . " -->\n";
+        $check_stmt = $conn->prepare($check_query);
+        $check_stmt->execute([$employee_id]);
+        $existing_resignation = $check_stmt->fetch();
+    } catch (PDOException $e) {
+        // Silent fail for this check
     }
 }
 
 // Handle form submission
 if ($_SERVER["REQUEST_METHOD"] == "POST" && !$existing_resignation) {
-    echo "<!-- Debug: Processing form submission -->\n";
-    
     $exit_type = trim($_POST['exit_type'] ?? '');
     $notice_date = trim($_POST['notice_date'] ?? '');
     $exit_date = trim($_POST['exit_date'] ?? '');
@@ -158,26 +146,14 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && !$existing_resignation) {
                 $insert_query = "INSERT INTO exits (employee_id, exit_type, exit_reason, notice_date, exit_date, status) 
                                VALUES (?, ?, ?, ?, ?, 'Pending')";
                 
-                if ($insert_stmt = $conn->prepare($insert_query)) {
-                    $insert_stmt->bind_param("issss", $employee_id, $exit_type, $exit_reason, $notice_date, $exit_date);
-                    
-                    if ($insert_stmt->execute()) {
-                        $success_message = "Your resignation has been filed successfully. HR will review it shortly.";
-                        $insert_stmt->close();
-                        echo "<!-- Debug: Resignation submitted successfully -->\n";
-                        // Refresh to show the pending status
-                        header("refresh:2;url=file_resignation.php");
-                    } else {
-                        $error_message = "Error filing resignation: " . $insert_stmt->error;
-                        echo "<!-- Debug: " . $error_message . " -->\n";
-                    }
-                } else {
-                    $error_message = "Database error: " . $conn->error;
-                    echo "<!-- Debug: " . $error_message . " -->\n";
-                }
-            } catch (Exception $e) {
+                $insert_stmt = $conn->prepare($insert_query);
+                $insert_stmt->execute([$employee_id, $exit_type, $exit_reason, $notice_date, $exit_date]);
+                
+                $success_message = "Your resignation has been filed successfully. HR will review it shortly.";
+                // Refresh to show the pending status
+                header("refresh:2;url=file_resignation.php");
+            } catch (PDOException $e) {
                 $error_message = "Error submitting resignation: " . $e->getMessage();
-                echo "<!-- Debug: " . $error_message . " -->\n";
             }
         }
     }
@@ -190,7 +166,32 @@ $resignation_types = [
     'End of Contract'
 ];
 
-echo "<!-- Debug: Ready to render HTML -->\n";
+// Get departments list
+$departments = [];
+try {
+    $dept_query = "SELECT department_id, department_name FROM departments ORDER BY department_name";
+    $dept_stmt = $conn->prepare($dept_query);
+    $dept_stmt->execute();
+    $departments = $dept_stmt->fetchAll();
+} catch (PDOException $e) {
+    // Silent fail, departments will be empty
+}
+
+// Get job roles list
+$job_roles = [];
+try {
+    $role_query = "SELECT job_role_id, title FROM job_roles ORDER BY title";
+    $role_stmt = $conn->prepare($role_query);
+    $role_stmt->execute();
+    $job_roles = $role_stmt->fetchAll();
+    
+    // Debug: Check if we got any roles
+    if (empty($job_roles)) {
+        $error_message = "DEBUG: No job roles found in database. Count: " . count($job_roles);
+    }
+} catch (PDOException $e) {
+    $error_message = "DEBUG: Error fetching job roles - " . $e->getMessage();
+}
 ?>
 
 <!DOCTYPE html>
@@ -283,13 +284,10 @@ echo "<!-- Debug: Ready to render HTML -->\n";
 </head>
 <body class="employee-page">
     
-    <?php 
-    echo "<!-- Debug: About to include sidebar -->\n";
-    include 'employee_sidebar.php'; 
-    echo "<!-- Debug: Sidebar included -->\n";
-    ?>
+    <?php include 'employee_sidebar.php'; ?>
     
     <div class="main-content">
+        
         <div class="page-header">
             <h2><i class="fas fa-sign-out-alt"></i> File Resignation</h2>
             <p class="mb-0">Submit your resignation request</p>
@@ -370,14 +368,32 @@ echo "<!-- Debug: Ready to render HTML -->\n";
                         <div class="col-md-6">
                             <div class="form-group">
                                 <label>Department</label>
-                                <input type="text" class="form-control" value="<?php echo htmlspecialchars($employee['department_name'] ?? 'N/A'); ?>" readonly>
+                                <select class="form-control" name="department_id">
+                                    <option value="">-- Select Department --</option>
+                                    <?php foreach ($departments as $dept): ?>
+                                        <option value="<?php echo htmlspecialchars($dept['department_id']); ?>" 
+                                            <?php echo (isset($employee['department_name']) && $employee['department_name'] == $dept['department_name']) ? 'selected' : ''; ?>>
+                                            <?php echo htmlspecialchars($dept['department_name']); ?>
+                                        </option>
+                                    <?php endforeach; ?>
+                                </select>
+                                <small class="form-text text-muted">Select your department</small>
                             </div>
                         </div>
                         
                         <div class="col-md-6">
                             <div class="form-group">
                                 <label>Position</label>
-                                <input type="text" class="form-control" value="<?php echo htmlspecialchars($employee['job_title'] ?? 'N/A'); ?>" readonly>
+                                <select class="form-control" name="job_role_id">
+                                    <option value="">-- Select Position --</option>
+                                    <?php foreach ($job_roles as $role): ?>
+                                        <option value="<?php echo htmlspecialchars($role['job_role_id']); ?>" 
+                                            <?php echo (isset($employee['job_title']) && $employee['job_title'] == $role['title']) ? 'selected' : ''; ?>>
+                                            <?php echo htmlspecialchars($role['title']); ?>
+                                        </option>
+                                    <?php endforeach; ?>
+                                </select>
+                                <small class="form-text text-muted">Select your position</small>
                             </div>
                         </div>
                     </div>
@@ -455,8 +471,6 @@ echo "<!-- Debug: Ready to render HTML -->\n";
     <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
     
     <script>
-        console.log('Script loaded');
-        
         // Form validation
         var form = document.getElementById('resignationForm');
         if (form) {

@@ -642,6 +642,11 @@ $employees = $stmt->fetchAll(PDO::FETCH_ASSOC);
                                     <td><?= htmlspecialchars($doc['exit_type']) ?></td>
                                     <td><?= date('M d, Y', strtotime($doc['uploaded_date'])) ?></td>
                                     <td>
+                                        <button class="btn btn-success btn-small"
+    onclick="printCertificate(<?= $doc['employee_id'] ?>, <?= $doc['exit_id'] ?>)">
+    <i class="fas fa-print"></i> Print
+</button>
+
                                         <?php if (!empty($doc['document_url']) && file_exists($doc['document_url'])): ?>
                                         <a href="<?= htmlspecialchars($doc['document_url']) ?>" class="btn btn-info btn-small" target="_blank">
                                             📄 View
@@ -888,6 +893,24 @@ $employees = $stmt->fetchAll(PDO::FETCH_ASSOC);
         if (window.history.replaceState) {
             window.history.replaceState(null, null, window.location.href);
         }
+
+        function printCertificate(employeeId, exitId) {
+    const printWindow = window.open(
+        `generate_exit_certificate.php?employee_id=${employeeId}&exit_id=${exitId}`,
+        '',
+        'width=900,height=700'
+    );
+
+    printWindow.onload = function() {
+        printWindow.focus();
+        printWindow.print();
+
+        printWindow.onafterprint = function() {
+            printWindow.close();
+        };
+    };
+}
+
     </script>
 
     <!-- Bootstrap JS (Optional) -->
