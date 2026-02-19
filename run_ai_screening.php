@@ -70,7 +70,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 // Update job application with AI screening results
                 $stmt = $conn->prepare("UPDATE job_applications 
                                        SET assessment_scores = ?, 
-                                           notes = ? 
+                                           notes = ?,
+                                           status = 'Screening'
                                        WHERE application_id = ?");
                 $stmt->bind_param('ssi', $assessmentJson, $notesText, $application['application_id']);
                 $stmt->execute();

@@ -20,14 +20,34 @@ $jobs = $conn->query($jobs_query)->fetchAll(PDO::FETCH_ASSOC);
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.1/css/all.min.css">
     <link rel="stylesheet" href="styles.css">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
     <style>
+        :root{
+            --primary-color:#c82333; /* municipal red */
+            --primary-dark:#8b1f28;
+            --primary-light:#f7b2b8;
+            --secondary-color:#0b61a4; /* municipal blue */
+            --bg-card:#ffffff;
+            --bg-primary:#f6f8fb;
+            --bg-secondary:#eef5fb;
+            --text-primary:#222;
+            --text-secondary:#6c757d;
+            --border-light:rgba(0,0,0,0.06);
+            --shadow-light:rgba(10,10,20,0.06);
+            --shadow-medium:rgba(10,10,20,0.12);
+            --success:#28a745;
+            --accent:var(--secondary-color);
+        }
+        html,body{font-family: 'Poppins', system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial;}
         .hero {
-            background: linear-gradient(135deg, var(--primary-color) 0%, var(--primary-light) 100%);
+            background: linear-gradient(135deg, var(--primary-color) 0%, var(--primary-dark) 100%);
             color: white;
-            padding: 80px 0;
-            text-align: center;
+            padding: 56px 0 40px;
             position: relative;
             overflow: hidden;
+            display: flex;
+            align-items: center;
+            justify-content: center;
         }
         
         .hero::before {
@@ -43,7 +63,12 @@ $jobs = $conn->query($jobs_query)->fetchAll(PDO::FETCH_ASSOC);
         .hero-content {
             position: relative;
             z-index: 2;
+            display:flex;
+            align-items:center;
+            gap:18px;
         }
+
+        .municipal-logo{width:84px;height:84px;border-radius:12px;background:white;padding:8px;box-shadow:0 6px 18px rgba(0,0,0,0.12);object-fit:contain}
         
         .search-filter {
             background: var(--bg-card);
@@ -214,7 +239,7 @@ $jobs = $conn->query($jobs_query)->fetchAll(PDO::FETCH_ASSOC);
             color: var(--text-primary);
             font-weight: 700;
             margin: 60px 0 40px;
-            font-size: 2.5rem;
+            font-size: 2rem;
             position: relative;
         }
         
@@ -241,10 +266,13 @@ $jobs = $conn->query($jobs_query)->fetchAll(PDO::FETCH_ASSOC);
 <body>
     <div class="hero">
         <div class="container hero-content">
-            <h1><i class="fas fa-city mr-3"></i>Join Our Municipal Team</h1>
-            <p class="lead">Discover meaningful career opportunities in public service. Make a difference in your community.</p>
+            <img src="image/garay.jpg" alt="Municipality Logo" class="municipal-logo" onerror="this.style.display='none'">
+            <div>
+                <h1><i class="fas fa-city mr-2"></i>Join Our Municipal Team</h1>
+                <p class="lead mb-0">Discover meaningful career opportunities in public service. Make a difference in your community.</p>
+            </div>
             <div class="mt-4">
-                <span class="badge badge-light mr-2 p-2"><i class="fas fa-users mr-1"></i><?php echo count($jobs); ?> Open Positions</span>
+                <span class="badge badge-light mr-2 p-2" aria-live="polite"><i class="fas fa-users mr-1"></i><?php echo count($jobs); ?> Open Positions</span>
                 <span class="badge badge-light p-2"><i class="fas fa-clock mr-1"></i>Apply Today</span>
             </div>
         </div>
@@ -262,10 +290,10 @@ $jobs = $conn->query($jobs_query)->fetchAll(PDO::FETCH_ASSOC);
                     </div>
                 </div>
                 <div class="col-md-6 text-center">
-                    <button class="filter-btn" onclick="filterJobs('all')">All Jobs</button>
-                    <button class="filter-btn" onclick="filterJobs('Full-time')">Full-time</button>
-                    <button class="filter-btn" onclick="filterJobs('Part-time')">Part-time</button>
-                    <button class="filter-btn" onclick="filterJobs('Contract')">Contract</button>
+                    <button class="filter-btn active" onclick="filterJobs(this,'all')" aria-pressed="true">All Jobs</button>
+                    <button class="filter-btn" onclick="filterJobs(this,'Full-time')" aria-pressed="false">Full-time</button>
+                    <button class="filter-btn" onclick="filterJobs(this,'Part-time')" aria-pressed="false">Part-time</button>
+                    <button class="filter-btn" onclick="filterJobs(this,'Contract')" aria-pressed="false">Contract</button>
                 </div>
             </div>
         </div>
@@ -341,7 +369,7 @@ $jobs = $conn->query($jobs_query)->fetchAll(PDO::FETCH_ASSOC);
     <div class="modal fade" id="jobDetailsModal" tabindex="-1" role="dialog">
         <div class="modal-dialog modal-lg" role="document">
             <div class="modal-content">
-                <div class="modal-header" style="background: linear-gradient(135deg, var(--primary) 0%, var(--primary-light) 100%); color: white;">
+                <div class="modal-header" style="background: linear-gradient(135deg, var(--primary-color) 0%, var(--primary-light) 100%); color: white;">
                     <h5 class="modal-title"><i class="fas fa-briefcase mr-2"></i>Job Details</h5>
                     <button type="button" class="close text-white" data-dismiss="modal">
                         <span>&times;</span>
@@ -364,113 +392,57 @@ $jobs = $conn->query($jobs_query)->fetchAll(PDO::FETCH_ASSOC);
     
     <script>
     function applyForJob(jobId) {
-        // Clear any existing session data for new application
         fetch('clear_session.php', { method: 'POST' })
-            .then(() => {
-                window.location.href = 'apply.php?job_id=' + jobId;
-            });
+            .then(() => { window.location.href = 'apply.php?job_id=' + jobId; });
     }
-    
+
     let currentFilter = 'all';
-    
-    function filterJobs(type) {
+
+    function filterJobs(el, type) {
         currentFilter = type;
-        $('.filter-btn').removeClass('active');
-        $(event.target).addClass('active');
-        
+        $('.filter-btn').removeClass('active').attr('aria-pressed', 'false');
+        if (el) $(el).addClass('active').attr('aria-pressed', 'true');
+
         $('.job-card').parent().show();
         if (type !== 'all') {
             $('.job-card').parent().each(function() {
-                const employmentType = $(this).find('.job-detail:contains("' + type + '")').length;
-                if (employmentType === 0) {
-                    $(this).hide();
-                }
+                const found = $(this).find('.job-detail').filter(function(){
+                    return $(this).text().trim().toLowerCase() === type.toLowerCase();
+                }).length;
+                if (!found) $(this).hide();
             });
         }
     }
-    
-    $('#jobSearch').on('keyup', function() {
+
+    function debounce(fn, wait){ let t; return function(){ const ctx=this, args=arguments; clearTimeout(t); t=setTimeout(()=>fn.apply(ctx,args), wait); }; }
+
+    $('#jobSearch').on('keyup', debounce(function() {
         const searchTerm = $(this).val().toLowerCase();
         $('.job-card').parent().each(function() {
             const jobText = $(this).text().toLowerCase();
-            const matches = jobText.includes(searchTerm);
-            
-            if (matches) {
-                $(this).show();
-            } else {
-                $(this).hide();
-            }
+            $(this).toggle(jobText.indexOf(searchTerm) !== -1);
         });
-    });
-    
+    }, 250));
+
+    function escapeHtml(str){ if(!str) return ''; return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+
+    function nl2brSafe(str){ return escapeHtml(str).replace(/\n/g, '<br>'); }
+
     function showJobDetails(jobId) {
-        // Find job data
         const jobs = <?php echo json_encode($jobs); ?>;
-        const job = jobs.find(j => j.job_opening_id == jobId);
-        
-        if (job) {
-            const content = `
-                <div class="job-detail-header mb-4">
-                    <h4 class="text-primary">${job.title}</h4>
-                    <p class="text-muted mb-2">
-                        <i class="fas fa-building mr-2"></i>${job.department_name}
-                        <span class="ml-3"><i class="fas fa-calendar mr-2"></i>Posted: ${new Date(job.posting_date).toLocaleDateString()}</span>
-                    </p>
-                </div>
-                
-                <div class="row mb-4">
-                    <div class="col-md-6">
-                        <div class="detail-card">
-                            <h6><i class="fas fa-users text-primary mr-2"></i>Positions Available</h6>
-                            <p>${job.vacancy_count} position${job.vacancy_count > 1 ? 's' : ''}</p>
-                        </div>
-                    </div>
-                    <div class="col-md-6">
-                        <div class="detail-card">
-                            <h6><i class="fas fa-clock text-primary mr-2"></i>Employment Type</h6>
-                            <p>${job.employment_type}</p>
-                        </div>
-                    </div>
-                    <div class="col-md-6">
-                        <div class="detail-card">
-                            <h6><i class="fas fa-map-marker-alt text-primary mr-2"></i>Location</h6>
-                            <p>${job.location}</p>
-                        </div>
-                    </div>
-                    ${job.salary_range_min && job.salary_range_max ? `
-                    <div class="col-md-6">
-                        <div class="detail-card">
-                            <h6><i class="fas fa-peso-sign text-primary mr-2"></i>Salary Range</h6>
-                            <p>₱${parseInt(job.salary_range_min).toLocaleString()} - ₱${parseInt(job.salary_range_max).toLocaleString()}</p>
-                        </div>
-                    </div>
-                    ` : ''}
-                </div>
-                
-                <div class="mb-4">
-                    <h6 class="text-primary"><i class="fas fa-info-circle mr-2"></i>Job Description</h6>
-                    <div class="detail-content">${job.description.replace(/\n/g, '<br>')}</div>
-                </div>
-                
-                ${job.requirements ? `
-                <div class="mb-4">
-                    <h6 class="text-primary"><i class="fas fa-check-circle mr-2"></i>Requirements</h6>
-                    <div class="detail-content">${job.requirements.replace(/\n/g, '<br>')}</div>
-                </div>
-                ` : ''}
-                
-                ${job.responsibilities ? `
-                <div class="mb-4">
-                    <h6 class="text-primary"><i class="fas fa-tasks mr-2"></i>Key Responsibilities</h6>
-                    <div class="detail-content">${job.responsibilities.replace(/\n/g, '<br>')}</div>
-                </div>
-                ` : ''}
-            `;
-            
-            document.getElementById('jobDetailsContent').innerHTML = content;
-            document.getElementById('modalApplyBtn').onclick = () => applyForJob(jobId);
-            $('#jobDetailsModal').modal('show');
-        }
+        const job = jobs.find(j => parseInt(j.job_opening_id) === parseInt(jobId));
+
+        if (!job) return;
+
+        const posted = new Date(job.posting_date).toLocaleDateString();
+        const salaryHtml = (job.salary_range_min && job.salary_range_max) ? `\n            <div class="col-md-6">\n                <div class="detail-card">\n                    <h6><i class="fas fa-peso-sign text-primary mr-2"></i>Salary Range</h6>\n                    <p>₱${parseInt(job.salary_range_min).toLocaleString()} - ₱${parseInt(job.salary_range_max).toLocaleString()}</p>\n                </div>\n            </div>` : '';
+
+        const content = `\n            <div class="job-detail-header mb-4">\n                <h4 class="text-primary">${escapeHtml(job.title)}</h4>\n                <p class="text-muted mb-2">\n                    <i class="fas fa-building mr-2"></i>${escapeHtml(job.department_name)}\n                    <span class="ml-3"><i class="fas fa-calendar mr-2"></i>Posted: ${posted}</span>\n                </p>\n            </div>\n            <div class="row mb-4">\n                <div class="col-md-6">\n                    <div class="detail-card">\n                        <h6><i class="fas fa-users text-primary mr-2"></i>Positions Available</h6>\n                        <p>${escapeHtml(String(job.vacancy_count))} position${job.vacancy_count > 1 ? 's' : ''}</p>\n                    </div>\n                </div>\n                <div class="col-md-6">\n                    <div class="detail-card">\n                        <h6><i class="fas fa-clock text-primary mr-2"></i>Employment Type</h6>\n                        <p>${escapeHtml(job.employment_type)}</p>\n                    </div>\n                </div>\n                <div class="col-md-6">\n                    <div class="detail-card">\n                        <h6><i class="fas fa-map-marker-alt text-primary mr-2"></i>Location</h6>\n                        <p>${escapeHtml(job.location)}</p>\n                    </div>\n                </div>\n                ${salaryHtml}\n            </div>\n            <div class="mb-4">\n                <h6 class="text-primary"><i class="fas fa-info-circle mr-2"></i>Job Description</h6>\n                <div class="detail-content">${nl2brSafe(job.description)}</div>\n            </div>\n            ${job.requirements ? `\n            <div class="mb-4">\n                <h6 class="text-primary"><i class="fas fa-check-circle mr-2"></i>Requirements</h6>\n                <div class="detail-content">${nl2brSafe(job.requirements)}</div>\n            </div>` : ''}\n            ${job.responsibilities ? `\n            <div class="mb-4">\n                <h6 class="text-primary"><i class="fas fa-tasks mr-2"></i>Key Responsibilities</h6>\n                <div class="detail-content">${nl2brSafe(job.responsibilities)}</div>\n            </div>` : ''}
+        `;
+
+        document.getElementById('jobDetailsContent').innerHTML = content;
+        document.getElementById('modalApplyBtn').onclick = function(){ applyForJob(jobId); };
+        $('#jobDetailsModal').modal('show');
     }
     </script>
     
@@ -480,7 +452,7 @@ $jobs = $conn->query($jobs_query)->fetchAll(PDO::FETCH_ASSOC);
         padding: 15px;
         border-radius: 8px;
         margin-bottom: 15px;
-        border-left: 3px solid var(--primary);
+        border-left: 3px solid var(--primary-color);
     }
     
     .detail-card h6 {

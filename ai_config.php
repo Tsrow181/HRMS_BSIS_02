@@ -14,58 +14,70 @@ if (file_exists($apiKeysFile)) {
     // Default empty keys if file doesn't exist
     define('GEMINI_API_KEY', '');
     define('OPENAI_API_KEY', '');
+    define('SCREENING_GEMINI_API_KEY', '');
+    define('SCREENING_OPENAI_API_KEY', '');
 }
 
-// Available Gemini Models (all support generateContent):
-// 
-// RECOMMENDED FOR PRODUCTION (v1 API - Stable):
-//   - gemini-2.5-flash (Latest, fastest, best for most tasks) ⭐ CURRENT
-//   - gemini-2.5-pro (Latest, highest quality, slower)
-//   - gemini-2.0-flash (Stable, fast)
-//   - gemini-2.0-flash-001 (Specific version)
-// 
-// LIGHTWEIGHT OPTIONS (v1 API):
-//   - gemini-2.5-flash-lite (Lighter version of 2.5 flash)
-//   - gemini-2.0-flash-lite (Lighter version of 2.0 flash)
-//   - gemini-2.0-flash-lite-001 (Specific lite version)
-// 
-// LATEST POINTERS (v1beta API - Auto-updates):
-//   - gemini-flash-latest (Always points to latest flash model)
-//   - gemini-flash-lite-latest (Always points to latest lite model)
-//   - gemini-pro-latest (Always points to latest pro model)
-// 
-// EXPERIMENTAL/PREVIEW (v1beta API - Cutting edge features):
-//   - gemini-3-pro-preview (Next generation pro)
-//   - gemini-3-flash-preview (Next generation flash)
-//   - gemini-exp-1206 (Experimental build from Dec 6)
-//   - gemini-2.5-flash-preview-09-2025 (September 2025 preview)
-//   - gemini-2.5-flash-lite-preview-09-2025 (Lite preview)
-//   - deep-research-pro-preview-12-2025 (Research-focused)
-// 
-// SPECIALIZED MODELS (v1beta API):
-//   - gemini-2.5-flash-preview-tts (Text-to-speech support)
-//   - gemini-2.5-pro-preview-tts (Pro with TTS)
-//   - gemini-2.0-flash-exp-image-generation (Image generation)
-//   - gemini-2.5-flash-image (Image processing)
-//   - gemini-3-pro-image-preview / nano-banana-pro-preview (Image models)
-//   - gemini-2.5-computer-use-preview-10-2025 (Computer interaction)
-//   - gemini-robotics-er-1.5-preview (Robotics applications)
-// 
-// SMALL MODELS (v1beta API - Lower resource usage):
-//   - gemma-3-27b-it (27 billion parameters)
-//   - gemma-3-12b-it (12 billion parameters)
-//   - gemma-3-4b-it (4 billion parameters)
-//   - gemma-3-1b-it (1 billion parameters)
-//   - gemma-3n-e4b-it (Efficient 4B)
-//   - gemma-3n-e2b-it (Efficient 2B)
-// 
-// AUDIO MODELS (v1beta API - Native audio support):
-//   - gemini-2.5-flash-native-audio-latest
-//   - gemini-2.5-flash-native-audio-preview-09-2025
-//   - gemini-2.5-flash-native-audio-preview-12-2025
-// 
-// NOTE: Models in v1 API are more stable. Models in v1beta may have breaking changes.
-//       For production use, stick with v1 API models (gemini-2.5-flash, gemini-2.5-pro, etc.)
+/**
+ * Log API usage to database (PDO Compatible)
+ */
+function logAPIUsage($provider, $apiType = 'job_generation') {
+    try {
+        // Try to get PDO connection from globals
+        $conn = $GLOBALS['conn'] ?? null;
+        
+        if (!$conn) {
+            require_once 'config.php';
+            $conn = $GLOBALS['conn'] ?? null;
+        }
+        
+        if (!$conn || !($conn instanceof PDO)) {
+            return; // Silently fail if no connection
+        }
+        
+        $today = date('Y-m-d');
+        
+        // Check if tracking table exists (PDO)
+        try {
+            $result = $conn->query("SHOW TABLES LIKE 'api_usage_tracking'");
+            $tableExists = ($result && $result->rowCount() > 0);
+        } catch (Exception $e) {
+            $tableExists = false;
+        }
+        
+        if (!$tableExists) {
+            try {
+                $conn->exec("CREATE TABLE IF NOT EXISTS api_usage_tracking (
+                    id INT AUTO_INCREMENT PRIMARY KEY,
+                    provider VARCHAR(50) NOT NULL,
+                    api_type VARCHAR(50) NOT NULL,
+                    request_date DATE NOT NULL,
+                    request_count INT DEFAULT 1,
+                    status VARCHAR(50) DEFAULT 'success',
+                    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                    UNIQUE KEY unique_tracking (provider, api_type, request_date)
+                )");
+            } catch (Exception $e) {
+                // Table might already exist, ignore
+            }
+        }
+        
+        // Insert or update usage count (PDO)
+        try {
+            $stmt = $conn->prepare("INSERT INTO api_usage_tracking (provider, api_type, request_date, request_count) 
+                                   VALUES (?, ?, ?, 1)
+                                   ON DUPLICATE KEY UPDATE request_count = request_count + 1");
+            $stmt->execute([$provider, $apiType, $today]);
+        } catch (Exception $e) {
+            // Silently fail if query fails
+        }
+        
+    } catch (Exception $e) {
+        // Silently fail - don't break the API calls
+    }
+}
+
+// Gemini Models: gemini-2.5-flash-lite, gemini-2.0-flash-lite, gemini-2.5-flash, gemini-2.5-pro, gemini-2.0-flash
 
 define('GEMINI_MODEL', 'gemini-2.5-flash-lite'); // Lite version with available quota
 define('GEMINI_API_VERSION', 'v1'); // v1 or v1beta
@@ -76,6 +88,42 @@ define('GEMINI_API_URL', 'https://generativelanguage.googleapis.com/' . GEMINI_A
 define('OPENAI_API_URL', 'https://api.openai.com/v1/chat/completions');
 define('OPENAI_MODEL', 'gpt-3.5-turbo'); // or 'gpt-4' for better quality
 
+// ==================== AI SCREENING CONFIGURATION ====================
+// Separate configuration for candidate screening (can use different provider/model)
+
+// AI Screening Provider: 'mock', 'gemini' or 'openai'
+define('SCREENING_AI_PROVIDER', 'gemini'); // Can be different from job generation
+
+// Screening API Keys (stored in ai_keys.php)
+// SCREENING_GEMINI_API_KEY
+// SCREENING_OPENAI_API_KEY
+
+// Gemini Screening Configuration
+define('SCREENING_GEMINI_MODEL', 'gemini-2.5-flash-lite');
+define('SCREENING_GEMINI_API_VERSION', 'v1');
+define('SCREENING_GEMINI_API_URL', 'https://generativelanguage.googleapis.com/' . SCREENING_GEMINI_API_VERSION . '/models/' . SCREENING_GEMINI_MODEL . ':generateContent');
+
+// OpenAI Screening Configuration
+define('SCREENING_OPENAI_MODEL', 'gpt-3.5-turbo');
+
+// ==================== AI EXTRACTOR CONFIGURATION ====================
+// Separate configuration for PDS extraction (can use different provider/model)
+
+// AI Extractor Provider: 'mock', 'gemini' or 'openai'
+define('EXTRACTOR_AI_PROVIDER', 'gemini');
+
+// Extractor API Keys (stored in ai_keys.php)
+// EXTRACTOR_GEMINI_API_KEY
+// EXTRACTOR_OPENAI_API_KEY
+
+// Gemini Extractor Configuration
+define('EXTRACTOR_GEMINI_MODEL', 'gemini-1.5-flash-8b');
+define('EXTRACTOR_GEMINI_API_VERSION', 'v1beta');
+define('EXTRACTOR_GEMINI_API_URL', 'https://generativelanguage.googleapis.com/' . EXTRACTOR_GEMINI_API_VERSION . '/models/' . EXTRACTOR_GEMINI_MODEL . ':generateContent');
+
+// OpenAI Extractor Configuration
+define('EXTRACTOR_OPENAI_MODEL', 'gpt-3.5-turbo');
+
 /**
  * Generate job description using AI
  */
@@ -83,11 +131,20 @@ function generateJobWithAI($jobRoleTitle, $jobRoleDescription, $departmentName, 
     $prompt = buildJobPrompt($jobRoleTitle, $jobRoleDescription, $departmentName, $employmentType, $salaryMin, $salaryMax);
     
     if (AI_PROVIDER === 'mock') {
+        logAPIUsage('mock', 'job_generation');
         return generateMockJob($jobRoleTitle, $jobRoleDescription, $departmentName, $employmentType);
     } elseif (AI_PROVIDER === 'gemini') {
-        return callGeminiAPI($prompt);
+        $result = callGeminiAPI($prompt);
+        if (isset($result['success']) && $result['success']) {
+            logAPIUsage('gemini', 'job_generation');
+        }
+        return $result;
     } else {
-        return callOpenAI($prompt);
+        $result = callOpenAI($prompt);
+        if (isset($result['success']) && $result['success']) {
+            logAPIUsage('openai', 'job_generation');
+        }
+        return $result;
     }
 }
 
